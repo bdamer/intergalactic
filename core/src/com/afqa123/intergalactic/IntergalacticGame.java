@@ -22,11 +22,14 @@ public class IntergalacticGame extends ApplicationAdapter {
         // OpenGL settings
         Gdx.gl.glEnable(GL20.GL_CULL_FACE);
         Gdx.gl.glCullFace(GL20.GL_BACK);
+        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
         loadAssets();
 
         galaxy = new Galaxy(10);
+
         screen = new GalaxyScreen(galaxy);
+        //screen = new TestScreen();
         screen.activate();
     }
 
@@ -36,9 +39,13 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("shaders/default.fsh", String.class);
         Assets.load("shaders/color.vsh", String.class);
         Assets.load("shaders/color.fsh", String.class);
+        Assets.load("shaders/sphere.vsh", String.class);
+        Assets.load("shaders/sphere.fsh", String.class);
         Assets.load("shaders/textured.vsh", String.class);
         Assets.load("shaders/textured.fsh", String.class);
         Assets.load("textures/nebula32.png", Texture.class);
+        Assets.load("textures/base-red.png", Texture.class);
+        Assets.load("textures/detail.png", Texture.class);
         Assets.getManager().finishLoading();
     }
     

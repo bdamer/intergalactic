@@ -153,7 +153,7 @@ public class GridRenderer implements Disposable {
         sp.begin();
         sp.setUniformMatrix("u_worldView", cam.combined);
         mesh.render(sp, GL20.GL_LINES);
-        sp.end();        
+        sp.end();
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.afqa123.intergalactic.screens;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
+import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -53,9 +54,11 @@ public class GalaxyScreen implements Screen {
     private final BackgroundRenderer bgRenderer;
     private boolean done;    
     
+    private final StarRenderer starRenderer;
+    
     public GalaxyScreen(Galaxy galaxy) {
-	    cam = new PerspectiveCamera(70, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(0.0f, 7.5f, 2.5f);
+	    cam = new PerspectiveCamera(50, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam.position.set(0.0f, 10.0f, 5.0f);
         cam.lookAt(0.0f, 0.0f, 0.0f);
         cam.near = 0.5f;
         cam.far = 100.0f;
@@ -65,10 +68,14 @@ public class GalaxyScreen implements Screen {
         gridRenderer.update();
         
         bgRenderer = new BackgroundRenderer();
+        
+        starRenderer = new StarRenderer();
     }
     
     @Override
     public void activate() {
+        done = false;
+
         // Update viewport in case it changed
         cam.viewportWidth = Gdx.graphics.getWidth();
         cam.viewportHeight = Gdx.graphics.getHeight();
@@ -100,6 +107,7 @@ public class GalaxyScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);        
         bgRenderer.render(cam);        
         gridRenderer.render(cam);
+        starRenderer.render(cam);
     }
 
     @Override
@@ -110,5 +118,7 @@ public class GalaxyScreen implements Screen {
     @Override
     public void dispose() {
         gridRenderer.dispose();
+        bgRenderer.dispose();
+        starRenderer.dispose();
     }
 }

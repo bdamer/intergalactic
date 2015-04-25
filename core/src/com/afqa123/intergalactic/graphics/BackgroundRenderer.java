@@ -46,7 +46,7 @@ public class BackgroundRenderer {
         Matrix4 mvp = new Matrix4(modelM);
         mvp.mulLeft(cam.combined);
 
-        texture.bind();
+        texture.bind(0);
         
         sp.begin();
         sp.setUniformMatrix("u_worldView", mvp);
