@@ -8,6 +8,7 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 
 public class IntergalacticGame extends ApplicationAdapter {
 	
@@ -35,7 +36,10 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("shaders/default.fsh", String.class);
         Assets.load("shaders/color.vsh", String.class);
         Assets.load("shaders/color.fsh", String.class);
-        Assets.getManager().finishLoading();        
+        Assets.load("shaders/textured.vsh", String.class);
+        Assets.load("shaders/textured.fsh", String.class);
+        Assets.load("textures/nebula32.png", Texture.class);
+        Assets.getManager().finishLoading();
     }
     
     @Override
