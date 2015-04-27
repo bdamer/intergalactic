@@ -1,5 +1,7 @@
 package com.afqa123.intergalactic.graphics;
 
+import com.afqa123.intergalactic.data.Sector;
+import com.afqa123.intergalactic.math.Hex;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -7,6 +9,7 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import java.util.ArrayList;
@@ -20,12 +23,44 @@ public class StarRenderer implements Disposable {
     private final ShaderProgram sp;
     private final Light light;
     private final Vector3 material;
+    private final Matrix4 modelM;
     private Mesh mesh;
     
-    public StarRenderer() {
+    public StarRenderer(Sector sector) {
         this.sp = ShaderFactory.buildShader("shaders/star.vsh", "shaders/star.fsh");
-        this.light = new DirectionalLight(new Vector3(0.0f, -1.0f, -0.5f), new Vector3(1.0f, 1.0f, 1.0f), 0.05f);
-        this.material = new Vector3(1.0f, 1.0f, 0.0f);
+        this.light = new DirectionalLight(new Vector3(0.0f, -1.0f, -0.5f), 
+                new Vector3(1.0f, 1.0f, 1.0f), 0.05f);
+        
+        float scale;        
+        switch (sector.getCategory()) {
+            case BLUE:
+                scale = 0.4f;
+                material = new Vector3(0.0f, 0.0f, 1.0f);
+                break;
+            case WHITE:
+                scale = 0.3f;
+                material = new Vector3(1.0f, 1.0f, 1.0f);
+                break;
+            case YELLOW:
+                scale = 0.25f;
+                material = new Vector3(1.0f, 1.0f, 0.0f);
+                break;
+            case ORANGE:
+                scale = 0.2f;
+                material = new Vector3(1.0f, 0.65f, 0.0f);
+                break;
+            case RED:
+                scale = 0.125f;
+                material = new Vector3(1.0f, 0.0f, 0.0f);
+                break;                
+            default:
+                throw new RuntimeException("Unsupported sector type: " + sector.getCategory());
+        }
+        
+        this.modelM = new Matrix4();
+        Vector3 pos = Hex.axialToWorld(new Vector2(sector.getX(), sector.getY()));
+        this.modelM.setToTranslationAndScaling(pos, new Vector3(scale, scale, scale));
+                
         buildMesh();
     }
     
@@ -92,18 +127,14 @@ public class StarRenderer implements Disposable {
         mesh.setIndices(indices);
     }
  
-    public void render(Camera cam) {        
-        Matrix4 model = new Matrix4();
-        model.setToScaling(0.5f, 0.5f, 0.5f);
-        model.translate(0.0f, 0.0f, 0.0f);
-
+    public void render(Camera cam) {
         Matrix4 mvp = new Matrix4();
         mvp.set(cam.combined);
-        mvp.mul(model);
+        mvp.mul(modelM);
         
         sp.begin();
         sp.setUniformMatrix("u_mvp", mvp);
-        sp.setUniformMatrix("u_model", model);
+        sp.setUniformMatrix("u_model", modelM);
         sp.setUniformf("u_diffuse", material);
         light.bind(sp);
         mesh.render(sp, GL20.GL_TRIANGLE_STRIP);

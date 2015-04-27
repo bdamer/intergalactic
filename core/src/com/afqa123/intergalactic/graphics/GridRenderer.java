@@ -2,6 +2,7 @@ package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.data.Sector;
+import com.afqa123.intergalactic.math.Hex;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -9,15 +10,10 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 
 public class GridRenderer implements Disposable {
     
-    private static final float SIZE = 1.0f;
-    private static final float HALF_SIZE = SIZE / 2.0f;
-    private static final float HEIGHT = (float)Math.sqrt(SIZE * SIZE - HALF_SIZE * HALF_SIZE);    
-    private static final float SQRT_THREE = (float)Math.sqrt(3.0f);    
     // Number of vertices per hex
     private static final int NUM_VERTICES = 6;
     // Number of indices per hex
@@ -77,8 +73,8 @@ public class GridRenderer implements Disposable {
         //    4
 
         // Compute center coordinates of hex
-        float x = SIZE * SQRT_THREE * ((float)s.getX() + 0.5f * (float)s.getY());
-        float y = SIZE * 3.0f / 2.0f * (float)s.getY();
+        float x = Hex.SIZE * Hex.SQRT_THREE * ((float)s.getX() + 0.5f * (float)s.getY());
+        float y = Hex.SIZE * 3.0f / 2.0f * (float)s.getY();
         float r = 1.0f;
         float g = 1.0f;
         float b = 1.0f;
@@ -89,23 +85,23 @@ public class GridRenderer implements Disposable {
         // Vertex 1        
         vertices[vIndex++] = x;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y - SIZE + PADDING;
+        vertices[vIndex++] = y - Hex.SIZE + PADDING;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
         vertices[vIndex++] = a;
         // Vertex 2
-        vertices[vIndex++] = x + HEIGHT - PADDING;
+        vertices[vIndex++] = x + Hex.HEIGHT - PADDING;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y - HALF_SIZE;
+        vertices[vIndex++] = y - Hex.HALF_SIZE;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
         vertices[vIndex++] = a;
         // Vertex 3
-        vertices[vIndex++] = x + HEIGHT - PADDING;
+        vertices[vIndex++] = x + Hex.HEIGHT - PADDING;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y + HALF_SIZE;
+        vertices[vIndex++] = y + Hex.HALF_SIZE;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
@@ -113,23 +109,23 @@ public class GridRenderer implements Disposable {
         // Vertex 4
         vertices[vIndex++] = x;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y + SIZE - PADDING;
+        vertices[vIndex++] = y + Hex.SIZE - PADDING;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
         vertices[vIndex++] = a;
         // Vertex 5
-        vertices[vIndex++] = x - HEIGHT + PADDING;
+        vertices[vIndex++] = x - Hex.HEIGHT + PADDING;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y + HALF_SIZE;
+        vertices[vIndex++] = y + Hex.HALF_SIZE;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
         vertices[vIndex++] = a;
         // Vertex 6
-        vertices[vIndex++] = x - HEIGHT + PADDING;
+        vertices[vIndex++] = x - Hex.HEIGHT + PADDING;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y - HALF_SIZE;
+        vertices[vIndex++] = y - Hex.HALF_SIZE;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;

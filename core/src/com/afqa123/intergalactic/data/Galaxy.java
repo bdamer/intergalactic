@@ -1,6 +1,9 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.data.Sector.StarCategory;
 import com.badlogic.gdx.math.Vector2;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Galaxy {
 
@@ -11,6 +14,8 @@ public class Galaxy {
     // Sectors in this galaxy. The first index represents the row, the second
     // the column.
     private final Sector[][] sectors;
+    // List of systems which contain stars.
+    private final List<Sector> starSystems;
     
     /**
      * Creates a new galaxy of a given size.
@@ -19,6 +24,7 @@ public class Galaxy {
      */
     public Galaxy(int size) {
         this.size = size;
+        this.starSystems = new ArrayList<>();
         // build up array of variable size for each row
         int rows = size * 2 - 1;
         int cols = size * 2 - 1;
@@ -29,7 +35,7 @@ public class Galaxy {
             cols--;
             sectors[median - i] = new Sector[cols];
             sectors[median + i] = new Sector[cols];
-        }        
+        }
         initializeSectors();
     }
     
@@ -38,7 +44,34 @@ public class Galaxy {
         for (int y = 0; y < sectors.length; y++) {
             for (int x = 0; x < sectors[y].length; x++) {
                 Vector2 axial = offsetToAxial(x, y);
-                sectors[y][x] = new Sector((int)axial.x, (int)axial.y);
+                
+                // TODO: revisit and come up with proper map generation mechanism
+                boolean hasStar = (Math.random() < 0.1);
+                StarCategory category = null;
+                if (hasStar) {
+                    switch ((int)(Math.random() * 5)) {
+                        case 0:
+                            category = StarCategory.BLUE;
+                            break;
+                        case 1:
+                            category = StarCategory.ORANGE;
+                            break;
+                        case 2:
+                            category = StarCategory.RED;
+                            break;
+                        case 3:
+                            category = StarCategory.WHITE;
+                            break;
+                        case 4:
+                            category = StarCategory.YELLOW;
+                            break;
+                    }
+                }
+                Sector s = new Sector((int)axial.x, (int)axial.y, category);
+                sectors[y][x] = s;                
+                if (hasStar) {
+                    starSystems.add(s);
+                }
                 count++;
             }
         }
@@ -74,6 +107,10 @@ public class Galaxy {
         int col = (y < 0 ? x + row : x + size - 1);
         return sectors[row][col];
     }
+
+    public List<Sector> getStarSystems() {
+        return starSystems;
+    }    
     
     /**
      * Converts a set of axial coordinates to offset coordinates for this grid.

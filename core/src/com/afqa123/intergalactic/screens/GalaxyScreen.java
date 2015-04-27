@@ -1,6 +1,7 @@
 package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.data.Galaxy;
+import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.StarRenderer;
@@ -9,6 +10,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GalaxyScreen implements Screen {
 
@@ -52,9 +55,8 @@ public class GalaxyScreen implements Screen {
     private final PerspectiveCamera cam;
     private final GridRenderer gridRenderer;
     private final BackgroundRenderer bgRenderer;
-    private boolean done;    
-    
-    private final StarRenderer starRenderer;
+    private final List<StarRenderer> starRenderers;
+    private boolean done;
     
     public GalaxyScreen(Galaxy galaxy) {
 	    cam = new PerspectiveCamera(45.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -68,8 +70,11 @@ public class GalaxyScreen implements Screen {
         gridRenderer.update();
         
         bgRenderer = new BackgroundRenderer();
-        
-        starRenderer = new StarRenderer();
+
+        starRenderers = new ArrayList<>();
+        for (Sector s : galaxy.getStarSystems()) {
+            starRenderers.add(new StarRenderer(s));
+        }
     }
     
     @Override
@@ -107,7 +112,10 @@ public class GalaxyScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);        
         bgRenderer.render(cam);        
         gridRenderer.render(cam);
-        starRenderer.render(cam);
+        
+        for (StarRenderer r : starRenderers) {
+            r.render(cam);
+        }
     }
 
     @Override
@@ -119,6 +127,8 @@ public class GalaxyScreen implements Screen {
     public void dispose() {
         gridRenderer.dispose();
         bgRenderer.dispose();
-        starRenderer.dispose();
+        for (StarRenderer r : starRenderers) {
+            r.dispose();
+        }
     }
 }
