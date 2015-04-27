@@ -1,9 +1,11 @@
-#ifdef GL_ES
+///
+// Default passthrough fragment shader.
+///
 precision mediump float;
-#endif
-varying vec4 v_color;
+
+uniform vec3 u_color;
 
 void main()
 {
-    gl_FragColor = v_color;
+    gl_FragColor = vec4(u_color, 1.0);
 }

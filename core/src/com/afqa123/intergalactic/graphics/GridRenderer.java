@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 
 public class GridRenderer implements Disposable {
@@ -151,7 +152,7 @@ public class GridRenderer implements Disposable {
         
     public void render(Camera cam) {
         sp.begin();
-        sp.setUniformMatrix("u_worldView", cam.combined);
+        sp.setUniformMatrix("u_mvp", cam.combined);
         mesh.render(sp, GL20.GL_LINES);
         sp.end();
     }

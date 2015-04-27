@@ -57,7 +57,7 @@ public class GalaxyScreen implements Screen {
     private final StarRenderer starRenderer;
     
     public GalaxyScreen(Galaxy galaxy) {
-	    cam = new PerspectiveCamera(50, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+	    cam = new PerspectiveCamera(45.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0.0f, 10.0f, 5.0f);
         cam.lookAt(0.0f, 0.0f, 0.0f);
         cam.near = 0.5f;

@@ -4,6 +4,7 @@ import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
+import com.afqa123.intergalactic.screens.TestScreen;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -28,8 +29,8 @@ public class IntergalacticGame extends ApplicationAdapter {
 
         galaxy = new Galaxy(10);
 
-        screen = new GalaxyScreen(galaxy);
         //screen = new TestScreen();
+        screen = new GalaxyScreen(galaxy);
         screen.activate();
     }
 
@@ -41,6 +42,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("shaders/color.fsh", String.class);
         Assets.load("shaders/sphere.vsh", String.class);
         Assets.load("shaders/sphere.fsh", String.class);
+        Assets.load("shaders/star.vsh", String.class);
+        Assets.load("shaders/star.fsh", String.class);
         Assets.load("shaders/textured.vsh", String.class);
         Assets.load("shaders/textured.fsh", String.class);
         Assets.load("textures/nebula32.png", Texture.class);

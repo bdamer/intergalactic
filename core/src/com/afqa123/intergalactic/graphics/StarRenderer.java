@@ -1,10 +1,8 @@
 package com.afqa123.intergalactic.graphics;
 
-import com.afqa123.intergalactic.asset.Assets;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -17,18 +15,17 @@ import java.util.List;
 public class StarRenderer implements Disposable {
 
     private static final int VERTEX_SIZE = 6;
-    private static final int SLICES = 18;
-    private static final int STACKS = 18;
+    private static final int SLICES = 16;
+    private static final int STACKS = 8;
     private final ShaderProgram sp;
+    private final Light light;
+    private final Vector3 material;
     private Mesh mesh;
-    private final Texture baseTexture;
-    private final Texture detailTexture;
-    private float rot = 0.0f;
-
+    
     public StarRenderer() {
-        this.sp = ShaderFactory.buildShader("shaders/sphere.vsh", "shaders/sphere.fsh");
-        this.baseTexture = Assets.get("textures/base-red.png");
-        this.detailTexture = Assets.get("textures/detail.png");
+        this.sp = ShaderFactory.buildShader("shaders/star.vsh", "shaders/star.fsh");
+        this.light = new DirectionalLight(new Vector3(0.0f, -1.0f, -0.5f), new Vector3(1.0f, 1.0f, 1.0f), 0.05f);
+        this.material = new Vector3(1.0f, 1.0f, 0.0f);
         buildMesh();
     }
     
@@ -48,9 +45,9 @@ public class StarRenderer implements Disposable {
             vertices[i * VERTEX_SIZE + 0] = vertexData.get(i * 3 + 0);
             vertices[i * VERTEX_SIZE + 1] = vertexData.get(i * 3 + 1);
             vertices[i * VERTEX_SIZE + 2] = vertexData.get(i * 3 + 2);
-            vertices[i * VERTEX_SIZE + 3] = Math.abs(normalData.get(i * 3 + 0));
-            vertices[i * VERTEX_SIZE + 4] = Math.abs(normalData.get(i * 3 + 1));
-            vertices[i * VERTEX_SIZE + 5] = Math.abs(normalData.get(i * 3 + 2));            
+            vertices[i * VERTEX_SIZE + 3] = normalData.get(i * 3 + 0);
+            vertices[i * VERTEX_SIZE + 4] = normalData.get(i * 3 + 1);
+            vertices[i * VERTEX_SIZE + 5] = normalData.get(i * 3 + 2);            
         }
         mesh.setVertices(vertices);        
 
@@ -96,19 +93,19 @@ public class StarRenderer implements Disposable {
     }
  
     public void render(Camera cam) {        
-        baseTexture.bind(0);
-        detailTexture.bind(1);
-        
         Matrix4 model = new Matrix4();
         model.setToScaling(0.5f, 0.5f, 0.5f);
-        model.rotate(Vector3.Y, rot);
-        rot += 0.1f;
+        model.translate(0.0f, 0.0f, 0.0f);
+
+        Matrix4 mvp = new Matrix4();
+        mvp.set(cam.combined);
+        mvp.mul(model);
         
         sp.begin();
-        sp.setUniformMatrix("u_worldView", cam.combined);
+        sp.setUniformMatrix("u_mvp", mvp);
         sp.setUniformMatrix("u_model", model);
-        sp.setUniformi("u_tex0", 0);
-        sp.setUniformi("u_tex1", 1);
+        sp.setUniformf("u_diffuse", material);
+        light.bind(sp);
         mesh.render(sp, GL20.GL_TRIANGLE_STRIP);
         sp.end();
     }
@@ -116,7 +113,6 @@ public class StarRenderer implements Disposable {
     @Override
     public void dispose() {
         mesh.dispose();
-        baseTexture.dispose();
-        detailTexture.dispose();
+        sp.dispose();
     }
 }

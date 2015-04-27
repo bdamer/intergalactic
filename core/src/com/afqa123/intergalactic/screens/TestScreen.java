@@ -1,6 +1,6 @@
 package com.afqa123.intergalactic.screens;
 
-import com.afqa123.intergalactic.graphics.StarRenderer;
+import com.afqa123.intergalactic.graphics.CubeRenderer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
@@ -26,7 +26,7 @@ public class TestScreen implements Screen {
     private final PerspectiveCamera cam;
     private final CameraInputController camCtrl;
     private boolean done;
-    private StarRenderer starRenderer;
+    private CubeRenderer renderer;
         
     public TestScreen() {
 	    cam = new PerspectiveCamera(70, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -38,7 +38,7 @@ public class TestScreen implements Screen {
 
         camCtrl = new CameraInputController(cam);       
         
-        starRenderer = new StarRenderer();
+        renderer = new CubeRenderer();
     }
     
     @Override
@@ -71,7 +71,7 @@ public class TestScreen implements Screen {
 		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);      
         
-        starRenderer.render(cam);
+        renderer.render(cam);
     }
 
     @Override
@@ -88,6 +88,6 @@ public class TestScreen implements Screen {
 
     @Override
     public void dispose() {
-        starRenderer.dispose();
+        renderer.dispose();
     }
 }

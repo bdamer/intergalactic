@@ -49,15 +49,14 @@ public class Geometry {
         for (int i = 1; i < stacks; i++) {
             for (int j = 0; j < slices; j++) {
                 x = cost1[j] * sint2[i];
-                y = sint1[j] * sint2[i];
-                z = cost2[i];
-
+                y = cost2[i];
+                z = -sint1[j] * sint2[i];
                 vertices.add(x * radius);
+                vertices.add(y * radius);
                 vertices.add(z * radius);
-                vertices.add(-y * radius);
                 normals.add(x);
+                normals.add(y);
                 normals.add(z);                
-                normals.add(-y);
             }
         }
 
