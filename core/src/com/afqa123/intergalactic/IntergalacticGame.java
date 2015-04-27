@@ -2,6 +2,7 @@ package com.afqa123.intergalactic;
 
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.Galaxy;
+import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
 import com.afqa123.intergalactic.screens.TestScreen;
@@ -71,5 +72,6 @@ public class IntergalacticGame extends ApplicationAdapter {
     @Override
     public void dispose() {
         screen.dispose();
-    }    
+        ShaderFactory.freeShaders();
+    }
 }

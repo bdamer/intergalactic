@@ -36,19 +36,13 @@ public class DebugTools {
         return mesh;        
     }
     
-    // TODO: implement caching in shader mgr...
-    private static ShaderProgram sp;
-    
     public static void renderNormalMesh(Matrix4 mvp, Mesh normalMesh) {
-        if (sp == null) {
-            sp = ShaderFactory.buildShader("shaders/default.vsh", "shaders/default.fsh");            
-        }        
+        ShaderProgram sp = ShaderFactory.buildShader("shaders/default.vsh", "shaders/default.fsh");            
         Vector3 color = new Vector3(1.0f, 0.0f, 0.0f);
         sp.begin();
         sp.setUniformMatrix("u_mvp", mvp);
         sp.setUniformf("u_color", color);
         normalMesh.render(sp, GL20.GL_LINES);
         sp.end();        
-    }
-    
+    }    
 }
