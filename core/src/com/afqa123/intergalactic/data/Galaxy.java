@@ -1,6 +1,7 @@
 package com.afqa123.intergalactic.data;
 
 import com.afqa123.intergalactic.data.Sector.StarCategory;
+import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +68,7 @@ public class Galaxy {
                             break;
                     }
                 }
-                Sector s = new Sector((int)axial.x, (int)axial.y, category);
+                Sector s = new Sector(new HexCoordinate(axial), category);
                 sectors[y][x] = s;                
                 if (hasStar) {
                     starSystems.add(s);

@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 
 public class GridRenderer implements Disposable {
@@ -73,8 +74,7 @@ public class GridRenderer implements Disposable {
         //    4
 
         // Compute center coordinates of hex
-        float x = Hex.SIZE * Hex.SQRT_THREE * ((float)s.getX() + 0.5f * (float)s.getY());
-        float y = Hex.SIZE * 3.0f / 2.0f * (float)s.getY();
+        Vector3 pos = s.getCoordinates().toWorld();
         float r = 1.0f;
         float g = 1.0f;
         float b = 1.0f;
@@ -83,49 +83,49 @@ public class GridRenderer implements Disposable {
         int vIndex = vCount * NUM_VERTICES * VERTEX_SIZE;
         
         // Vertex 1        
-        vertices[vIndex++] = x;
+        vertices[vIndex++] = pos.x;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y - Hex.SIZE + PADDING;
+        vertices[vIndex++] = pos.z - Hex.SIZE + PADDING;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
         vertices[vIndex++] = a;
         // Vertex 2
-        vertices[vIndex++] = x + Hex.HEIGHT - PADDING;
+        vertices[vIndex++] = pos.x + Hex.HEIGHT - PADDING;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y - Hex.HALF_SIZE;
+        vertices[vIndex++] = pos.z - Hex.HALF_SIZE;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
         vertices[vIndex++] = a;
         // Vertex 3
-        vertices[vIndex++] = x + Hex.HEIGHT - PADDING;
+        vertices[vIndex++] = pos.x + Hex.HEIGHT - PADDING;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y + Hex.HALF_SIZE;
+        vertices[vIndex++] = pos.z + Hex.HALF_SIZE;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
         vertices[vIndex++] = a;
         // Vertex 4
-        vertices[vIndex++] = x;
+        vertices[vIndex++] = pos.x;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y + Hex.SIZE - PADDING;
+        vertices[vIndex++] = pos.z + Hex.SIZE - PADDING;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
         vertices[vIndex++] = a;
         // Vertex 5
-        vertices[vIndex++] = x - Hex.HEIGHT + PADDING;
+        vertices[vIndex++] = pos.x - Hex.HEIGHT + PADDING;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y + Hex.HALF_SIZE;
+        vertices[vIndex++] = pos.z + Hex.HALF_SIZE;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;
         vertices[vIndex++] = a;
         // Vertex 6
-        vertices[vIndex++] = x - Hex.HEIGHT + PADDING;
+        vertices[vIndex++] = pos.x - Hex.HEIGHT + PADDING;
         vertices[vIndex++] = 0.0f;
-        vertices[vIndex++] = y - Hex.HALF_SIZE;
+        vertices[vIndex++] = pos.z - Hex.HALF_SIZE;
         vertices[vIndex++] = r;
         vertices[vIndex++] = g;
         vertices[vIndex++] = b;

@@ -49,15 +49,18 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("shaders/star.fsh", String.class);
         Assets.load("shaders/textured.vsh", String.class);
         Assets.load("shaders/textured.fsh", String.class);
+        Assets.load("shaders/transparency.fsh", String.class);
         Assets.load("textures/nebula32.png", Texture.class);
         Assets.load("textures/base-red.png", Texture.class);
         Assets.load("textures/detail.png", Texture.class);
+        Assets.load("textures/selection.png", Texture.class);        
         Assets.getManager().finishLoading();
     }
     
     @Override
     public void resize(int width, int height) {
-        Gdx.app.debug(IntergalacticGame.class.getName(), String.format("Resizing screen to %d by %d", width, height));
+        Gdx.app.debug(IntergalacticGame.class.getName(), 
+                String.format("Resizing screen to %d by %d", width, height));
         screen.resize(width, height);
     }
     

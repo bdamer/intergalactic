@@ -1,5 +1,7 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.math.HexCoordinate;
+
 /**
  * Class representing a single galactic sector.
  */
@@ -14,8 +16,7 @@ public class Sector {
     }
     
     // Axial coordinates of this sector.
-    private final int x;
-    private final int y;
+    private final HexCoordinate coordinates;
     private final StarCategory category;
     
     // Tile flags as relevant to player
@@ -24,19 +25,14 @@ public class Sector {
     private boolean shortRange;
     private boolean longRange;
     
-    public Sector(int x, int y, StarCategory category) {
-        this.x = x;
-        this.y = y;
+    public Sector(HexCoordinate coordinates, StarCategory category) {
+        this.coordinates = coordinates;
         this.category = category;
     }
     
-    public int getX() {
-        return x;
+    public HexCoordinate getCoordinates() {
+        return coordinates;
     }
-    
-    public int getY() {
-        return y;
-    }    
 
     public StarCategory getCategory() {
         return category;

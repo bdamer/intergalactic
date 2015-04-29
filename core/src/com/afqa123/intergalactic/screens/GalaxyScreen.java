@@ -4,12 +4,16 @@ import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
+import com.afqa123.intergalactic.graphics.Indicator;
 import com.afqa123.intergalactic.graphics.StarRenderer;
+import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +23,7 @@ public class GalaxyScreen implements Screen {
     
         private int lastX;
         private int lastY;
+        private int lastButton;
         private final static float SCROLL_SPEED = 0.1f;
         
         @Override
@@ -35,20 +40,38 @@ public class GalaxyScreen implements Screen {
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
             lastX = screenX;
             lastY = screenY;
-            return true;
+            lastButton = button;
+            if (button == 0) {
+                Ray r = cam.getPickRay(screenX, screenY);            
+                // compute intersection with xz-plane
+                final Vector3 normal = new Vector3(0.0f, 1.0f, 0.0f);
+                float t = -r.origin.dot(normal) / r.direction.dot(normal);            
+                if (t > 0) {
+                    Vector3 hit = new Vector3(r.origin.x + r.direction.x * t,
+                            r.origin.y + r.direction.y * t,
+                            r.origin.z + r.direction.z * t);                
+                    HexCoordinate c = new HexCoordinate(hit);
+                    indicator.setPosition(c.toWorld());
+                }
+                return true;                
+            } else {
+                return false;
+            }            
         }
 
         @Override
         public boolean touchDragged(int screenX, int screenY, int pointer) {
-            float dx = SCROLL_SPEED * (float)(screenX - lastX);
-            float dy = SCROLL_SPEED * (float)(screenY - lastY);
-            
-            cam.position.add(-dx, 0, -dy);
-            cam.update();
-            
-            lastX = screenX;
-            lastY = screenY;
-            return true;
+            if (lastButton == 1) {
+                float dx = SCROLL_SPEED * (float)(screenX - lastX);
+                float dy = SCROLL_SPEED * (float)(screenY - lastY);            
+                cam.position.add(-dx, 0, -dy);
+                cam.update();            
+                lastX = screenX;
+                lastY = screenY;
+                return true;
+            } else {
+                return false;
+            }
         }
     }
     
@@ -56,6 +79,7 @@ public class GalaxyScreen implements Screen {
     private final GridRenderer gridRenderer;
     private final BackgroundRenderer bgRenderer;
     private final List<StarRenderer> starRenderers;
+    private final Indicator indicator;
     private boolean done;
     
     public GalaxyScreen(Galaxy galaxy) {
@@ -75,6 +99,8 @@ public class GalaxyScreen implements Screen {
         for (Sector s : galaxy.getStarSystems()) {
             starRenderers.add(new StarRenderer(s));
         }
+        
+        indicator = new Indicator();
     }
     
     @Override
@@ -112,7 +138,7 @@ public class GalaxyScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);        
         bgRenderer.render(cam);        
         gridRenderer.render(cam);
-        
+        indicator.render(cam);
         for (StarRenderer r : starRenderers) {
             r.render(cam);
         }
@@ -130,5 +156,6 @@ public class GalaxyScreen implements Screen {
         for (StarRenderer r : starRenderers) {
             r.dispose();
         }
+        indicator.dispose();
     }
 }

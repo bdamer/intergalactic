@@ -1,5 +1,6 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.math.Vector2;
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,28 +46,23 @@ public class GalaxyTest {
         Galaxy g = new Galaxy(1);
         Sector s = g.getSector(0, 0);
         Assert.assertNotNull(s);
-        Assert.assertEquals(0, s.getX());
-        Assert.assertEquals(0, s.getY());
+        Assert.assertEquals(new HexCoordinate(0, 0), s.getCoordinates());
         
         g = new Galaxy(2);
         s = g.getSector(0, 0);
         Assert.assertNotNull(s);
-        Assert.assertEquals(0, s.getX());
-        Assert.assertEquals(0, s.getY());
+        Assert.assertEquals(new HexCoordinate(0, 0), s.getCoordinates());
 
         s = g.getSector(0, -1);
         Assert.assertNotNull(s);        
-        Assert.assertEquals(0, s.getX());
-        Assert.assertEquals(-1, s.getY());
+        Assert.assertEquals(new HexCoordinate(0, -1), s.getCoordinates());
         
         s = g.getSector(0, 1);
         Assert.assertNotNull(s);        
-        Assert.assertEquals(0, s.getX());
-        Assert.assertEquals(1, s.getY());
+        Assert.assertEquals(new HexCoordinate(0, 1), s.getCoordinates());
         
         s = g.getSector(1, -1);
         Assert.assertNotNull(s);        
-        Assert.assertEquals(1, s.getX());
-        Assert.assertEquals(-1, s.getY());
+        Assert.assertEquals(new HexCoordinate(1, -1), s.getCoordinates());
     }
 }

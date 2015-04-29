@@ -1,6 +1,7 @@
 package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.asset.Assets;
+import com.afqa123.intergalactic.math.Hex;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -9,25 +10,30 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Disposable;
 
-public class BackgroundRenderer {
+public class Indicator implements Disposable {
 
+    private final static Vector3 SCALE_VECTOR = new Vector3(Hex.HEIGHT, 1.0f, Hex.HEIGHT);
     private final ShaderProgram sp;
-    private final Mesh mesh;
     private final Texture texture;
+    private final Mesh mesh;
     private final Matrix4 modelM;
+    private Vector3 position;
     
-    public BackgroundRenderer() {
-        sp = ShaderFactory.buildShader("shaders/textured.vsh", "shaders/textured.fsh");
+    public Indicator() {
+        sp = ShaderFactory.buildShader("shaders/textured.vsh", "shaders/transparency.fsh");
+        texture = Assets.get("textures/selection.png");        
         mesh = new Mesh(true, 4, 0,
             new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
             new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE));
-        texture = Assets.get("textures/nebula32.png");
-        modelM = new Matrix4();
-        modelM.setToTranslationAndScaling(0.0f, -1.0f, 0.0f, 25.0f, 1.0f, 25.0f);
         buildMesh();
+        modelM = new Matrix4();
+        position = Vector3.Zero;
     }
-    
+
+    // TODO: reuse
     private void buildMesh() {
         /**
          * 2 3
@@ -44,6 +50,7 @@ public class BackgroundRenderer {
     
     public void render(Camera cam) {
         Matrix4 mvp = new Matrix4(modelM);
+        modelM.setToTranslationAndScaling(position, SCALE_VECTOR);
         mvp.mulLeft(cam.combined);
 
         texture.bind(0);
@@ -52,12 +59,20 @@ public class BackgroundRenderer {
         sp.setUniformMatrix("u_worldView", mvp);
         sp.setUniformi("u_tex0", 0);
         mesh.render(sp, GL20.GL_TRIANGLE_STRIP);
-        sp.end();        
+        sp.end();   
+    }
+    
+    @Override
+    public void dispose() {
+        texture.dispose();
+        mesh.dispose();
     }
 
-    public void dispose() {
-        mesh.dispose();
-        sp.dispose();
-        texture.dispose();
+    public Vector3 getPosition() {
+        return position;
+    }
+
+    public void setPosition(Vector3 position) {
+        this.position = position;
     }    
 }

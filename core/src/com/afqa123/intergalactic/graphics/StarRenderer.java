@@ -1,7 +1,6 @@
 package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.data.Sector;
-import com.afqa123.intergalactic.math.Hex;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -9,7 +8,6 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import java.util.ArrayList;
@@ -58,7 +56,7 @@ public class StarRenderer implements Disposable {
         }
         
         this.modelM = new Matrix4();
-        Vector3 pos = Hex.axialToWorld(new Vector2(sector.getX(), sector.getY()));
+        Vector3 pos = sector.getCoordinates().toWorld();
         this.modelM.setToTranslationAndScaling(pos, new Vector3(scale, scale, scale));
                 
         buildMesh();
