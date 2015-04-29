@@ -1,3 +1,4 @@
+#version 100
 ///
 // Textured vertex shader.
 ///

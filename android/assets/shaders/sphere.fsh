@@ -1,3 +1,4 @@
+#version 100
 ///
 // Textured fragment shader to map a spherical body.
 ///

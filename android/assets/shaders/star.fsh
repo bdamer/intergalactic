@@ -1,3 +1,4 @@
+#version 100
 ///
 // Fragment shader for per-vertex lit body. 
 ///

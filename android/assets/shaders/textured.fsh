@@ -1,3 +1,4 @@
+#version 100
 ///
 // Textured fragment shader.
 ///
@@ -8,5 +9,5 @@ uniform sampler2D u_tex0;
 
 void main()
 {
-    gl_FragColor = texture(u_tex0, v_texCoord);
+    gl_FragColor = texture2D(u_tex0, v_texCoord);
 }

@@ -20,11 +20,12 @@ import java.util.List;
 public class GalaxyScreen implements Screen {
 
     private class GalaxyScreenInputProcessor extends InputAdapter {
-    
+
+        private static final int DRAG_RECT = 8;
+        private static final float SCROLL_SPEED = 0.05f;
         private int lastX;
         private int lastY;
-        private int lastButton;
-        private final static float SCROLL_SPEED = 0.1f;
+        private boolean dragging;
         
         @Override
         public boolean keyDown(int i) {
@@ -40,9 +41,14 @@ public class GalaxyScreen implements Screen {
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
             lastX = screenX;
             lastY = screenY;
-            lastButton = button;
-            if (button == 0) {
-                Ray r = cam.getPickRay(screenX, screenY);            
+            dragging = false;
+            return true;                
+        }
+
+        @Override
+        public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+            if (!dragging) {
+                Ray r = cam.getPickRay(screenX, screenY);
                 // compute intersection with xz-plane
                 final Vector3 normal = new Vector3(0.0f, 1.0f, 0.0f);
                 float t = -r.origin.dot(normal) / r.direction.dot(normal);            
@@ -52,26 +58,29 @@ public class GalaxyScreen implements Screen {
                             r.origin.z + r.direction.z * t);                
                     HexCoordinate c = new HexCoordinate(hit);
                     indicator.setPosition(c.toWorld());
-                }
-                return true;                
-            } else {
-                return false;
-            }            
+                }            
+            }
+            return true;
         }
 
         @Override
         public boolean touchDragged(int screenX, int screenY, int pointer) {
-            if (lastButton == 1) {
+            // Check if we've moved enough to start dragging
+            if (!dragging) {
+                int dx = screenX - lastX;
+                int dy = screenY - lastY;
+                dragging = (dx * dx + dy * dy) >= DRAG_RECT;
+            }
+            
+            if (dragging) {
                 float dx = SCROLL_SPEED * (float)(screenX - lastX);
                 float dy = SCROLL_SPEED * (float)(screenY - lastY);            
                 cam.position.add(-dx, 0, -dy);
                 cam.update();            
                 lastX = screenX;
                 lastY = screenY;
-                return true;
-            } else {
-                return false;
-            }
+            }            
+            return true;                
         }
     }
     

@@ -1,3 +1,4 @@
+#version 100
 ///
 // Vertex shader for per-vertex lit body. 
 ///
