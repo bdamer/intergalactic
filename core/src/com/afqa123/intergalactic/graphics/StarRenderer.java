@@ -45,7 +45,7 @@ public class StarRenderer implements Disposable {
                 break;
             case ORANGE:
                 scale = 0.2f;
-                material = new Vector3(1.0f, 0.65f, 0.0f);
+                material = new Vector3(1.0f, 0.35f, 0.0f);
                 break;
             case RED:
                 scale = 0.125f;

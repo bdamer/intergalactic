@@ -22,8 +22,9 @@ public class IntergalacticGame extends ApplicationAdapter {
         // Application settings
         Gdx.app.setLogLevel(Application.LOG_DEBUG);
         // OpenGL settings
-        Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-        Gdx.gl.glCullFace(GL20.GL_BACK);
+        // Disabled since it screws with effects
+        //Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+        //Gdx.gl.glCullFace(GL20.GL_BACK);
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -32,13 +33,21 @@ public class IntergalacticGame extends ApplicationAdapter {
 
         galaxy = new Galaxy(15);
 
-        //screen = new TestScreen();
-        screen = new GalaxyScreen(galaxy);
+        screen = new TestScreen();
+        //screen = new GalaxyScreen(galaxy);
         screen.activate();
     }
 
     private void loadAssets() {
         Gdx.app.log(IntergalacticGame.class.getName(), "Loading assets...");
+
+        // Assets
+        Assets.load("textures/nebula32.png", Texture.class);
+        Assets.load("textures/base-red.png", Texture.class);
+        Assets.load("textures/detail.png", Texture.class);
+        Assets.load("textures/selection.png", Texture.class);        
+        
+        // Scene shaders
         Assets.load("shaders/default.vsh", String.class);
         Assets.load("shaders/default.fsh", String.class);
         Assets.load("shaders/color.vsh", String.class);
@@ -50,10 +59,15 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("shaders/textured.vsh", String.class);
         Assets.load("shaders/textured.fsh", String.class);
         Assets.load("shaders/transparency.fsh", String.class);
-        Assets.load("textures/nebula32.png", Texture.class);
-        Assets.load("textures/base-red.png", Texture.class);
-        Assets.load("textures/detail.png", Texture.class);
-        Assets.load("textures/selection.png", Texture.class);        
+                
+        // Effects Shaders
+        Assets.load("shaders/fx_blur_h.vsh", String.class);
+        Assets.load("shaders/fx_blur_v.vsh", String.class);
+        Assets.load("shaders/fx_blur.fsh", String.class);
+        Assets.load("shaders/fx_default.vsh", String.class);
+        Assets.load("shaders/fx_glow.fsh", String.class);
+        Assets.load("shaders/fx_threshold.fsh", String.class);
+        
         Assets.getManager().finishLoading();
     }
     
@@ -68,7 +82,6 @@ public class IntergalacticGame extends ApplicationAdapter {
 	public void render () {
         screen.update();        
         screen.render();
-
         if (screen.isDone()) {
             Gdx.app.exit();
         }
