@@ -1,8 +1,9 @@
 package com.afqa123.intergalactic.screens;
 
-import com.afqa123.intergalactic.graphics.CubeRenderer;
+import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.graphics.StarRenderer;
+import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
@@ -16,6 +17,7 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Vector2;
 
 public class BloomTestScreen implements Screen {
 
@@ -26,17 +28,23 @@ public class BloomTestScreen implements Screen {
                 case Keys.ESCAPE:
                     done = true;
                     return true;
-                case Keys.NUM_1:
+                case Keys.NUM_1:    // just render scene
                     mode = 1;
                     return true;
-                case Keys.NUM_2:
+                case Keys.NUM_2:    // add threshold pass
                     mode = 2;
                     return true;
-                case Keys.NUM_3:
+                case Keys.NUM_3:    // add horizontal blur
                     mode = 3;
                     return true;
-                case Keys.NUM_4:
+                case Keys.NUM_4:    // add vertical blur
                     mode = 4;
+                    return true;
+                case Keys.F1:       // regular blur 
+                    alernateBlur = false;
+                    return true;
+                case Keys.F2:        // alternate blur
+                    alernateBlur = true;
                     return true;
                 default:                     
                     return false;
@@ -47,13 +55,15 @@ public class BloomTestScreen implements Screen {
     private final PerspectiveCamera cam;
     private final CameraInputController camCtrl;
     private boolean done;
-    private CubeRenderer renderer;
+//    private CubeRenderer renderer;
 
     // Test objects here
+    private StarRenderer renderer;
     private final ShaderProgram compShader;
     private final ShaderProgram thresholdShader;
     private final ShaderProgram hblurShader;
     private final ShaderProgram vblurShader;
+    private final ShaderProgram blurShader2;
     private final Mesh mesh;
     
     // Size of FBO for effects stages
@@ -61,7 +71,8 @@ public class BloomTestScreen implements Screen {
     private FrameBuffer fbo0;
     private FrameBuffer fbo1;
     private FrameBuffer fbo2;
-    private int mode = 1;
+    private int mode = 4;
+    private boolean alernateBlur;
     
     public BloomTestScreen() {
 	    cam = new PerspectiveCamera(70, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -72,9 +83,12 @@ public class BloomTestScreen implements Screen {
         cam.update();
 
         camCtrl = new CameraInputController(cam);        
-        renderer = new CubeRenderer();
+//        renderer = new CubeRenderer();
         
         // Test code here:
+        Sector sector = new Sector(new HexCoordinate(0,0), Sector.StarCategory.RED);
+        renderer = new StarRenderer(sector);
+
         fbo0 = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         fbo1 = new FrameBuffer(Pixmap.Format.RGBA8888, FBO_SIZE, FBO_SIZE, false);
         fbo2 = new FrameBuffer(Pixmap.Format.RGBA8888, FBO_SIZE, FBO_SIZE, false);
@@ -83,6 +97,7 @@ public class BloomTestScreen implements Screen {
         thresholdShader = ShaderFactory.buildShader("shaders/fx_default.vsh", "shaders/fx_threshold.fsh");
         hblurShader = ShaderFactory.buildShader("shaders/fx_blur_h.vsh", "shaders/fx_blur.fsh");
         vblurShader = ShaderFactory.buildShader("shaders/fx_blur_v.vsh", "shaders/fx_blur.fsh");
+        blurShader2 = ShaderFactory.buildShader("shaders/fx_default.vsh", "shaders/fx_blur2.fsh");
         
         // Simple mesh to render fullscreen texture to during fx pass
         mesh = new Mesh(true, 4, 0, new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE));
@@ -154,10 +169,19 @@ public class BloomTestScreen implements Screen {
         Gdx.gl.glViewport(0, 0, nextFbo.getWidth(), nextFbo.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         lastFbo.getColorBufferTexture().bind(0);
-        hblurShader.begin();
-        hblurShader.setUniformi("u_tex0", 0);
-        mesh.render(hblurShader, GL20.GL_TRIANGLE_STRIP);
-        hblurShader.end(); 
+        if (alernateBlur) {
+            hblurShader.begin();
+            hblurShader.setUniformi("u_tex0", 0);
+            mesh.render(hblurShader, GL20.GL_TRIANGLE_STRIP);
+            hblurShader.end();             
+        } else {
+            blurShader2.begin();
+            blurShader2.setUniformi("u_tex0", 0);
+            blurShader2.setUniformf("u_blur", 1.5f / (float)FBO_SIZE);
+            blurShader2.setUniformf("u_dir", new Vector2(1.0f, 0.0f));
+            mesh.render(blurShader2, GL20.GL_TRIANGLE_STRIP);
+            blurShader2.end(); 
+        }
         nextFbo.end();
         return nextFbo;
     }
@@ -168,10 +192,19 @@ public class BloomTestScreen implements Screen {
         Gdx.gl.glViewport(0, 0, nextFbo.getWidth(), nextFbo.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         lastFbo.getColorBufferTexture().bind(0);
-        vblurShader.begin();
-        vblurShader.setUniformi("u_tex0", 0);
-        mesh.render(vblurShader, GL20.GL_TRIANGLE_STRIP);
-        vblurShader.end();
+        if (alernateBlur) {
+            vblurShader.begin();
+            vblurShader.setUniformi("u_tex0", 0);
+            mesh.render(vblurShader, GL20.GL_TRIANGLE_STRIP);
+            vblurShader.end();             
+        } else {
+            blurShader2.begin();
+            blurShader2.setUniformi("u_tex0", 0);
+            blurShader2.setUniformf("u_blur", 2.0f / (float)FBO_SIZE);
+            blurShader2.setUniformf("u_dir", new Vector2(0.0f, 1.0f));
+            mesh.render(blurShader2, GL20.GL_TRIANGLE_STRIP);
+            blurShader2.end();
+        }
         nextFbo.end();
         return nextFbo;
     }

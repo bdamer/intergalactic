@@ -21,7 +21,7 @@ public class CubeRenderer implements Disposable {
     private Mesh normalMesh;
 
     public CubeRenderer() {
-        this.sp = ShaderFactory.buildShader("shaders/star.vsh", "shaders/star.fsh");
+        this.sp = ShaderFactory.buildShader("shaders/sc_star.vsh", "shaders/sc_star.fsh");
         this.light = new DirectionalLight(new Vector3(0.0f, -1.0f, -0.5f), new Vector3(1.0f, 1.0f, 1.0f), 0.05f);
         this.material = new Vector3(1.0f, 0.0f, 1.0f);
         buildMesh();

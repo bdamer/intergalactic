@@ -1,9 +1,11 @@
 package com.afqa123.intergalactic.graphics;
 
+import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.Sector;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -16,40 +18,57 @@ import java.util.List;
 public class StarRenderer implements Disposable {
 
     private static final int VERTEX_SIZE = 6;
-    private static final int SLICES = 16;
-    private static final int STACKS = 8;
+    private static final int SLICES = 32;
+    private static final int STACKS = 24;
     private final ShaderProgram sp;
     private final Light light;
     private final Vector3 material;
     private final Matrix4 modelM;
+    private final float turbulence;
+    private final float gradient;
     private Mesh mesh;
+    // seed value to animate surface
+    private final long start;
+        
+    private final Texture explosion;
     
     public StarRenderer(Sector sector) {
-        this.sp = ShaderFactory.buildShader("shaders/star.vsh", "shaders/star.fsh");
+        this.sp = ShaderFactory.buildShader("shaders/sc_star_noise.vsh", "shaders/sc_star_noise.fsh");
         this.light = new DirectionalLight(new Vector3(0.0f, -1.0f, -0.5f), 
                 new Vector3(1.0f, 1.0f, 1.0f), 0.05f);
         
+        start = System.currentTimeMillis() - (long)(Math.random() * 1000000.0);
         float scale;        
         switch (sector.getCategory()) {
             case BLUE:
                 scale = 0.4f;
+                turbulence = 1.0f / 30000.0f;
                 material = new Vector3(0.0f, 0.0f, 1.0f);
+                gradient = 20.0f / 32.0f;
                 break;
             case WHITE:
                 scale = 0.3f;
+                turbulence = 1.0f / 30000.0f;
                 material = new Vector3(1.0f, 1.0f, 1.0f);
+                gradient = 15.0f / 32.0f;
                 break;
             case YELLOW:
                 scale = 0.25f;
+                turbulence = 1.0f / 35000.0f;
                 material = new Vector3(1.0f, 1.0f, 0.0f);
+                gradient = 10.0f / 32.0f;
                 break;
             case ORANGE:
                 scale = 0.2f;
+                turbulence = 1.0f / 30000.0f;
                 material = new Vector3(1.0f, 0.35f, 0.0f);
+                gradient = 5.0f / 32.0f;
                 break;
             case RED:
                 scale = 0.125f;
+                turbulence = 1.0f / 30000.0f;
                 material = new Vector3(1.0f, 0.0f, 0.0f);
+                gradient = 0.0f / 32.0f;
                 break;                
             default:
                 throw new RuntimeException("Unsupported sector type: " + sector.getCategory());
@@ -60,6 +79,8 @@ public class StarRenderer implements Disposable {
         this.modelM.setToTranslationAndScaling(pos, new Vector3(scale, scale, scale));
                 
         buildMesh();
+        
+        explosion = Assets.get("textures/explosion.png");
     }
     
     private void buildMesh() {
@@ -130,11 +151,15 @@ public class StarRenderer implements Disposable {
         mvp.set(cam.combined);
         mvp.mul(modelM);
         
+        explosion.bind(0);
         sp.begin();
         sp.setUniformMatrix("u_mvp", mvp);
-        sp.setUniformMatrix("u_model", modelM);
-        sp.setUniformf("u_diffuse", material);
-        light.bind(sp);
+        sp.setUniformi("u_tex0", 0);
+//        sp.setUniformMatrix("u_model", modelM);
+//        sp.setUniformf("u_diffuse", material);
+//        light.bind(sp);
+        sp.setUniformf("u_time", turbulence * (System.currentTimeMillis() - start) );
+        sp.setUniformf("u_gradient", gradient);                
         mesh.render(sp, GL20.GL_TRIANGLE_STRIP);
         sp.end();
     }

@@ -3,6 +3,7 @@ package com.afqa123.intergalactic;
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
+import com.afqa123.intergalactic.screens.BloomTestScreen;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
 import com.afqa123.intergalactic.screens.TestScreen;
@@ -33,6 +34,7 @@ public class IntergalacticGame extends ApplicationAdapter {
 
         galaxy = new Galaxy(15);
 
+        //screen = new BloomTestScreen();
         screen = new TestScreen();
         //screen = new GalaxyScreen(galaxy);
         screen.activate();
@@ -46,24 +48,29 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("textures/base-red.png", Texture.class);
         Assets.load("textures/detail.png", Texture.class);
         Assets.load("textures/selection.png", Texture.class);        
+        Assets.load("textures/explosion.png", Texture.class);        
         
         // Scene shaders
+        Assets.load("shaders/sc_sphere.vsh", String.class);
+        Assets.load("shaders/sc_sphere.fsh", String.class);
+        Assets.load("shaders/sc_star.vsh", String.class);
+        Assets.load("shaders/sc_star.fsh", String.class);
+        Assets.load("shaders/sc_star_noise.vsh", String.class);
+        Assets.load("shaders/sc_star_noise.fsh", String.class);
+
         Assets.load("shaders/default.vsh", String.class);
         Assets.load("shaders/default.fsh", String.class);
         Assets.load("shaders/color.vsh", String.class);
         Assets.load("shaders/color.fsh", String.class);
-        Assets.load("shaders/sphere.vsh", String.class);
-        Assets.load("shaders/sphere.fsh", String.class);
-        Assets.load("shaders/star.vsh", String.class);
-        Assets.load("shaders/star.fsh", String.class);
         Assets.load("shaders/textured.vsh", String.class);
         Assets.load("shaders/textured.fsh", String.class);
         Assets.load("shaders/transparency.fsh", String.class);
                 
         // Effects Shaders
+        Assets.load("shaders/fx_blur.fsh", String.class);
         Assets.load("shaders/fx_blur_h.vsh", String.class);
         Assets.load("shaders/fx_blur_v.vsh", String.class);
-        Assets.load("shaders/fx_blur.fsh", String.class);
+        Assets.load("shaders/fx_blur2.fsh", String.class);
         Assets.load("shaders/fx_default.vsh", String.class);
         Assets.load("shaders/fx_glow.fsh", String.class);
         Assets.load("shaders/fx_threshold.fsh", String.class);

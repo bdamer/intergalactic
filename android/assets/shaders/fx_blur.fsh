@@ -1,6 +1,7 @@
 #version 100
 ///
 // Blur fragment shader based on http://xissburg.com/faster-gaussian-blur-in-glsl/.
+// TODO: review - not working on android because of lack of variants
 ///
 precision mediump float;
 
