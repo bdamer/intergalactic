@@ -18,6 +18,8 @@ import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BloomTestScreen implements Screen {
 
@@ -59,6 +61,7 @@ public class BloomTestScreen implements Screen {
 
     // Test objects here
     private StarRenderer renderer;
+    private List<Sector> sectors;
     private final ShaderProgram compShader;
     private final ShaderProgram thresholdShader;
     private final ShaderProgram hblurShader;
@@ -86,8 +89,9 @@ public class BloomTestScreen implements Screen {
 //        renderer = new CubeRenderer();
         
         // Test code here:
-        Sector sector = new Sector(new HexCoordinate(0,0), Sector.StarCategory.RED);
-        renderer = new StarRenderer(sector);
+        sectors = new ArrayList<>();
+        sectors.add(new Sector(new HexCoordinate(0,0), Sector.StarCategory.BLUE));
+        renderer = new StarRenderer();
 
         fbo0 = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         fbo1 = new FrameBuffer(Pixmap.Format.RGBA8888, FBO_SIZE, FBO_SIZE, false);
@@ -217,7 +221,7 @@ public class BloomTestScreen implements Screen {
         fbo0.begin();
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        renderer.render(cam);
+        renderer.render(cam, sectors);
         fbo0.end();
         
         FrameBuffer lastFbo = fbo0;        

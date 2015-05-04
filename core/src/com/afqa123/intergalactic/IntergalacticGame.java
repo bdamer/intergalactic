@@ -10,6 +10,7 @@ import com.afqa123.intergalactic.screens.TestScreen;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 
@@ -17,6 +18,7 @@ public class IntergalacticGame extends ApplicationAdapter {
 	
     private Screen screen;
     private Galaxy galaxy;
+    private FPSLogger fps;
     
 	@Override
 	public void create () {
@@ -30,13 +32,15 @@ public class IntergalacticGame extends ApplicationAdapter {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
+        fps = new FPSLogger();
+        
         loadAssets();
 
         galaxy = new Galaxy(15);
 
         //screen = new BloomTestScreen();
-        screen = new TestScreen();
-        //screen = new GalaxyScreen(galaxy);
+        //screen = new TestScreen();
+        screen = new GalaxyScreen(galaxy);
         screen.activate();
     }
 
@@ -92,6 +96,7 @@ public class IntergalacticGame extends ApplicationAdapter {
         if (screen.isDone()) {
             Gdx.app.exit();
         }
+        fps.log();
 	}   
 
     @Override

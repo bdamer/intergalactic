@@ -1,7 +1,6 @@
 package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.data.Galaxy;
-import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.Indicator;
@@ -14,8 +13,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GalaxyScreen implements Screen {
 
@@ -57,6 +54,7 @@ public class GalaxyScreen implements Screen {
                             r.origin.y + r.direction.y * t,
                             r.origin.z + r.direction.z * t);                
                     HexCoordinate c = new HexCoordinate(hit);
+                    Gdx.app.log(GalaxyScreen.class.getName(), String.format("Sector: %d / %d", c.x, c.y));
                     indicator.setPosition(c.toWorld());
                 }            
             }
@@ -87,9 +85,10 @@ public class GalaxyScreen implements Screen {
     private final PerspectiveCamera cam;
     private final GridRenderer gridRenderer;
     private final BackgroundRenderer bgRenderer;
-    private final List<StarRenderer> starRenderers;
+    private final StarRenderer starRenderer;
     private final Indicator indicator;
     private boolean done;
+    private final Galaxy galaxy;
     
     public GalaxyScreen(Galaxy galaxy) {
 	    cam = new PerspectiveCamera(45.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -100,16 +99,12 @@ public class GalaxyScreen implements Screen {
         cam.update();
         
         gridRenderer = new GridRenderer(galaxy);
-        gridRenderer.update();
-        
+        gridRenderer.update();        
         bgRenderer = new BackgroundRenderer();
-
-        starRenderers = new ArrayList<>();
-        for (Sector s : galaxy.getStarSystems()) {
-            starRenderers.add(new StarRenderer(s));
-        }
-        
+        starRenderer = new StarRenderer();        
         indicator = new Indicator();
+        
+        this.galaxy = galaxy;
     }
     
     @Override
@@ -148,11 +143,9 @@ public class GalaxyScreen implements Screen {
         bgRenderer.render(cam);        
         gridRenderer.render(cam);
         indicator.render(cam);
-        for (StarRenderer r : starRenderers) {
-            r.render(cam);
-        }
+        starRenderer.render(cam, galaxy.getStarSystems());
     }
-
+    
     @Override
     public boolean isDone() {
         return done;
@@ -162,9 +155,7 @@ public class GalaxyScreen implements Screen {
     public void dispose() {
         gridRenderer.dispose();
         bgRenderer.dispose();
-        for (StarRenderer r : starRenderers) {
-            r.dispose();
-        }
+        starRenderer.dispose();
         indicator.dispose();
     }
 }
