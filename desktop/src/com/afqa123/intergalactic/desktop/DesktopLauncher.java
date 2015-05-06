@@ -10,6 +10,10 @@ public class DesktopLauncher {
         // Disable frame-rate limit
         //config.foregroundFPS = 0;
         //config.backgroundFPS = 0;        
+        config.width = 960;
+        config.height = 540;
+        config.resizable = false;
+        config.title = "Intergalactic";
 		new LwjglApplication(new IntergalacticGame(), config);
 	}
 }

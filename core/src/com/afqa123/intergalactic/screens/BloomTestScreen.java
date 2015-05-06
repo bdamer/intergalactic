@@ -90,7 +90,7 @@ public class BloomTestScreen implements Screen {
         
         // Test code here:
         sectors = new ArrayList<>();
-        sectors.add(new Sector(new HexCoordinate(0,0), Sector.StarCategory.BLUE));
+        sectors.add(new Sector("Centauri Prime", new HexCoordinate(0,0), Sector.StarCategory.BLUE));
         renderer = new StarRenderer();
 
         fbo0 = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);

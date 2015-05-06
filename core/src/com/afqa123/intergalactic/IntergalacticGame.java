@@ -1,18 +1,18 @@
 package com.afqa123.intergalactic;
 
 import com.afqa123.intergalactic.asset.Assets;
+import com.afqa123.intergalactic.asset.FontProvider;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
-import com.afqa123.intergalactic.screens.BloomTestScreen;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
-import com.afqa123.intergalactic.screens.TestScreen;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.utils.JsonValue;
 
 public class IntergalacticGame extends ApplicationAdapter {
 	
@@ -40,19 +40,21 @@ public class IntergalacticGame extends ApplicationAdapter {
 
         //screen = new BloomTestScreen();
         //screen = new TestScreen();
+        //screen = new SectorScreen();
         screen = new GalaxyScreen(galaxy);
         screen.activate();
     }
 
     private void loadAssets() {
         Gdx.app.log(IntergalacticGame.class.getName(), "Loading assets...");
-
+        
         // Assets
         Assets.load("textures/nebula32.png", Texture.class);
         Assets.load("textures/base-red.png", Texture.class);
         Assets.load("textures/detail.png", Texture.class);
         Assets.load("textures/selection.png", Texture.class);        
         Assets.load("textures/explosion.png", Texture.class);        
+        Assets.load("data/sectors.json", JsonValue.class);
         
         // Scene shaders
         Assets.load("shaders/sc_sphere.vsh", String.class);
@@ -80,6 +82,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("shaders/fx_threshold.fsh", String.class);
         
         Assets.getManager().finishLoading();
+
+        FontProvider.intialize();
     }
     
     @Override
@@ -101,6 +105,7 @@ public class IntergalacticGame extends ApplicationAdapter {
 
     @Override
     public void dispose() {
+        FontProvider.free();
         screen.dispose();
         ShaderFactory.freeShaders();
     }

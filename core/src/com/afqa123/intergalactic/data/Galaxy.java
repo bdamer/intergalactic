@@ -1,8 +1,10 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.Sector.StarCategory;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,9 @@ public class Galaxy {
     }
     
     private void initializeSectors() {
+        JsonValue root = Assets.get("data/sectors.json");
+        String[] sectorNames = root.asStringArray();
+
         count = 0;
         for (int y = 0; y < sectors.length; y++) {
             for (int x = 0; x < sectors[y].length; x++) {
@@ -49,7 +54,9 @@ public class Galaxy {
                 // TODO: revisit and come up with proper map generation mechanism
                 boolean hasStar = (Math.random() < 0.1);
                 StarCategory category = null;
+                String name = null;
                 if (hasStar) {
+                    name = sectorNames[(int)(Math.random() * sectorNames.length)];
                     switch ((int)(Math.random() * 5)) {
                         case 0:
                             category = StarCategory.BLUE;
@@ -68,7 +75,7 @@ public class Galaxy {
                             break;
                     }
                 }
-                Sector s = new Sector(new HexCoordinate(axial), category);
+                Sector s = new Sector(name, new HexCoordinate(axial), category);
                 sectors[y][x] = s;                
                 if (hasStar) {
                     starSystems.add(s);

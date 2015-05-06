@@ -14,11 +14,43 @@ public class Sector {
         YELLOW,     // average
         ORANGE,     // small
         RED         // dwarf
-    }
+    };
+
+    public enum Morale {
+        ECSTATIC("Ecstatic"),
+        PLEASED("Pleased"),
+        CONTENT("Content"),
+        DISGRUNTLED("Disgruntled"),
+        REBELLIOUS("Rebellious");
+        
+        private final String label;
+        
+        private Morale(String label) {
+            this.label = label;
+        }
+        
+        public String getLabel() {
+            return label;
+        }
+    };
+    
+    private final String name;
     
     // Axial coordinates of this sector.
     private final HexCoordinate coordinates;
     private final StarCategory category;
+    
+    // Game stats (updated each turn)
+    private float population;
+    private int maxPopulation;
+    private float morale;
+    private float growthRate;
+    // Members of population allocated to production
+    private int foodProducers;
+    private int industrialProducers;
+    private int scienceProducers;    
+    
+    // Rendering properties
     // Base color / material
     // TODO: review - currently not used
     private final Vector3 material;
@@ -37,11 +69,17 @@ public class Sector {
     private boolean shortRange;
     private boolean longRange;
     
-    public Sector(HexCoordinate coordinates, StarCategory category) {
+    public Sector(String name, HexCoordinate coordinates, StarCategory category) {
+        this.name = name;
         this.coordinates = coordinates;
         this.category = category;
         this.seed = System.currentTimeMillis() - (long)(Math.random() * 1000000.0);
 
+        this.growthRate = 0.5f;
+        this.population = 1;
+        this.maxPopulation = 10;
+        this.morale = 0.5f;
+        
         if (category != null) {
             switch (category) {
                 case BLUE:
@@ -135,5 +173,71 @@ public class Sector {
 
     public long getSeed() {
         return seed;
+    }
+
+    public String getName() {
+        return name;
+    }
+    
+    public float getPopulation() {
+        return population;
+    }
+
+    public void setPopulation(float population) {
+        this.population = population;
+    }
+
+    public int getMaxPopulation() {
+        return maxPopulation;
+    }
+
+    public void setMaxPopulation(int maxPopulation) {
+        this.maxPopulation = maxPopulation;
     }    
+    
+    public Morale getMorale() {
+        if (morale < 0.2f) {
+            return Morale.REBELLIOUS;
+        } else if (morale < 0.4f) {
+            return Morale.DISGRUNTLED;
+        } else if (morale < 0.6f) {
+            return Morale.CONTENT;
+        } else if (morale < 0.8f) {
+            return Morale.PLEASED;
+        } else {
+            return Morale.ECSTATIC;
+        }
+    }
+
+    public float getGrowthRate() {
+        return growthRate;
+    }
+
+    public void setGrowthRate(float growthRate) {
+        this.growthRate = growthRate;
+    }
+
+    public int getFoodProducers() {
+        return foodProducers;
+    }
+
+    public void setFoodProducers(int foodProducers) {
+        this.foodProducers = foodProducers;
+    }
+
+    public int getIndustrialProducers() {
+        return industrialProducers;
+    }
+
+    public void setIndustrialProducers(int industrialProducers) {
+        this.industrialProducers = industrialProducers;
+    }
+
+    public int getScienceProducers() {
+        return scienceProducers;
+    }
+
+    public void setScienceProducers(int scienceProducers) {
+        this.scienceProducers = scienceProducers;
+    }
 }
