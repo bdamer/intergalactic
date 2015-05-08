@@ -10,23 +10,24 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
-import java.util.List;
 
-public class StarRenderer implements Disposable {
-
+public class SectorRenderer implements Disposable {
+ 
     private static final int SLICES = 32;
     private static final int STACKS = 24;
     private final ShaderProgram sp;
     private final Texture explosion;
+    private final Sector sector;
     private final Mesh mesh;        
     
-    public StarRenderer() {
+    public SectorRenderer(Sector sector) {
+        this.sector = sector;
         sp = ShaderFactory.buildShader("shaders/sc_star_noise.vsh", "shaders/sc_star_noise.fsh");
         explosion = Assets.get("textures/explosion.png");
         mesh = new MeshBuilder().buildSphere(SLICES, STACKS);
     }
  
-    public void render(Camera cam, List<Sector> sectors) {
+    public void render(Camera cam) {
         Matrix4 mvp = new Matrix4();
         Matrix4 model = new Matrix4();
         
@@ -34,22 +35,15 @@ public class StarRenderer implements Disposable {
         sp.begin();
         sp.setUniformi("u_tex0", 0);
 
-        for (Sector sector : sectors) {
-            float scale = sector.getScale();
-            Vector3 pos = sector.getCoordinates().toWorld();
-            if (!cam.frustum.sphereInFrustum(pos, scale)) {
-                continue;
-            }
-            
-            model.setToTranslationAndScaling(pos, new Vector3(scale, scale, scale));            
-            mvp.set(cam.combined);
-            mvp.mul(model);
+        float scale = sector.getScale();
+        model.setToTranslationAndScaling(new Vector3(0.0f, 0.0f, 0.0f), new Vector3(scale, scale, scale));            
+        mvp.set(cam.combined);
+        mvp.mul(model);
 
-            sp.setUniformMatrix("u_mvp", mvp);
-            sp.setUniformf("u_time", sector.getTurbulence() * (System.currentTimeMillis() - sector.getSeed()) );
-            sp.setUniformf("u_gradient", sector.getGradient());                
-            mesh.render(sp, GL20.GL_TRIANGLE_STRIP);
-        }
+        sp.setUniformMatrix("u_mvp", mvp);
+        sp.setUniformf("u_time", sector.getTurbulence() * (System.currentTimeMillis() - sector.getSeed()) );
+        sp.setUniformf("u_gradient", sector.getGradient());                
+        mesh.render(sp, GL20.GL_TRIANGLE_STRIP);
         
         sp.end();
     }
@@ -60,4 +54,5 @@ public class StarRenderer implements Disposable {
         sp.dispose();
         explosion.dispose();
     }
+    
 }

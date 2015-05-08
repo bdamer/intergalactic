@@ -121,6 +121,7 @@ public class IntergalacticGame extends ApplicationAdapter {
     
     public void popScreen() {
         this.screen.deactivate();
+        this.screen.dispose();        
         this.screen = screens.pop();
         this.screen.activate();
     }

@@ -2,10 +2,11 @@ package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.data.Sector;
-import com.afqa123.intergalactic.graphics.StarRenderer;
+import com.afqa123.intergalactic.graphics.SectorRenderer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
@@ -13,17 +14,15 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SectorScreen extends AbstractScreen {
-
+    
     private class SectorScreenInputProcessor extends InputAdapter {
         
         @Override
         public boolean keyDown(int i) {
             if (i == Input.Keys.ESCAPE) {
-                setDone(true);
+                getGame().popScreen();
                 return true;
             } else {
                 return false;
@@ -32,8 +31,8 @@ public class SectorScreen extends AbstractScreen {
     }
     
     private final PerspectiveCamera cam;
-    private Sector sector;
-    private StarRenderer renderer;
+    private final Sector sector;
+    private final SectorRenderer renderer;
     
     // UI
     private final Label sectorLabel;
@@ -65,13 +64,13 @@ public class SectorScreen extends AbstractScreen {
         getStage().addActor(backButton);
         
         cam = new PerspectiveCamera(45.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(0.0f, 10.0f, 5.0f);
+        cam.position.set(0.0f, 0.0f, 4.0f);
         cam.lookAt(0.0f, 0.0f, 0.0f);
         cam.near = 0.5f;
         cam.far = 100.0f;
         cam.update();
         
-        renderer = new StarRenderer();        
+        renderer = new SectorRenderer(sector);        
     }
     
     @Override
@@ -82,9 +81,12 @@ public class SectorScreen extends AbstractScreen {
         cam.viewportWidth = Gdx.graphics.getWidth();
         cam.viewportHeight = Gdx.graphics.getHeight();
         cam.update();
-        
-        //Gdx.input.setInputProcessor(new SectorScreenInputProcessor());        
 
+        InputMultiplexer im = new InputMultiplexer();
+        im.addProcessor(Gdx.input.getInputProcessor());
+        im.addProcessor(new SectorScreenInputProcessor());
+        Gdx.input.setInputProcessor(im);
+        
         updateLabels();
     }
 
@@ -106,11 +108,7 @@ public class SectorScreen extends AbstractScreen {
         // Scene pass
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        // TODO: clean up - this should use a new renderer to show the star
-        // and planets
-        List<Sector> s = new ArrayList<>();
-        s.add(sector);
-        renderer.render(cam, s);            
+        renderer.render(cam);            
 
         // UI pass
         getStage().draw();
