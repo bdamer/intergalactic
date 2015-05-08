@@ -1,35 +1,29 @@
 package com.afqa123.intergalactic.screens;
 
-import com.afqa123.intergalactic.asset.FontProvider;
+import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.graphics.StarRenderer;
-import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SectorScreen implements Screen {
+public class SectorScreen extends AbstractScreen {
 
-    private static final int WIDTH = 960;
-    private static final int HEIGHT = 540;
-    private static final int MARGIN = 10;
-    private static final String FONT = "scaled-font";
-    
     private class SectorScreenInputProcessor extends InputAdapter {
         
         @Override
         public boolean keyDown(int i) {
             if (i == Input.Keys.ESCAPE) {
-                done = true;
+                setDone(true);
                 return true;
             } else {
                 return false;
@@ -40,29 +34,35 @@ public class SectorScreen implements Screen {
     private final PerspectiveCamera cam;
     private Sector sector;
     private StarRenderer renderer;
-    private boolean done;
     
     // UI
-    private final Stage stage;
-    private final Skin skin;    
     private final Label sectorLabel;
     private final Label productionLabel;
+    private final TextButton backButton;
         
-    public SectorScreen() {        
-        // TODO: look into viewports for different ratios
-        stage = new Stage(new FitViewport(WIDTH, HEIGHT));
-        skin = new Skin(Gdx.files.internal("skins/uiskin.json"));
-        skin.add(FONT, FontProvider.getFont());
-                
+    public SectorScreen(IntergalacticGame game, Sector sector) {        
+        super(game);
+        this.sector = sector;
+        
         // Create ui components
-        sectorLabel = new Label(null, skin, FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
+        sectorLabel = new Label(null, getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
         sectorLabel.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-        sectorLabel.setPosition(MARGIN, 50.0f);
-        stage.addActor(sectorLabel);
+        sectorLabel.setPosition(STAGE_MARGIN, 50.0f);
+        getStage().addActor(sectorLabel);
         
-        productionLabel = new Label(null, skin, FONT, new Color(0.0f, 1.0f, 0.0f, 1.0f));
-        productionLabel.setPosition(WIDTH / 2, 50.0f);        
-        stage.addActor(productionLabel);
+        productionLabel = new Label(null, getSkin(), FONT, new Color(0.0f, 1.0f, 0.0f, 1.0f));
+        productionLabel.setPosition(STAGE_WIDTH / 2, 50.0f);        
+        getStage().addActor(productionLabel);
+        
+        backButton = new TextButton("Back", getSkin());
+        backButton.setPosition(STAGE_MARGIN, STAGE_HEIGHT - 4 * STAGE_MARGIN);
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                getGame().popScreen();
+            }
+        });
+        getStage().addActor(backButton);
         
         cam = new PerspectiveCamera(45.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0.0f, 10.0f, 5.0f);
@@ -71,13 +71,12 @@ public class SectorScreen implements Screen {
         cam.far = 100.0f;
         cam.update();
         
-        sector = new Sector("Kronos", new HexCoordinate(0,0), Sector.StarCategory.RED);        
         renderer = new StarRenderer();        
     }
     
     @Override
     public void activate() {
-        done = false;
+        super.activate();
  
         // Update viewport in case it changed
         cam.viewportWidth = Gdx.graphics.getWidth();
@@ -85,7 +84,6 @@ public class SectorScreen implements Screen {
         cam.update();
         
         //Gdx.input.setInputProcessor(new SectorScreenInputProcessor());        
-        Gdx.input.setInputProcessor(stage);
 
         updateLabels();
     }
@@ -98,7 +96,7 @@ public class SectorScreen implements Screen {
     @Override
     public void update() {
         cam.update();
-        stage.act();
+        getStage().act();
     }
     
     @Override
@@ -115,26 +113,20 @@ public class SectorScreen implements Screen {
         renderer.render(cam, s);            
 
         // UI pass
-        stage.draw();
+        getStage().draw();
     }
 
     @Override
     public void resize(int width, int height) {
+        super.resize(width, height);
         cam.viewportWidth = width;
         cam.viewportHeight = height;
         cam.update();
-        
-        stage.getViewport().update(width, height, true);        
-    }
-
-    @Override
-    public boolean isDone() {
-        return done;
     }
 
     @Override
     public void dispose() {
-        stage.dispose();
+        super.dispose();
     }
 
     private void updateLabels() {

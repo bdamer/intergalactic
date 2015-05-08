@@ -44,25 +44,29 @@ public class GalaxyTest {
     @Test
     public void testGetSector() {
         Galaxy g = new Galaxy(1);
-        Sector s = g.getSector(0, 0);
+        HexCoordinate c = new HexCoordinate(0, 0);
+        Sector s = g.getSector(c);
         Assert.assertNotNull(s);
-        Assert.assertEquals(new HexCoordinate(0, 0), s.getCoordinates());
+        Assert.assertEquals(c, s.getCoordinates());
         
         g = new Galaxy(2);
-        s = g.getSector(0, 0);
+        s = g.getSector(c);
         Assert.assertNotNull(s);
-        Assert.assertEquals(new HexCoordinate(0, 0), s.getCoordinates());
+        Assert.assertEquals(c, s.getCoordinates());
 
-        s = g.getSector(0, -1);
+        c = new HexCoordinate(0, -1);
+        s = g.getSector(c);
         Assert.assertNotNull(s);        
-        Assert.assertEquals(new HexCoordinate(0, -1), s.getCoordinates());
+        Assert.assertEquals(c, s.getCoordinates());
         
-        s = g.getSector(0, 1);
+        c = new HexCoordinate(0, 1);
+        s = g.getSector(c);
         Assert.assertNotNull(s);        
-        Assert.assertEquals(new HexCoordinate(0, 1), s.getCoordinates());
+        Assert.assertEquals(c, s.getCoordinates());
         
-        s = g.getSector(1, -1);
+        c = new HexCoordinate(1, -1);
+        s = g.getSector(c);
         Assert.assertNotNull(s);        
-        Assert.assertEquals(new HexCoordinate(1, -1), s.getCoordinates());
+        Assert.assertEquals(c, s.getCoordinates());
     }
 }

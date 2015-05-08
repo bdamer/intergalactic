@@ -110,12 +110,12 @@ public class Galaxy {
      * @param y Y coordinate.
      * @return A sector or null.
      */
-    public Sector getSector(int x, int y) {
-        int row = y + size - 1;
-        int col = (y < 0 ? x + row : x + size - 1);
+    public Sector getSector(HexCoordinate c) {
+        int row = c.y + size - 1;
+        int col = (c.y < 0 ? c.x + row : c.x + size - 1);
         return sectors[row][col];
     }
-
+    
     public List<Sector> getStarSystems() {
         return starSystems;
     }    

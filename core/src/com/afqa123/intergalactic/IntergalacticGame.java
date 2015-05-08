@@ -13,9 +13,11 @@ import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.JsonValue;
+import java.util.Stack;
 
 public class IntergalacticGame extends ApplicationAdapter {
 	
+    private final Stack<Screen> screens = new Stack<>();
     private Screen screen;
     private Galaxy galaxy;
     private FPSLogger fps;
@@ -41,7 +43,7 @@ public class IntergalacticGame extends ApplicationAdapter {
         //screen = new BloomTestScreen();
         //screen = new TestScreen();
         //screen = new SectorScreen();
-        screen = new GalaxyScreen(galaxy);
+        screen = new GalaxyScreen(this, galaxy);
         screen.activate();
     }
 
@@ -57,6 +59,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("data/sectors.json", JsonValue.class);
         
         // Scene shaders
+        Assets.load("shaders/sc_color.vsh", String.class);
+        Assets.load("shaders/sc_color.fsh", String.class);
         Assets.load("shaders/sc_sphere.vsh", String.class);
         Assets.load("shaders/sc_sphere.fsh", String.class);
         Assets.load("shaders/sc_star.vsh", String.class);
@@ -66,8 +70,6 @@ public class IntergalacticGame extends ApplicationAdapter {
 
         Assets.load("shaders/default.vsh", String.class);
         Assets.load("shaders/default.fsh", String.class);
-        Assets.load("shaders/color.vsh", String.class);
-        Assets.load("shaders/color.fsh", String.class);
         Assets.load("shaders/textured.vsh", String.class);
         Assets.load("shaders/textured.fsh", String.class);
         Assets.load("shaders/transparency.fsh", String.class);
@@ -108,5 +110,18 @@ public class IntergalacticGame extends ApplicationAdapter {
         FontProvider.free();
         screen.dispose();
         ShaderFactory.freeShaders();
+    }
+    
+    public void pushScreen(Screen screen) {
+        this.screen.deactivate();
+        screens.push(this.screen);
+        this.screen = screen;
+        this.screen.activate();
+    }
+    
+    public void popScreen() {
+        this.screen.deactivate();
+        this.screen = screens.pop();
+        this.screen.activate();
     }
 }

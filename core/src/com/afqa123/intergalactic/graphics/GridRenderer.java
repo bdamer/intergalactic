@@ -30,8 +30,7 @@ public class GridRenderer implements Disposable {
     
     public GridRenderer(Galaxy galaxy) {
         this.galaxy = galaxy;
-        this.sp = ShaderFactory.buildShader("shaders/color.vsh", "shaders/color.fsh");
-        // TODO: static == false?
+        this.sp = ShaderFactory.buildShader("shaders/sc_color.vsh", "shaders/sc_color.fsh");
         this.mesh = new Mesh(true, galaxy.getCount() * NUM_VERTICES, 
             galaxy.getCount() * NUM_INDICES, 
             new VertexAttribute(Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),

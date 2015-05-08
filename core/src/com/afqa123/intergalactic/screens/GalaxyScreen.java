@@ -1,6 +1,8 @@
 package com.afqa123.intergalactic.screens;
 
+import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.data.Galaxy;
+import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.Indicator;
@@ -9,25 +11,33 @@ import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.TimeUtils;
+import java.util.ArrayList;
+import java.util.List;
 
-public class GalaxyScreen implements Screen {
+public class GalaxyScreen extends AbstractScreen {
 
     private class GalaxyScreenInputProcessor extends InputAdapter {
 
         private static final int DRAG_RECT = 8;
         private static final float SCROLL_SPEED = 0.05f;
+        private static final long DOUBLE_CLICK = 200l;
         private int lastX;
         private int lastY;
         private boolean dragging;
+        private long lastUp;
         
         @Override
         public boolean keyDown(int i) {
             if (i == Input.Keys.ESCAPE) {
-                done = true;
+                setDone(true);
                 return true;
             } else {
                 return false;
@@ -55,8 +65,22 @@ public class GalaxyScreen implements Screen {
                             r.origin.z + r.direction.z * t);                
                     HexCoordinate c = new HexCoordinate(hit);
                     Gdx.app.log(GalaxyScreen.class.getName(), String.format("Sector: %d / %d", c.x, c.y));
-                    indicator.setPosition(c.toWorld());
+                    long dt = TimeUtils.timeSinceMillis(lastUp);
+                    Gdx.app.log("", String.format("%d", dt));
+                    
+                    // Regular click
+                    if (dt > DOUBLE_CLICK) {
+                        indicator.setPosition(c.toWorld());
+                    // Double click
+                    } else {
+                        Sector sector = galaxy.getSector(c);
+                        if (sector.getCategory() != null) {
+                            getGame().pushScreen(new SectorScreen(getGame(), sector));
+                        }
+                    }                    
                 }            
+                
+                lastUp = TimeUtils.millis();
             }
             return true;
         }
@@ -87,11 +111,25 @@ public class GalaxyScreen implements Screen {
     private final BackgroundRenderer bgRenderer;
     private final StarRenderer starRenderer;
     private final Indicator indicator;
-    private boolean done;
     private final Galaxy galaxy;
     
-    public GalaxyScreen(Galaxy galaxy) {
-	    cam = new PerspectiveCamera(45.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+    // UI
+    private final List<Label> sectorLabels;
+    
+    public GalaxyScreen(IntergalacticGame game, Galaxy galaxy) {
+        super(game);
+        this.galaxy = galaxy;
+        
+        // Create ui components
+        sectorLabels = new ArrayList<>();
+        for (Sector s : galaxy.getStarSystems()) {
+            Label sectorLabel = new Label(s.getName(), getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
+            sectorLabel.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+            getStage().addActor(sectorLabel);
+            sectorLabels.add(sectorLabel);
+        }
+        
+        cam = new PerspectiveCamera(45.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0.0f, 10.0f, 5.0f);
         cam.lookAt(0.0f, 0.0f, 0.0f);
         cam.near = 0.5f;
@@ -102,14 +140,12 @@ public class GalaxyScreen implements Screen {
         gridRenderer.update();        
         bgRenderer = new BackgroundRenderer();
         starRenderer = new StarRenderer();        
-        indicator = new Indicator();
-        
-        this.galaxy = galaxy;
+        indicator = new Indicator();        
     }
     
     @Override
     public void activate() {
-        done = false;
+        super.activate();
 
         // Update viewport in case it changed
         cam.viewportWidth = Gdx.graphics.getWidth();
@@ -126,6 +162,7 @@ public class GalaxyScreen implements Screen {
     
     @Override
     public void resize(int width, int height) {
+        super.resize(width, height);
         cam.viewportWidth = width;
         cam.viewportHeight = height;
         cam.update();
@@ -133,26 +170,34 @@ public class GalaxyScreen implements Screen {
 
     @Override
     public void update() {
-        
+        List<Sector> starSystems = galaxy.getStarSystems();
+        // Create ui components
+        for (int i = 0; i < starSystems.size(); i++) {
+            Sector sector = starSystems.get(i);
+            Vector3 screen = cam.project(sector.getCoordinates().toWorld());
+            Label label = sectorLabels.get(i);
+            label.setPosition(screen.x, screen.y + 40.0f * sector.getScale(), Align.bottom);
+        }                
     }
     
     @Override
     public void render() {
-		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);        
         bgRenderer.render(cam);        
         gridRenderer.render(cam);
         indicator.render(cam);
+        
         starRenderer.render(cam, galaxy.getStarSystems());
+        
+        // UI pass
+        getStage().draw();
     }
     
     @Override
-    public boolean isDone() {
-        return done;
-    }
-
-    @Override
     public void dispose() {
+        super.dispose();        
         gridRenderer.dispose();
         bgRenderer.dispose();
         starRenderer.dispose();
