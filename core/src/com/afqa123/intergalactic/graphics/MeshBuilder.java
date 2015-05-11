@@ -1,5 +1,6 @@
 package com.afqa123.intergalactic.graphics;
 
+import com.afqa123.intergalactic.math.Geometry;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -72,6 +73,38 @@ public class MeshBuilder {
         indices[idx+1] = (short)offset;
 
         mesh.setIndices(indices);
+        return mesh;
+    }
+    
+    /**
+     * Builds up vertices for a spiral.
+     * 
+     * @param numSegments Number of spiral segments
+     * @param step Step between each segments in radians.
+     * @param radius Max radius of the spiral.
+     * @return A list of vertices.
+     */
+    public Mesh buildSpiral(int numSegments, float step, float radius) {        
+        float[] vertices = new float[numSegments * 7];
+        
+        Mesh mesh = new Mesh(true, numSegments, 0, 
+            new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
+            new VertexAttribute(VertexAttributes.Usage.ColorUnpacked, 4, ShaderProgram.COLOR_ATTRIBUTE));
+
+        float angle = 0.0f;
+        for (int idx = 0; idx < numSegments; idx++) {
+            int offset = idx * 7;
+            vertices[offset++] = (float)Math.cos(angle) * (float)idx / (float)numSegments * radius;
+            vertices[offset++] = (float)Math.sin(angle) * (float)idx / (float)numSegments * radius;
+            vertices[offset++] = 0.0f;
+            vertices[offset++] = 1.0f;
+            vertices[offset++] = 1.0f;
+            vertices[offset++] = 1.0f;            
+            vertices[offset++] = 1.0f;            
+            angle += step;
+        }        
+        mesh.setVertices(vertices);
+        
         return mesh;
     }
 }

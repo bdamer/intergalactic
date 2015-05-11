@@ -42,7 +42,6 @@ public class IntergalacticGame extends ApplicationAdapter {
 
         //screen = new BloomTestScreen();
         //screen = new TestScreen();
-        //screen = new SectorScreen();
         screen = new GalaxyScreen(this, galaxy);
         screen.activate();
     }

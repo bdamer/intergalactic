@@ -3,7 +3,9 @@ package com.afqa123.intergalactic.data;
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.Sector.StarCategory;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,8 @@ public class Galaxy {
     // List of systems which contain stars.
     private final List<Sector> starSystems;
     
+    private final String[] sectorNames;
+    
     /**
      * Creates a new galaxy of a given size.
      * 
@@ -27,7 +31,8 @@ public class Galaxy {
      */
     public Galaxy(int size) {
         this.size = size;
-        this.starSystems = new ArrayList<>();
+        this.starSystems = new ArrayList<>();        
+        sectorNames = ((JsonValue)Assets.get("data/sectors.json")).asStringArray();        
         // build up array of variable size for each row
         int rows = size * 2 - 1;
         int cols = size * 2 - 1;
@@ -40,49 +45,91 @@ public class Galaxy {
             sectors[median + i] = new Sector[cols];
         }
         initializeSectors();
+        randomizeSectorsSpiral();
     }
     
     private void initializeSectors() {
-        JsonValue root = Assets.get("data/sectors.json");
-        String[] sectorNames = root.asStringArray();
-
+        starSystems.clear();
         count = 0;
         for (int y = 0; y < sectors.length; y++) {
             for (int x = 0; x < sectors[y].length; x++) {
-                Vector2 axial = offsetToAxial(x, y);
-                
-                // TODO: revisit and come up with proper map generation mechanism
-                boolean hasStar = (Math.random() < 0.1);
-                StarCategory category = null;
-                String name = null;
-                if (hasStar) {
-                    name = sectorNames[(int)(Math.random() * sectorNames.length)];
-                    switch ((int)(Math.random() * 5)) {
-                        case 0:
-                            category = StarCategory.BLUE;
-                            break;
-                        case 1:
-                            category = StarCategory.ORANGE;
-                            break;
-                        case 2:
-                            category = StarCategory.RED;
-                            break;
-                        case 3:
-                            category = StarCategory.WHITE;
-                            break;
-                        case 4:
-                            category = StarCategory.YELLOW;
-                            break;
-                    }
-                }
-                Sector s = new Sector(name, new HexCoordinate(axial), category);
-                sectors[y][x] = s;                
-                if (hasStar) {
-                    starSystems.add(s);
-                }
+                sectors[y][x] = new Sector(null, new HexCoordinate(offsetToAxial(x, y)), null);        
                 count++;
             }
         }
+    }
+    
+    private void randomizeSectors() {
+        Gdx.app.log(Galaxy.class.getName(), "Building irregular galaxy.");
+        for (int y = 0; y < sectors.length; y++) {
+            for (int x = 0; x < sectors[y].length; x++) {
+                // TODO: revisit and come up with proper map generation mechanism
+                boolean hasStar = (Math.random() < 0.1);
+                if (!hasStar) {
+                    Vector2 axial = offsetToAxial(x, y);
+                    sectors[y][x] = createStarSector(new HexCoordinate(axial));
+                }            
+            }
+        }
+    }
+    
+    private void randomizeSectorsRing() {
+        Gdx.app.log(Galaxy.class.getName(), "Building ring galaxy.");
+    }
+    
+    private void randomizeSectorsSpiral() {
+        Gdx.app.log(Galaxy.class.getName(), "Building spiral galaxy.");
+        
+        // TODO: these should not be fixed, but instead change over time 
+        // depending on the arc length for the current radius so that 
+        // we get an even distribution
+        final float MIN_ANGLE = 0.25f;  // min increase in angle per step
+        final float MAX_ANGLE = 1.00f;  // max increase in angle per step        
+        // TODO: HEIGHT * width at mid point should give us max radius
+        final float RADIUS = 20.0f;     // radius of the spiral 
+        // TODO: base on size of galaxy [tiny, small, medium, large, huge]
+        final float NUM_ROT = 3.0f;     // number of circles in this spiral
+        
+        float rad = 0.0f;
+        float angle = 0.0f;
+        while (rad < RADIUS) {
+            Vector3 pos = new Vector3((float)Math.cos(angle) * rad,
+                                      0.0f,
+                                      (float)Math.sin(angle) * rad);
+            HexCoordinate coord = new HexCoordinate(pos);
+            Vector2 offset = axialToOffset((int)coord.x, (int)coord.y);
+            // only create star sector if there currently is none at these coordinates.
+            if (sectors[(int)offset.y][(int)offset.x].getCategory() == null) {
+                sectors[(int)offset.y][(int)offset.x] = createStarSector(coord);
+            }
+            angle += MIN_ANGLE + Math.random() * (MAX_ANGLE - MIN_ANGLE);
+            rad = RADIUS * angle / (NUM_ROT * 2.0f * (float)Math.PI);
+        }
+    }
+    
+    private Sector createStarSector(HexCoordinate coord) {
+        StarCategory category = null;
+        String name = sectorNames[(int)(Math.random() * sectorNames.length)];
+        switch ((int)(Math.random() * 5)) {
+            case 0:
+                category = StarCategory.BLUE;
+                break;
+            case 1:
+                category = StarCategory.ORANGE;
+                break;
+            case 2:
+                category = StarCategory.RED;
+                break;
+            case 3:
+                category = StarCategory.WHITE;
+                break;
+            case 4:
+                category = StarCategory.YELLOW;
+                break;
+        }
+        Sector s = new Sector(name, coord, category);
+        starSystems.add(s);
+        return s;
     }
     
     /**

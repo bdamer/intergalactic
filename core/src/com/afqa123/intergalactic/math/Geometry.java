@@ -1,4 +1,4 @@
-package com.afqa123.intergalactic.graphics;
+package com.afqa123.intergalactic.math;
 
 import java.util.List;
 
@@ -111,5 +111,13 @@ public class Geometry {
             sint[size] = sint[0];
             cost[size] = cost[0];
         }
+    }
+    
+    public static float deg2Rad(float x) { 
+        return (x * (float)Math.PI) / 180.0f; 
+    }
+	
+    public static float rad2Deg(float x) { 
+        return (x * 180.0f) / (float)Math.PI; 
     }
 }
