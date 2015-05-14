@@ -129,7 +129,7 @@ public class GalaxyScreen extends AbstractScreen {
             sectorLabels.add(sectorLabel);
         }
         
-        cam = new PerspectiveCamera(45.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam = new PerspectiveCamera(42.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0.0f, 10.0f, 5.0f);
         cam.lookAt(0.0f, 0.0f, 0.0f);
         cam.near = 0.5f;

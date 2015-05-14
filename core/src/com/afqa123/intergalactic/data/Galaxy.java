@@ -12,6 +12,8 @@ import java.util.List;
 
 public class Galaxy {
 
+    // Prime number use to generate randomized sector name order
+    private static final int RANDOM_STEP = 19;
     // Size of the galaxy represented by the radius of the surrounding circle.
     private final int size;
     // Number of sectors in the galaxy
@@ -23,6 +25,7 @@ public class Galaxy {
     private final List<Sector> starSystems;
     
     private final String[] sectorNames;
+    private int lastNameIdx;
     
     /**
      * Creates a new galaxy of a given size.
@@ -32,7 +35,8 @@ public class Galaxy {
     public Galaxy(int size) {
         this.size = size;
         this.starSystems = new ArrayList<>();        
-        sectorNames = ((JsonValue)Assets.get("data/sectors.json")).asStringArray();        
+        sectorNames = ((JsonValue)Assets.get("data/sectors.json")).asStringArray();
+        lastNameIdx = (int)(Math.random() * sectorNames.length);
         // build up array of variable size for each row
         int rows = size * 2 - 1;
         int cols = size * 2 - 1;
@@ -65,7 +69,7 @@ public class Galaxy {
             for (int x = 0; x < sectors[y].length; x++) {
                 // TODO: revisit and come up with proper map generation mechanism
                 boolean hasStar = (Math.random() < 0.1);
-                if (!hasStar) {
+                if (hasStar) {
                     Vector2 axial = offsetToAxial(x, y);
                     sectors[y][x] = createStarSector(new HexCoordinate(axial));
                 }            
@@ -75,6 +79,7 @@ public class Galaxy {
     
     private void randomizeSectorsRing() {
         Gdx.app.log(Galaxy.class.getName(), "Building ring galaxy.");
+        // TODO: implement
     }
     
     private void randomizeSectorsSpiral() {
@@ -109,7 +114,7 @@ public class Galaxy {
     
     private Sector createStarSector(HexCoordinate coord) {
         StarCategory category = null;
-        String name = sectorNames[(int)(Math.random() * sectorNames.length)];
+        String name = sectorNames[(lastNameIdx += RANDOM_STEP) % sectorNames.length];
         switch ((int)(Math.random() * 5)) {
             case 0:
                 category = StarCategory.BLUE;

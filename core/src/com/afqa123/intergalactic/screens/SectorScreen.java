@@ -63,7 +63,7 @@ public class SectorScreen extends AbstractScreen {
         });
         getStage().addActor(backButton);
         
-        cam = new PerspectiveCamera(45.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam = new PerspectiveCamera(42.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0.0f, 0.0f, 4.0f);
         cam.lookAt(0.0f, 0.0f, 0.0f);
         cam.near = 0.5f;
