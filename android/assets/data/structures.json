@@ -1,0 +1,81 @@
+[
+    {
+        "id": "barracks",
+        "label": "Barracks",
+        "detail": "Provides defense against ground invasions.",
+        "depends": []
+    },
+    {
+        "id": "climate_control",
+        "label": "Climate Control",
+        "detail": "Controls planetary climate to increase food production.",
+        "provides": "+10% FOOD",
+        "depends": []
+    },
+    {
+        "id": "fabricators",
+        "label": "Fabricators",
+        "detail": "Increases industrial production.",
+        "provides": "+25% IND",
+        "depends": []
+    },
+    {
+        "id": "mass_replication",
+        "label": "Mass Replication",
+        "detail": "Increases industrial production.",
+        "provides": "+20% IND",
+        "depends": [ "fabricators", "research_lab" ]
+    },
+    {
+        "id": "nano_fabrication",
+        "label": "Nano Fabrication",
+        "detail": "Increases industrial production.",
+        "provides": "+15% IND",
+        "depends": [ "fabricators", "research_lab" ]
+    },
+    {
+        "id": "offworld_farming",
+        "label": "Off-world Farming",
+        "detail": "Increases food production.",
+        "provides": "+100 FOOD",
+        "depends": [ "climate_control", "shipyard" ]
+    },
+    {
+        "id": "orbital_laser",
+        "label": "Orbital Laser",
+        "detail": "Provides orbital defense against enemy ships.",
+        "depends": [ "shipyard", "science_academy" ]
+    },
+    {
+        "id": "scanner",
+        "label": "Scanner",
+        "detail": "Increases this colonies scan and supply range.",
+        "depends": [ "shipyard", "research_lab" ]
+    },
+    {
+        "id": "science_academy",
+        "label": "Science Academy",
+        "detail": "Increases scientific research.",
+        "provides": "+15% SCI",
+        "depends": [ "research_lab" ]
+    },
+    {
+        "id": "shield_generator",
+        "label": "Shield Generator",
+        "detail": "Provides orbital defense against enemy ships.",
+        "depends": [ "science_academy" ]
+    },
+    {
+        "id": "shipyard",
+        "label": "Shipyard",
+        "detail": "Enables construction of ships.",
+        "depends": [ ]
+    },
+    {
+        "id": "research_lab",
+        "label": "Research Lab",
+        "detail": "Increases scientific research.",
+        "provides": "+18% SCI",
+        "depends": [ ]
+    }
+]

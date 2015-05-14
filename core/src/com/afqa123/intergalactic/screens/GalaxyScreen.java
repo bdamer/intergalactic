@@ -11,12 +11,16 @@ import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.TimeUtils;
 import java.util.ArrayList;
@@ -115,6 +119,7 @@ public class GalaxyScreen extends AbstractScreen {
     
     // UI
     private final List<Label> sectorLabels;
+    private final TextButton turnButton;
     
     public GalaxyScreen(IntergalacticGame game, Galaxy galaxy) {
         super(game);
@@ -128,6 +133,16 @@ public class GalaxyScreen extends AbstractScreen {
             getStage().addActor(sectorLabel);
             sectorLabels.add(sectorLabel);
         }
+
+        turnButton = new TextButton(getGame().getLabels().getProperty("BUTTON_TURN"), getSkin());
+        turnButton.setPosition(STAGE_WIDTH - STAGE_MARGIN - turnButton.getWidth(), STAGE_MARGIN);
+        turnButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                getGame().turn();
+            }
+        });
+        getStage().addActor(turnButton);
         
         cam = new PerspectiveCamera(42.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0.0f, 10.0f, 5.0f);
@@ -152,7 +167,10 @@ public class GalaxyScreen extends AbstractScreen {
         cam.viewportHeight = Gdx.graphics.getHeight();
         cam.update();
         
-        Gdx.input.setInputProcessor(new GalaxyScreenInputProcessor());
+        InputMultiplexer m = new InputMultiplexer();
+        m.addProcessor(Gdx.input.getInputProcessor());
+        m.addProcessor(new GalaxyScreenInputProcessor());
+        Gdx.input.setInputProcessor(m);
     }
 
     @Override

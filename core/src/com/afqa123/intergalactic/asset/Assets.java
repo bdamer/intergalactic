@@ -3,8 +3,9 @@ package com.afqa123.intergalactic.asset;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.utils.JsonValue;
+import java.util.Properties;
 
-// Review this - I think having a global / static is the way to go, but
+// Review this - I think having a global / static is the way to go
 public class Assets {
 
     private static final AssetManager am = new AssetManager();
@@ -12,6 +13,7 @@ public class Assets {
     static {
         // Register custom asset loaders
         am.setLoader(JsonValue.class, new JsonValueAssetLoader(new InternalFileHandleResolver()));
+        am.setLoader(Properties.class, new PropertiesAssetLoader(new InternalFileHandleResolver()));
         am.setLoader(String.class, new StringAssetLoader(new InternalFileHandleResolver()));
     }
  

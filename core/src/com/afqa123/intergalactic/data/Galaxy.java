@@ -49,7 +49,6 @@ public class Galaxy {
             sectors[median + i] = new Sector[cols];
         }
         initializeSectors();
-        randomizeSectorsSpiral();
     }
     
     private void initializeSectors() {
@@ -63,7 +62,7 @@ public class Galaxy {
         }
     }
     
-    private void randomizeSectors() {
+    public void randomizeSectors() {
         Gdx.app.log(Galaxy.class.getName(), "Building irregular galaxy.");
         for (int y = 0; y < sectors.length; y++) {
             for (int x = 0; x < sectors[y].length; x++) {
@@ -77,12 +76,12 @@ public class Galaxy {
         }
     }
     
-    private void randomizeSectorsRing() {
+    public void randomizeSectorsRing() {
         Gdx.app.log(Galaxy.class.getName(), "Building ring galaxy.");
         // TODO: implement
     }
     
-    private void randomizeSectorsSpiral() {
+    public void randomizeSectorsSpiral() {
         Gdx.app.log(Galaxy.class.getName(), "Building spiral galaxy.");
         
         // TODO: these should not be fixed, but instead change over time 

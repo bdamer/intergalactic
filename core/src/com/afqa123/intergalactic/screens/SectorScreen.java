@@ -53,8 +53,8 @@ public class SectorScreen extends AbstractScreen {
         productionLabel.setPosition(STAGE_WIDTH / 2, 50.0f);        
         getStage().addActor(productionLabel);
         
-        backButton = new TextButton("Back", getSkin());
-        backButton.setPosition(STAGE_MARGIN, STAGE_HEIGHT - 4 * STAGE_MARGIN);
+        backButton = new TextButton(getGame().getLabels().getProperty("BUTTON_BACK"), getSkin());
+        backButton.setPosition(STAGE_MARGIN, STAGE_HEIGHT - STAGE_MARGIN - backButton.getHeight());
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -129,14 +129,14 @@ public class SectorScreen extends AbstractScreen {
 
     private void updateLabels() {
         // update UI from sector
-        String info = String.format("%s\nPopulation: %d / %d\nGrowth: %.1f %%\nMorale: %s", 
+        String info = String.format("%s\nPopulation: %d / %d\nGrowth: %.2f %%\nMorale: %s", 
                 sector.getName(), (int)sector.getPopulation(), sector.getMaxPopulation(), 
                 sector.getGrowthRate(), sector.getMorale().getLabel());                
         sectorLabel.setText(info);
         String prod = String.format("\nFood %d  +%d\nInd %d  +%d\nSci %d  +%d",
-                sector.getFoodProducers(), sector.getFoodProducers(),
-                sector.getIndustrialProducers(), sector.getIndustrialProducers(),
-                sector.getScienceProducers(), sector.getScienceProducers());
+                sector.getFoodProducers(), (int)sector.getFoodOutput(),
+                sector.getIndustrialProducers(), (int)sector.getIndustrialOutput(),
+                sector.getScienceProducers(), (int)sector.getScientificOutput());
         productionLabel.setText(prod);
     }
 }

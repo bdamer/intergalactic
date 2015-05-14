@@ -3,6 +3,7 @@ package com.afqa123.intergalactic;
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.asset.FontProvider;
 import com.afqa123.intergalactic.data.Galaxy;
+import com.afqa123.intergalactic.data.Simulation;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
@@ -13,14 +14,20 @@ import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.JsonValue;
+import java.util.Properties;
 import java.util.Stack;
 
 public class IntergalacticGame extends ApplicationAdapter {
 	
-    private final Stack<Screen> screens = new Stack<>();
+    // The current screen
     private Screen screen;
+    // Screen stack
+    private final Stack<Screen> screens = new Stack<>();
+    // The simulation engine
+    private Simulation simulation;
     private Galaxy galaxy;
     private FPSLogger fps;
+    private Properties labels;
     
 	@Override
 	public void create () {
@@ -39,6 +46,9 @@ public class IntergalacticGame extends ApplicationAdapter {
         loadAssets();
 
         galaxy = new Galaxy(15);
+        // TODO: load from file, etc.
+        galaxy.randomizeSectorsSpiral();
+        simulation = new Simulation(galaxy);
 
         //screen = new BloomTestScreen();
         //screen = new TestScreen();
@@ -56,6 +66,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("textures/selection.png", Texture.class);        
         Assets.load("textures/explosion.png", Texture.class);        
         Assets.load("data/sectors.json", JsonValue.class);
+        // TODO: load based on system locale
+        Assets.load("localization/default.properties", Properties.class);
         
         // Scene shaders
         Assets.load("shaders/sc_color.vsh", String.class);
@@ -84,6 +96,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         
         Assets.getManager().finishLoading();
 
+        labels = Assets.get("localization/default.properties");
+        
         FontProvider.intialize();
     }
     
@@ -123,5 +137,14 @@ public class IntergalacticGame extends ApplicationAdapter {
         this.screen.dispose();        
         this.screen = screens.pop();
         this.screen.activate();
+    }
+    
+    public void turn() {
+        // TODO: implement AI turns
+        simulation.turn();
+    }
+    
+    public Properties getLabels() {
+        return labels;
     }
 }

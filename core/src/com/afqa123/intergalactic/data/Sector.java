@@ -2,12 +2,20 @@ package com.afqa123.intergalactic.data;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.math.Vector3;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 /**
  * Class representing a single galactic sector.
  */
-public class Sector {
+public final class Sector {
 
+    private static final int BASE_FOOD_PRODUCTION = 1;
+    private static final int BASE_IND_PRODUCTION = 1;
+    private static final int BASE_SCI_PRODUCTION = 1;
+    
     public enum StarCategory {
         BLUE,       // gigantic
         WHITE,      // large
@@ -45,10 +53,18 @@ public class Sector {
     private int maxPopulation;
     private float morale;
     private float growthRate;
+    private float foodConsumptionRate;
     // Members of population allocated to production
     private int foodProducers;
     private int industrialProducers;
-    private int scienceProducers;    
+    private int scienceProducers;
+    // Production multipliers
+    private float foodMultiplier;
+    private float industrialMultiplier;
+    private float scienceMultiplier;
+    // Buildings and production queue
+    private List<Structure> structures;
+    private Queue<BuildQueueEntry> buildQueue;
     
     // Rendering properties
     // Base color / material
@@ -75,10 +91,13 @@ public class Sector {
         this.category = category;
         this.seed = System.currentTimeMillis() - (long)(Math.random() * 1000000.0);
 
-        this.growthRate = 0.5f;
         this.population = 1;
-        this.maxPopulation = 10;
-        this.morale = 0.5f;
+        // TODO: this is based on the number of terraformed planets in this sector
+        this.maxPopulation = 50;
+        this.foodProducers = 1;
+        this.structures = new ArrayList<>();
+        this.buildQueue = new LinkedList<>();
+        computerModifiers();
         
         if (category != null) {
             switch (category) {
@@ -240,4 +259,86 @@ public class Sector {
     public void setScienceProducers(int scienceProducers) {
         this.scienceProducers = scienceProducers;
     }
+    
+    public float getFoodOutput() {
+        return (float)(BASE_FOOD_PRODUCTION + foodProducers) * foodMultiplier;
+    }
+
+    public float getScientificOutput() {
+        return (float)(BASE_SCI_PRODUCTION + scienceProducers) * scienceMultiplier;
+    }
+    
+    public float getIndustrialOutput() {
+        return (float)(BASE_IND_PRODUCTION + industrialProducers) * industrialMultiplier;
+    }
+    
+    public void computerModifiers() {
+        // Default everything...
+        scienceMultiplier = 1.0f;
+        foodMultiplier = 1.0f;
+        industrialMultiplier = 1.0f;
+        foodConsumptionRate = 1.0f;
+        growthRate = 0.25f;
+        // TODO: or is morale different from other values in that it changes
+        // more slowly, over time?
+        morale = 0.5f;
+
+        for (Structure s : structures) {
+            // TODO: update modifiers from structures
+        }
+
+        float foodSurplus = getFoodOutput() - (foodConsumptionRate * (int)population);
+        if (foodSurplus < 0.0f) {
+            growthRate = -0.25f;
+            morale -= 0.25f;
+        } else {
+            // TODO: add bonus to growth based on food surplus
+        }
+    }
+    
+    /**
+     * Grows or shrinks the population based on the current growth rate.
+     */
+    public void growPopulation() {
+        int oldPopulation = (int)population;
+        population += population * growthRate;
+        if (population < 1.0f) {
+            population = 1.0f;
+        } else if (population > maxPopulation) {
+            population = maxPopulation;
+        }
+        
+        int newPopulation = (int)population;
+        // Population grew (this works under the assumption that the population
+        // will never grow or shrink by more than 1 per turn)
+        if (newPopulation > oldPopulation) {
+            foodProducers++;
+        // Population shrunk
+        } else if (oldPopulation > newPopulation) {
+            if (foodProducers > 0) {
+                foodProducers--;
+            } else if (industrialProducers > 0) {
+                industrialProducers--;
+            } else {
+                scienceProducers--;
+            }
+        }        
+    }
+
+    /**
+     * Updates top of production queue.
+     */
+    public void produce() {
+        BuildQueueEntry entry = buildQueue.peek();
+        if (entry == null) {
+            return;
+        }
+        float remaining = entry.getCost() - getIndustrialOutput();
+        if (remaining > 0) {
+            entry.setCost(remaining);
+        } else {
+            buildQueue.remove();
+            // TODO: add entry to list of structures or create new ship entity
+        }
+    }    
 }

@@ -1,0 +1,20 @@
+[
+    {
+        "id": "colony_ship",
+        "label": "Colony Ship",
+        "detail": "Allows the colonization of other systems.",
+        "depends": ["shipyard"]
+    },
+    {
+        "id": "raider",
+        "label": "Raider",
+        "detail": "Lightly armored fighter craft.",
+        "depends": ["barracks","shipyard"]
+    },
+    {
+        "id": "scout",
+        "label": "Scout",
+        "detail": "Unarmored long-range scout ship.",
+        "depends": ["research_lab","shipyard"]
+    }
+]
