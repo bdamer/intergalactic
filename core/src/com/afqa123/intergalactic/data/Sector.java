@@ -12,9 +12,10 @@ import java.util.Queue;
  */
 public final class Sector {
 
-    private static final int BASE_FOOD_PRODUCTION = 1;
-    private static final int BASE_IND_PRODUCTION = 1;
-    private static final int BASE_SCI_PRODUCTION = 1;
+    // TODO: review
+    private static final int BASE_FOOD_PRODUCTION = 0;
+    private static final int BASE_IND_PRODUCTION = 0;
+    private static final int BASE_SCI_PRODUCTION = 0;
     
     public enum StarCategory {
         BLUE,       // gigantic
@@ -43,6 +44,7 @@ public final class Sector {
     };
     
     private final String name;
+    private Faction owner;
     
     // Axial coordinates of this sector.
     private final HexCoordinate coordinates;
@@ -78,23 +80,17 @@ public final class Sector {
     private final float turbulence;
     // seed value to animate surface
     private final long seed;
-    
-    // Tile flags as relevant to player
-    // TODO: do we have to determine this dynamically relative to each player?
-    private boolean visible = true;
-    private boolean shortRange;
-    private boolean longRange;
-    
+        
     public Sector(String name, HexCoordinate coordinates, StarCategory category) {
         this.name = name;
         this.coordinates = coordinates;
         this.category = category;
         this.seed = System.currentTimeMillis() - (long)(Math.random() * 1000000.0);
 
-        this.population = 1;
+        this.population = 0;
         // TODO: this is based on the number of terraformed planets in this sector
-        this.maxPopulation = 50;
-        this.foodProducers = 1;
+        this.maxPopulation = 0;
+        this.foodProducers = 0;
         this.structures = new ArrayList<>();
         this.buildQueue = new LinkedList<>();
         computerModifiers();
@@ -150,30 +146,6 @@ public final class Sector {
         return category;
     }
 
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
-
-    public boolean isShortRange() {
-        return shortRange;
-    }
-
-    public void setShortRange(boolean shortRange) {
-        this.shortRange = shortRange;
-    }
-
-    public boolean isLongRange() {
-        return longRange;
-    }
-
-    public void setLongRange(boolean longRange) {
-        this.longRange = longRange;
-    }
-
     public Vector3 getMaterial() {
         return material;
     }
@@ -197,6 +169,14 @@ public final class Sector {
     public String getName() {
         return name;
     }
+
+    public Faction getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Faction owner) {
+        this.owner = owner;
+    }    
     
     public float getPopulation() {
         return population;

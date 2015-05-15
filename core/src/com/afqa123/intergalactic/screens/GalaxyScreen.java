@@ -1,6 +1,10 @@
 package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
+import com.afqa123.intergalactic.data.Faction;
+import com.afqa123.intergalactic.data.FactionMap;
+import com.afqa123.intergalactic.data.FactionMap.SectorStatus;
+import com.afqa123.intergalactic.data.FactionMap.Status;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
@@ -68,22 +72,22 @@ public class GalaxyScreen extends AbstractScreen {
                             r.origin.y + r.direction.y * t,
                             r.origin.z + r.direction.z * t);                
                     HexCoordinate c = new HexCoordinate(hit);
-                    Gdx.app.log(GalaxyScreen.class.getName(), String.format("Sector: %d / %d", c.x, c.y));
-                    long dt = TimeUtils.timeSinceMillis(lastUp);
-                    Gdx.app.log("", String.format("%d", dt));
-                    
-                    // Regular click
-                    if (dt > DOUBLE_CLICK) {
-                        indicator.setPosition(c.toWorld());
-                    // Double click
-                    } else {
-                        Sector sector = galaxy.getSector(c);
-                        if (sector.getCategory() != null) {
-                            getGame().pushScreen(new SectorScreen(getGame(), sector));
-                        }
-                    }                    
-                }            
-                
+                    if (HexCoordinate.ORIGIN.getDistance(c) < galaxy.getRadius()) {
+                        Gdx.app.log(GalaxyScreen.class.getName(), String.format("Sector: %d / %d", c.x, c.y));
+                        long dt = TimeUtils.timeSinceMillis(lastUp);
+                        // Regular click
+                        if (dt > DOUBLE_CLICK) {
+                            indicator.setPosition(c.toWorld());
+                        // Double click
+                        } else {
+                            Sector sector = galaxy.getSector(c);
+                            SectorStatus status = getGame().getPlayer().getMap().getSector(c);
+                            if (sector.getCategory() != null && status.getStatus() == Status.EXPLORED) {
+                                getGame().pushScreen(new SectorScreen(getGame(), sector));
+                            }
+                        }                    
+                    }
+                }
                 lastUp = TimeUtils.millis();
             }
             return true;
@@ -116,6 +120,7 @@ public class GalaxyScreen extends AbstractScreen {
     private final StarRenderer starRenderer;
     private final Indicator indicator;
     private final Galaxy galaxy;
+    private final List<Sector> visibleSectors;
     
     // UI
     private final List<Label> sectorLabels;
@@ -127,12 +132,6 @@ public class GalaxyScreen extends AbstractScreen {
         
         // Create ui components
         sectorLabels = new ArrayList<>();
-        for (Sector s : galaxy.getStarSystems()) {
-            Label sectorLabel = new Label(s.getName(), getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
-            sectorLabel.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-            getStage().addActor(sectorLabel);
-            sectorLabels.add(sectorLabel);
-        }
 
         turnButton = new TextButton(getGame().getLabels().getProperty("BUTTON_TURN"), getSkin());
         turnButton.setPosition(STAGE_WIDTH - STAGE_MARGIN - turnButton.getWidth(), STAGE_MARGIN);
@@ -145,17 +144,24 @@ public class GalaxyScreen extends AbstractScreen {
         getStage().addActor(turnButton);
         
         cam = new PerspectiveCamera(42.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.position.set(0.0f, 10.0f, 5.0f);
-        cam.lookAt(0.0f, 0.0f, 0.0f);
+        // Center on player home
+        Faction player = game.getPlayer();
+        Sector home = player.getSectors().get(0);
+        Vector3 target = home.getCoordinates().toWorld();
+        cam.position.set(target.x, target.y + 10.0f, target.z + 5.0f);
+        cam.lookAt(target);
         cam.near = 0.5f;
         cam.far = 100.0f;
         cam.update();
+        
+        visibleSectors = new ArrayList<>();
         
         gridRenderer = new GridRenderer(galaxy);
         gridRenderer.update();        
         bgRenderer = new BackgroundRenderer();
         starRenderer = new StarRenderer();        
         indicator = new Indicator();        
+        indicator.setPosition(target);
     }
     
     @Override
@@ -171,6 +177,8 @@ public class GalaxyScreen extends AbstractScreen {
         m.addProcessor(Gdx.input.getInputProcessor());
         m.addProcessor(new GalaxyScreenInputProcessor());
         Gdx.input.setInputProcessor(m);
+        
+        resetRenderLists();
     }
 
     @Override
@@ -186,12 +194,36 @@ public class GalaxyScreen extends AbstractScreen {
         cam.update();
     }
 
+    // TODO: execute when Galaxy model changes -> more listeners!
+    private void resetRenderLists() {
+        visibleSectors.clear();
+        for (Label l : sectorLabels) {
+            l.remove();
+        }
+        sectorLabels.clear();
+        
+        FactionMap playerMap = getGame().getPlayer().getMap();
+        List<Sector> sectors = galaxy.getStarSystems();
+        for (Sector sector : sectors) {
+            Status status = playerMap.getSector(sector.getCoordinates()).getStatus();
+            if (status == Status.UNKNOWN) {
+                continue;
+            }
+
+            Label sectorLabel = new Label(sector.getName(), getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
+            sectorLabel.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+            getStage().addActor(sectorLabel);
+            sectorLabel.setVisible(status == Status.EXPLORED);
+            sectorLabels.add(sectorLabel);            
+            visibleSectors.add(sector);
+        }
+    }
+    
     @Override
     public void update() {
-        List<Sector> starSystems = galaxy.getStarSystems();
         // Create ui components
-        for (int i = 0; i < starSystems.size(); i++) {
-            Sector sector = starSystems.get(i);
+        for (int i = 0; i < visibleSectors.size(); i++) {
+            Sector sector = visibleSectors.get(i);
             Vector3 screen = cam.project(sector.getCoordinates().toWorld());
             Label label = sectorLabels.get(i);
             label.setPosition(screen.x, screen.y + 40.0f * sector.getScale(), Align.bottom);
@@ -206,8 +238,8 @@ public class GalaxyScreen extends AbstractScreen {
         bgRenderer.render(cam);        
         gridRenderer.render(cam);
         indicator.render(cam);
-        
-        starRenderer.render(cam, galaxy.getStarSystems());
+
+        starRenderer.render(cam, visibleSectors);
         
         // UI pass
         getStage().draw();

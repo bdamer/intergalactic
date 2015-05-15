@@ -1,12 +1,32 @@
 package com.afqa123.intergalactic.math;
 
 import static com.afqa123.intergalactic.math.Hex.SQRT_THREE;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HexCoordinate {
 
+    public enum Direction {
+        EAST(1, 0),
+        NORTH_EAST(1, -1),
+        NORTH_WEST(0, -1),
+        WEST(-1, 0),
+        SOUTH_WEST(-1, 1),
+        SOUTH_EAST(0, 1);
+        
+        public final int x;
+        public final int y;
+        
+        private Direction(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    };
+    
+    public static final HexCoordinate ORIGIN = new HexCoordinate(0, 0);
+    
     // Scale of the hex grid.
     private float scale = 1.0f;
     public final int x;
@@ -75,8 +95,36 @@ public class HexCoordinate {
 
     public void setScale(float scale) {
         this.scale = scale;
-    }    
+    } 
 
+    /**
+     * Returns the distance to another {@code HexCoordinate}.
+     * 
+     * @param c The other hex coordinate.
+     * @return The distance.
+     */
+    public int getDistance(HexCoordinate c) {
+        return (Math.abs(x - c.x) + Math.abs(x + y - c.x - c.y) + Math.abs(y - c.y)) / 2;
+    }
+    
+    public HexCoordinate getNeighbor(Direction dir) {
+        return new HexCoordinate(x + dir.x, y + dir.y);
+    }
+
+    public List<HexCoordinate> getRing(int radius) {
+        List<HexCoordinate> res = new ArrayList<>();
+        Direction[] directions = Direction.values();
+        HexCoordinate cur = new HexCoordinate(x + directions[4].x * radius, 
+            y + directions[4].y * radius);
+        for (Direction dir : directions) {
+            for (int j = 0; j < radius; j++) {
+                res.add(cur);
+                cur = cur.getNeighbor(dir);
+            }
+        }
+        return res;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 7;

@@ -1,6 +1,7 @@
 package com.afqa123.intergalactic.data;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Vector2;
 import java.util.List;
 
 /**
@@ -10,9 +11,32 @@ public class Simulation {
 
     private int turn;
     private final Galaxy galaxy;
+    private final Faction player;
     
-    public Simulation(Galaxy galaxy) {
+    public Simulation(Galaxy galaxy, Faction player) {
         this.galaxy = galaxy;
+        this.player = player;
+    }
+    
+    public void init() {
+        galaxy.randomizeSectorsSpiral();
+        
+        // Determine player start planets
+        List<Sector> sectors = galaxy.getStarSystems();
+        Sector home = sectors.get((int)(Math.random() * sectors.size()));
+        //Sector home = new Sector("Sol", new HexCoordinate(0, -14), Sector.StarCategory.YELLOW);
+        //Vector2 offset = galaxy.axialToOffset(0, -14);
+        //galaxy.getSectors()[(int)offset.x][(int)offset.y] = home;
+        //galaxy.getStarSystems().add(home);
+        home.setOwner(player);
+        home.setPopulation(2.0f);
+        home.setFoodProducers(2);
+        // TODO: compute automatically based on number of terraformed planets
+        home.setMaxPopulation(10);
+        home.computerModifiers();
+        player.getSectors().add(home);
+        player.getMap().addHomeColony(home);
+        player.getMap().update();
     }
     
     /**

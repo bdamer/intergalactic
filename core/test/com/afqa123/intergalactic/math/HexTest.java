@@ -35,10 +35,5 @@ public class HexTest {
         Assert.assertEquals(new Vector2(10, -32), actual);
         actual = Hex.worldToAxial(new Vector3(-45.03332f, 0, -48.0f));
         Assert.assertEquals(new Vector2(-10, -32), actual);
-    }
-    
-    @Test
-    public void testRound() {
-        
-    }
+    }    
 }

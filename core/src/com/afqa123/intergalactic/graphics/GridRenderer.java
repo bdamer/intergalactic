@@ -50,8 +50,7 @@ public class GridRenderer implements Disposable {
         Sector[][] sectors = galaxy.getSectors();
         for (Sector[] row : sectors) {
             for (Sector s : row) {
-                if (!s.isVisible())
-                    continue;                
+                // TODO: use player faction map to determine any additional properties
                 addHex(s, vertices, indices, counter);
                 counter++;
             }

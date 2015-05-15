@@ -15,7 +15,7 @@ public class Galaxy {
     // Prime number use to generate randomized sector name order
     private static final int RANDOM_STEP = 19;
     // Size of the galaxy represented by the radius of the surrounding circle.
-    private final int size;
+    private final int radius;
     // Number of sectors in the galaxy
     private int count;
     // Sectors in this galaxy. The first index represents the row, the second
@@ -23,30 +23,31 @@ public class Galaxy {
     private final Sector[][] sectors;
     // List of systems which contain stars.
     private final List<Sector> starSystems;
-    
     private final String[] sectorNames;
     private int lastNameIdx;
     
     /**
      * Creates a new galaxy of a given size.
      * 
-     * @param size The radius of the circle that surrounds the hexagon galaxy.
+     * @param radius The radius of the circle that surrounds the hexagon galaxy.
      */
-    public Galaxy(int size) {
-        this.size = size;
+    public Galaxy(int radius) {
+        this.radius = radius;
         this.starSystems = new ArrayList<>();        
         sectorNames = ((JsonValue)Assets.get("data/sectors.json")).asStringArray();
         lastNameIdx = (int)(Math.random() * sectorNames.length);
         // build up array of variable size for each row
-        int rows = size * 2 - 1;
-        int cols = size * 2 - 1;
+        int rows = radius * 2 - 1;
+        int median = radius - 1;
+        int cols = radius;
         sectors = new Sector[rows][];
-        int median = size - 1;
-        sectors[median] = new Sector[cols];
-        for (int i = 1; i < size; i++) {
-            cols--;
-            sectors[median - i] = new Sector[cols];
-            sectors[median + i] = new Sector[cols];
+        for (int i = 0; i < rows; i++) {
+            sectors[i] = new Sector[cols];
+            if (i < median) {
+                cols++;
+            } else if (i > median) {
+                cols--;
+            }
         }
         initializeSectors();
     }
@@ -145,6 +146,10 @@ public class Galaxy {
         return count;
     }
     
+    public int getRadius() {
+        return radius;
+    }
+    
     /**
      * Returns all sectors in the galaxy.
      * 
@@ -162,8 +167,8 @@ public class Galaxy {
      * @return A sector or null.
      */
     public Sector getSector(HexCoordinate c) {
-        int row = c.y + size - 1;
-        int col = (c.y < 0 ? c.x + row : c.x + size - 1);
+        int row = c.y + radius - 1;
+        int col = (c.y < 0 ? c.x + row : c.x + radius - 1);
         return sectors[row][col];
     }
     
@@ -189,8 +194,8 @@ public class Galaxy {
      * @return Offset coordinates.
      */
     public Vector2 axialToOffset(int xa, int ya) {
-        int row = ya + size - 1;
-        int col = (ya < 0 ? xa + row : xa + size - 1);
+        int row = ya + radius - 1;
+        int col = (ya < 0 ? xa + row : xa + radius - 1);
         return new Vector2(col, row);
     }    
     
@@ -212,8 +217,8 @@ public class Galaxy {
      * @return Axial coordinates.
      */
     public Vector2 offsetToAxial(int xo, int yo) {
-        int y = yo - size + 1;
-        int x = (y < 0 ? xo - yo : xo - size + 1);
+        int y = yo - radius + 1;
+        int x = (y < 0 ? xo - yo : xo - radius + 1);
         return new Vector2(x, y);
     }
 }

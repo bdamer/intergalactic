@@ -2,12 +2,12 @@ package com.afqa123.intergalactic;
 
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.asset.FontProvider;
+import com.afqa123.intergalactic.data.Faction;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.data.Simulation;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
-import com.afqa123.intergalactic.screens.TestScreen;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -27,6 +27,7 @@ public class IntergalacticGame extends ApplicationAdapter {
     // The simulation engine
     private Simulation simulation;
     private Galaxy galaxy;
+    private Faction player;
     private FPSLogger fps;
     private Properties labels;
     
@@ -47,9 +48,10 @@ public class IntergalacticGame extends ApplicationAdapter {
         loadAssets();
 
         galaxy = new Galaxy(15);
+        player = new Faction("Player", true, galaxy);       
+        simulation = new Simulation(galaxy, player);
         // TODO: load from file, etc.
-        galaxy.randomizeSectorsSpiral();
-        simulation = new Simulation(galaxy);
+        simulation.init();
 
         //screen = new BloomTestScreen();
         //screen = new TestScreen(this);
@@ -147,5 +149,9 @@ public class IntergalacticGame extends ApplicationAdapter {
     
     public Properties getLabels() {
         return labels;
+    }
+    
+    public Faction getPlayer() {
+        return player;
     }
 }
