@@ -7,6 +7,7 @@ import com.afqa123.intergalactic.data.Simulation;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
+import com.afqa123.intergalactic.screens.TestScreen;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -51,7 +52,7 @@ public class IntergalacticGame extends ApplicationAdapter {
         simulation = new Simulation(galaxy);
 
         //screen = new BloomTestScreen();
-        //screen = new TestScreen();
+        //screen = new TestScreen(this);
         screen = new GalaxyScreen(this, galaxy);
         screen.activate();
     }
@@ -63,7 +64,7 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("textures/nebula32.png", Texture.class);
         Assets.load("textures/base-red.png", Texture.class);
         Assets.load("textures/detail.png", Texture.class);
-        Assets.load("textures/selection.png", Texture.class);        
+        Assets.load("textures/ui.png", Texture.class);        
         Assets.load("textures/explosion.png", Texture.class);        
         Assets.load("data/sectors.json", JsonValue.class);
         // TODO: load based on system locale

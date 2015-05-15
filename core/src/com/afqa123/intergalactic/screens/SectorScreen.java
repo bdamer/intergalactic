@@ -1,8 +1,12 @@
 package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
+import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.graphics.SectorRenderer;
+import static com.afqa123.intergalactic.screens.AbstractScreen.STAGE_MARGIN;
+import com.afqa123.intergalactic.ui.ChangeListener;
+import com.afqa123.intergalactic.ui.ProductionGroup;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -10,10 +14,13 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 public class SectorScreen extends AbstractScreen {
     
@@ -38,10 +45,16 @@ public class SectorScreen extends AbstractScreen {
     private final Label sectorLabel;
     private final Label productionLabel;
     private final TextButton backButton;
+    private final DragAndDrop dnd;
+    private final ProductionGroup foodProduction;
+    private final ProductionGroup indProduction;
+    private final ProductionGroup sciProduction;
         
-    public SectorScreen(IntergalacticGame game, Sector sector) {        
+    public SectorScreen(final IntergalacticGame game, final Sector sector) {        
         super(game);
         this.sector = sector;
+        
+        dnd = new DragAndDrop();
         
         // Create ui components
         sectorLabel = new Label(null, getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
@@ -50,7 +63,7 @@ public class SectorScreen extends AbstractScreen {
         getStage().addActor(sectorLabel);
         
         productionLabel = new Label(null, getSkin(), FONT, new Color(0.0f, 1.0f, 0.0f, 1.0f));
-        productionLabel.setPosition(STAGE_WIDTH / 2, 50.0f);        
+        productionLabel.setPosition(STAGE_WIDTH / 2 - 75, 70.0f);        
         getStage().addActor(productionLabel);
         
         backButton = new TextButton(getGame().getLabels().getProperty("BUTTON_BACK"), getSkin());
@@ -62,6 +75,46 @@ public class SectorScreen extends AbstractScreen {
             }
         });
         getStage().addActor(backButton);
+        
+        Texture texture = Assets.get("textures/ui.png");
+        TextureRegion tr = new TextureRegion(texture, 0.125f, 0.0f, 0.15625f, 0.03125f);
+
+        foodProduction = new ProductionGroup(dnd, tr, sector.getFoodProducers());
+        foodProduction.setPosition(STAGE_WIDTH / 2, STAGE_MARGIN + 2 * tr.getRegionHeight());
+        foodProduction.setChangeListener(new ChangeListener<Integer>() {
+            @Override
+            public void valueChanged(Integer value) {
+                sector.setFoodProducers(value);
+                sector.computerModifiers();
+                // TODO: replace with ModelChangedListener...
+                updateLabels();
+            }            
+        });
+        getStage().addActor(foodProduction);
+        
+        indProduction = new ProductionGroup(dnd, tr, sector.getIndustrialProducers());
+        indProduction.setPosition(STAGE_WIDTH / 2, STAGE_MARGIN + tr.getRegionHeight());
+        indProduction.setChangeListener(new ChangeListener<Integer>() {
+            @Override
+            public void valueChanged(Integer value) {
+                sector.setIndustrialProducers(value);
+                sector.computerModifiers();
+                updateLabels();
+            }            
+        });
+        getStage().addActor(indProduction);
+
+        sciProduction = new ProductionGroup(dnd, tr, sector.getScienceProducers());
+        sciProduction.setPosition(STAGE_WIDTH / 2, STAGE_MARGIN);
+        sciProduction.setChangeListener(new ChangeListener<Integer>() {
+            @Override
+            public void valueChanged(Integer value) {
+                sector.setScienceProducers(value);
+                sector.computerModifiers();
+                updateLabels();
+            }            
+        });
+        getStage().addActor(sciProduction);  
         
         cam = new PerspectiveCamera(42.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0.0f, 0.0f, 4.0f);
@@ -133,10 +186,9 @@ public class SectorScreen extends AbstractScreen {
                 sector.getName(), (int)sector.getPopulation(), sector.getMaxPopulation(), 
                 sector.getGrowthRate(), sector.getMorale().getLabel());                
         sectorLabel.setText(info);
-        String prod = String.format("\nFood %d  +%d\nInd %d  +%d\nSci %d  +%d",
-                sector.getFoodProducers(), (int)sector.getFoodOutput(),
-                sector.getIndustrialProducers(), (int)sector.getIndustrialOutput(),
-                sector.getScienceProducers(), (int)sector.getScientificOutput());
+                
+        String prod = String.format("\nFood %.2f\nInd %.2f\nSci %.2f",
+                sector.getNetFoodOutput(), sector.getIndustrialOutput(), sector.getScientificOutput());
         productionLabel.setText(prod);
     }
 }

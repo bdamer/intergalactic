@@ -260,8 +260,8 @@ public final class Sector {
         this.scienceProducers = scienceProducers;
     }
     
-    public float getFoodOutput() {
-        return (float)(BASE_FOOD_PRODUCTION + foodProducers) * foodMultiplier;
+    public float getNetFoodOutput() {
+        return (float)(BASE_FOOD_PRODUCTION + foodProducers) * foodMultiplier - (foodConsumptionRate * (int)population);
     }
 
     public float getScientificOutput() {
@@ -287,8 +287,7 @@ public final class Sector {
             // TODO: update modifiers from structures
         }
 
-        float foodSurplus = getFoodOutput() - (foodConsumptionRate * (int)population);
-        if (foodSurplus < 0.0f) {
+        if (getNetFoodOutput() < 0.0f) {
             growthRate = -0.25f;
             morale -= 0.25f;
         } else {

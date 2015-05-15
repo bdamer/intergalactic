@@ -1,25 +1,30 @@
 package com.afqa123.intergalactic.screens;
 
+import com.afqa123.intergalactic.IntergalacticGame;
+import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.graphics.CubeRenderer;
+import com.afqa123.intergalactic.ui.ProductionGroup;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
-public class TestScreen implements Screen {
+public class TestScreen extends AbstractScreen {
 
     public class TestInputProcessor extends InputAdapter {
         @Override
         public boolean keyDown(int i) {
             switch (i) {
                 case Keys.ESCAPE:
-                    done = true;
+                    setDone(true);
                     return true;
-                default:                     
+                default:          
                     return false;
             }
         }
@@ -27,12 +32,13 @@ public class TestScreen implements Screen {
     
     private final PerspectiveCamera cam;
     private final CameraInputController camCtrl;
-    private boolean done;
     private CubeRenderer renderer;
 
     // Test objects here
     
-    public TestScreen() {
+    public TestScreen(IntergalacticGame game) {
+        super(game);
+        
 	    cam = new PerspectiveCamera(70, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.position.set(0.0f, 0.0f, 10.0f);
         cam.lookAt(0.0f, 0.0f, 0.0f);
@@ -44,11 +50,12 @@ public class TestScreen implements Screen {
         renderer = new CubeRenderer();
         
         // Test code here:
+              
     }
     
     @Override
     public void activate() {
-        done = false;
+        super.activate();
         
         // Update viewport in case it changed
         cam.viewportWidth = Gdx.graphics.getWidth();
@@ -56,14 +63,23 @@ public class TestScreen implements Screen {
         cam.update();
         
         InputMultiplexer mp = new InputMultiplexer();
-        mp.addProcessor(camCtrl);
+        mp.addProcessor(Gdx.input.getInputProcessor());
         mp.addProcessor(new TestInputProcessor());
+        mp.addProcessor(camCtrl);
         Gdx.input.setInputProcessor(mp);
     }
 
     @Override
     public void deactivate() {
     
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        cam.viewportWidth = width;
+        cam.viewportHeight = height;
+        cam.update(true);
     }
 
     @Override
@@ -77,22 +93,14 @@ public class TestScreen implements Screen {
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         renderer.render(cam);        
-    }
 
-    @Override
-    public void resize(int width, int height) {
-        cam.viewportWidth = width;
-        cam.viewportHeight = height;
-        cam.update(true);
-    }
-
-    @Override
-    public boolean isDone() {
-        return done;
+        // UI pass
+        getStage().draw();
     }
 
     @Override
     public void dispose() {
+        super.dispose();
         renderer.dispose();
     }
 }
