@@ -1,10 +1,18 @@
 package com.afqa123.intergalactic.data;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class FactionMap {
 
+    public interface ChangeListener {
+
+        void mapChanged();
+    
+    };
+    
     public enum Range {
         SHORT,
         MEDIUM,
@@ -60,7 +68,8 @@ public class FactionMap {
     // the column.
     private final SectorStatus[][] map;
     private final int radius;
-
+    private final Set<ChangeListener> listeners = new HashSet<>();
+    
     public FactionMap(Faction faction, int radius) {
         this.faction = faction;
         this.radius = radius;
@@ -121,6 +130,10 @@ public class FactionMap {
                 }
             }
         }
+        
+        for (ChangeListener l : listeners) {
+            l.mapChanged();
+        }
     }
     
     public SectorStatus getSector(HexCoordinate c) {
@@ -131,6 +144,10 @@ public class FactionMap {
         } else {
             return map[row][col];        
         }
+    }
+
+    public SectorStatus[][] getSectors() {
+        return map;
     }
     
     public void addHomeColony(Sector home) {
@@ -146,5 +163,13 @@ public class FactionMap {
                 s.status = Status.KNOWN;
             }
         }
+    }
+    
+    public void addChangeListener(ChangeListener l) {
+        listeners.add(l);
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        listeners.remove(l);
     }
 }

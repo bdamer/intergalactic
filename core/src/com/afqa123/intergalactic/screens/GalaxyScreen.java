@@ -30,7 +30,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GalaxyScreen extends AbstractScreen {
+public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeListener {
 
     private class GalaxyScreenInputProcessor extends InputAdapter {
 
@@ -129,10 +129,11 @@ public class GalaxyScreen extends AbstractScreen {
     public GalaxyScreen(IntergalacticGame game, Galaxy galaxy) {
         super(game);
         this.galaxy = galaxy;
+
+        visibleSectors = new ArrayList<>();
+        sectorLabels = new ArrayList<>();
         
         // Create ui components
-        sectorLabels = new ArrayList<>();
-
         turnButton = new TextButton(getGame().getLabels().getProperty("BUTTON_TURN"), getSkin());
         turnButton.setPosition(STAGE_WIDTH - STAGE_MARGIN - turnButton.getWidth(), STAGE_MARGIN);
         turnButton.addListener(new ClickListener() {
@@ -154,14 +155,13 @@ public class GalaxyScreen extends AbstractScreen {
         cam.far = 100.0f;
         cam.update();
         
-        visibleSectors = new ArrayList<>();
-        
         gridRenderer = new GridRenderer(galaxy);
-        gridRenderer.update();        
         bgRenderer = new BackgroundRenderer();
         starRenderer = new StarRenderer();        
         indicator = new Indicator();        
         indicator.setPosition(target);
+        
+        game.getPlayer().getMap().addChangeListener(this);
     }
     
     @Override
@@ -178,7 +178,7 @@ public class GalaxyScreen extends AbstractScreen {
         m.addProcessor(new GalaxyScreenInputProcessor());
         Gdx.input.setInputProcessor(m);
         
-        resetRenderLists();
+        mapChanged();
     }
 
     @Override
@@ -194,8 +194,8 @@ public class GalaxyScreen extends AbstractScreen {
         cam.update();
     }
 
-    // TODO: execute when Galaxy model changes -> more listeners!
-    private void resetRenderLists() {
+    @Override
+    public void mapChanged() {
         visibleSectors.clear();
         for (Label l : sectorLabels) {
             l.remove();
@@ -217,6 +217,8 @@ public class GalaxyScreen extends AbstractScreen {
             sectorLabels.add(sectorLabel);            
             visibleSectors.add(sector);
         }
+
+        gridRenderer.update(playerMap);
     }
     
     @Override
