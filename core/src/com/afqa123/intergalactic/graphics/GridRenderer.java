@@ -1,8 +1,9 @@
 package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.data.FactionMap;
-import com.afqa123.intergalactic.data.FactionMap.SectorStatus;
+import com.afqa123.intergalactic.data.FactionMap.SectorEntry;
 import com.afqa123.intergalactic.data.Galaxy;
+import com.afqa123.intergalactic.data.Range;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.math.Hex;
 import com.badlogic.gdx.Gdx;
@@ -29,13 +30,13 @@ public class GridRenderer implements Disposable {
     // Padding between grid cells
     private static final float PADDING = 0.05f;
     private static final Color GRID_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.6f);
-    private static final Map<FactionMap.Range, Color> RANGE_COLORS;
+    private static final Map<Range, Color> RANGE_COLORS;
     
     static {
         RANGE_COLORS = new HashMap<>();
-        RANGE_COLORS.put(FactionMap.Range.SHORT, new Color(0.0f, 1.0f, 0.0f, 0.5f));
-        RANGE_COLORS.put(FactionMap.Range.MEDIUM, new Color(1.0f, 1.0f, 0.0f, 0.5f));
-        RANGE_COLORS.put(FactionMap.Range.LONG, new Color(1.0f, 0.0f, 0.0f, 0.6f));
+        RANGE_COLORS.put(Range.SHORT, new Color(0.0f, 1.0f, 0.0f, 0.5f));
+        RANGE_COLORS.put(Range.MEDIUM, new Color(1.0f, 1.0f, 0.0f, 0.5f));
+        RANGE_COLORS.put(Range.LONG, new Color(1.0f, 0.0f, 0.0f, 0.6f));
     }
     
     private final ShaderProgram sp;
@@ -62,12 +63,12 @@ public class GridRenderer implements Disposable {
         
         int counter = 0;
         Sector[][] sectors = galaxy.getSectors();
-        SectorStatus[][] sectorStatus = map.getSectors();
+        SectorEntry[][] entries = map.getSectors();
         for (int row = 0; row < sectors.length; row++) {
             for (int col = 0; col < sectors[row].length; col++) {
                 // TODO: use player faction map to determine any additional properties
                 Sector sector = sectors[row][col];
-                SectorStatus status = sectorStatus[row][col];
+                SectorEntry status = entries[row][col];
                 Color color = GRID_COLOR;
                 if (status.getRange() != null) {
                     color = RANGE_COLORS.get(status.getRange());

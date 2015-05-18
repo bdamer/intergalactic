@@ -3,10 +3,10 @@ package com.afqa123.intergalactic.screens;
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.data.Faction;
 import com.afqa123.intergalactic.data.FactionMap;
-import com.afqa123.intergalactic.data.FactionMap.SectorStatus;
-import com.afqa123.intergalactic.data.FactionMap.Status;
+import com.afqa123.intergalactic.data.FactionMap.SectorEntry;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.data.Sector;
+import com.afqa123.intergalactic.data.SectorStatus;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.Indicator;
@@ -81,8 +81,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                         // Double click
                         } else {
                             Sector sector = galaxy.getSector(c);
-                            SectorStatus status = getGame().getPlayer().getMap().getSector(c);
-                            if (sector.getCategory() != null && status.getStatus() == Status.EXPLORED) {
+                            SectorEntry entry = getGame().getPlayer().getMap().getSector(c);
+                            if (sector.getCategory() != null && entry.getStatus() == SectorStatus.EXPLORED) {
                                 getGame().pushScreen(new SectorScreen(getGame(), sector));
                             }
                         }                    
@@ -205,15 +205,15 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         FactionMap playerMap = getGame().getPlayer().getMap();
         List<Sector> sectors = galaxy.getStarSystems();
         for (Sector sector : sectors) {
-            Status status = playerMap.getSector(sector.getCoordinates()).getStatus();
-            if (status == Status.UNKNOWN) {
+            SectorStatus status = playerMap.getSector(sector.getCoordinates()).getStatus();
+            if (status == SectorStatus.UNKNOWN) {
                 continue;
             }
 
             Label sectorLabel = new Label(sector.getName(), getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
             sectorLabel.setColor(1.0f, 1.0f, 1.0f, 1.0f);
             getStage().addActor(sectorLabel);
-            sectorLabel.setVisible(status == Status.EXPLORED);
+            sectorLabel.setVisible(status == SectorStatus.EXPLORED);
             sectorLabels.add(sectorLabel);            
             visibleSectors.add(sector);
         }

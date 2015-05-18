@@ -13,26 +13,14 @@ public class FactionMap {
     
     };
     
-    public enum Range {
-        SHORT,
-        MEDIUM,
-        LONG
-    };
-    
-    public enum Status {
-        UNKNOWN,
-        KNOWN,
-        EXPLORED
-    };
-    
-    public class SectorStatus {
+    public class SectorEntry {
         
         private Range range;
-        private Status status;
+        private SectorStatus status;
         
-        public SectorStatus() {
+        public SectorEntry() {
             range = null;
-            status = Status.UNKNOWN;
+            status = SectorStatus.UNKNOWN;
         }
         
         public Range getRange() {
@@ -54,11 +42,11 @@ public class FactionMap {
             }
         }
         
-        public Status getStatus() {
+        public SectorStatus getStatus() {
             return status;
         }
 
-        public void setStatus(Status status) {
+        public void setStatus(SectorStatus status) {
             this.status = status;
         }
     };
@@ -66,7 +54,7 @@ public class FactionMap {
     private final Faction faction;
     // Sectors in this faction map. The first index represents the row, the second
     // the column.
-    private final SectorStatus[][] map;
+    private final SectorEntry[][] map;
     private final int radius;
     private final Set<ChangeListener> listeners = new HashSet<>();
     
@@ -77,11 +65,11 @@ public class FactionMap {
         int rows = radius * 2 - 1;
         int median = radius - 1;
         int cols = radius;
-        map = new SectorStatus[rows][];
+        map = new SectorEntry[rows][];
         for (int i = 0; i < rows; i++) {
-            map[i] = new SectorStatus[cols];
+            map[i] = new SectorEntry[cols];
             for (int j = 0; j < map[i].length; j++) {
-                map[i][j] = new SectorStatus();
+                map[i][j] = new SectorEntry();
             }
             if (i < median) {
                 cols++;
@@ -108,7 +96,7 @@ public class FactionMap {
             // TODO: use custom range based on colony tech
             List<HexCoordinate> shortRange = coord.getRing(1);
             for (HexCoordinate c : shortRange) {
-                SectorStatus s = getSector(c);
+                SectorEntry s = getSector(c);
                 if (s != null) {
                     s.addRange(Range.SHORT);
                 }
@@ -116,7 +104,7 @@ public class FactionMap {
             
             List<HexCoordinate> mediumRange = coord.getRing(2);
             for (HexCoordinate c : mediumRange) {
-                SectorStatus s = getSector(c);
+                SectorEntry s = getSector(c);
                 if (s != null) {
                     s.addRange(Range.MEDIUM);
                 }
@@ -124,7 +112,7 @@ public class FactionMap {
             
             List<HexCoordinate> longRange = coord.getRing(3);
             for (HexCoordinate c : longRange) {
-                SectorStatus s = getSector(c);
+                SectorEntry s = getSector(c);
                 if (s != null) {
                     s.addRange(Range.LONG);
                 }
@@ -136,7 +124,7 @@ public class FactionMap {
         }
     }
     
-    public SectorStatus getSector(HexCoordinate c) {
+    public SectorEntry getSector(HexCoordinate c) {
         int row = c.y + radius - 1;
         int col = (c.y < 0 ? c.x + row : c.x + radius - 1);
         if (row < 0 || col < 0 || row > map.length - 1 || col > map[row].length - 1) {
@@ -146,21 +134,21 @@ public class FactionMap {
         }
     }
 
-    public SectorStatus[][] getSectors() {
+    public SectorEntry[][] getSectors() {
         return map;
     }
     
     public void addHomeColony(Sector home) {
         HexCoordinate c = home.getCoordinates();
-        SectorStatus s = getSector(c);
+        SectorEntry s = getSector(c);
         if (s != null) {
-            s.status = Status.EXPLORED;
+            s.status = SectorStatus.EXPLORED;
         }
         List<HexCoordinate> shortRange = c.getRing(1);
         for (HexCoordinate cs : shortRange) {
             s = getSector(cs);
             if (s != null) {
-                s.status = Status.KNOWN;
+                s.status = SectorStatus.KNOWN;
             }
         }
     }
