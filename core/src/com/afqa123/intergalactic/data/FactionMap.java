@@ -94,7 +94,7 @@ public class FactionMap {
             getSector(coord).range = Range.SHORT;
 
             // TODO: use custom range based on colony tech
-            List<HexCoordinate> shortRange = coord.getRing(1);
+            HexCoordinate[] shortRange = coord.getRing(1);
             for (HexCoordinate c : shortRange) {
                 SectorEntry s = getSector(c);
                 if (s != null) {
@@ -102,7 +102,7 @@ public class FactionMap {
                 }
             }
             
-            List<HexCoordinate> mediumRange = coord.getRing(2);
+            HexCoordinate[] mediumRange = coord.getRing(2);
             for (HexCoordinate c : mediumRange) {
                 SectorEntry s = getSector(c);
                 if (s != null) {
@@ -110,7 +110,7 @@ public class FactionMap {
                 }
             }
             
-            List<HexCoordinate> longRange = coord.getRing(3);
+            HexCoordinate[] longRange = coord.getRing(3);
             for (HexCoordinate c : longRange) {
                 SectorEntry s = getSector(c);
                 if (s != null) {
@@ -144,7 +144,7 @@ public class FactionMap {
         if (s != null) {
             s.status = SectorStatus.EXPLORED;
         }
-        List<HexCoordinate> shortRange = c.getRing(1);
+        HexCoordinate[] shortRange = c.getRing(1);
         for (HexCoordinate cs : shortRange) {
             s = getSector(cs);
             if (s != null) {

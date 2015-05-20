@@ -1,6 +1,8 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Vector2;
 import java.util.List;
 
 /**
@@ -21,12 +23,21 @@ public class Simulation {
         galaxy.randomizeSectorsSpiral();
         
         // Determine player start planets
-        List<Sector> sectors = galaxy.getStarSystems();
-        Sector home = sectors.get((int)(Math.random() * sectors.size()));
-        //Sector home = new Sector("Sol", new HexCoordinate(0, -14), Sector.StarCategory.YELLOW);
-        //Vector2 offset = galaxy.axialToOffset(0, -14);
-        //galaxy.getSectors()[(int)offset.x][(int)offset.y] = home;
-        //galaxy.getStarSystems().add(home);
+
+        // Select random home sector
+        // List<Sector> sectors = galaxy.getStarSystems();
+        // Sector home = sectors.get((int)(Math.random() * sectors.size()));
+        
+        // Select sector at origin
+        HexCoordinate c = new HexCoordinate(0, 0);
+        Sector home = galaxy.getSector(HexCoordinate.ORIGIN);
+        if (home.getCategory() == null) {
+            home = new Sector("Sol", c, Sector.StarCategory.YELLOW);
+            galaxy.getStarSystems().add(home);
+        }
+        Vector2 offset = galaxy.axialToOffset(c.x, c.y);
+        galaxy.getSectors()[(int)offset.x][(int)offset.y] = home;
+        
         home.setOwner(player);
         home.setPopulation(2.0f);
         home.setFoodProducers(2);

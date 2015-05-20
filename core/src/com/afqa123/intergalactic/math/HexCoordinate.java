@@ -3,8 +3,6 @@ package com.afqa123.intergalactic.math;
 import static com.afqa123.intergalactic.math.Hex.SQRT_THREE;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import java.util.ArrayList;
-import java.util.List;
 
 public class HexCoordinate {
 
@@ -111,14 +109,15 @@ public class HexCoordinate {
         return new HexCoordinate(x + dir.x, y + dir.y);
     }
 
-    public List<HexCoordinate> getRing(int radius) {
-        List<HexCoordinate> res = new ArrayList<>();
+    public HexCoordinate[] getRing(int radius) {
+        HexCoordinate[] res = new HexCoordinate[radius * Direction.values().length];
         Direction[] directions = Direction.values();
         HexCoordinate cur = new HexCoordinate(x + directions[4].x * radius, 
             y + directions[4].y * radius);
+        int offset = 0;
         for (Direction dir : directions) {
             for (int j = 0; j < radius; j++) {
-                res.add(cur);
+                res[offset++] = cur;
                 cur = cur.getNeighbor(dir);
             }
         }

@@ -5,13 +5,17 @@ import com.afqa123.intergalactic.data.Faction;
 import com.afqa123.intergalactic.data.FactionMap;
 import com.afqa123.intergalactic.data.FactionMap.SectorEntry;
 import com.afqa123.intergalactic.data.Galaxy;
+import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.data.SectorStatus;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.Indicator;
+import com.afqa123.intergalactic.graphics.PathRenderer;
 import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.util.AStarPathfinder;
+import com.afqa123.intergalactic.util.Pathfinder;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -78,6 +82,11 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                         // Regular click
                         if (dt > DOUBLE_CLICK) {
                             indicator.setPosition(c.toWorld());
+
+                            // Testing for now...
+                            Pathfinder finder = new AStarPathfinder();
+                            path = finder.findPath(HexCoordinate.ORIGIN, c);
+                            
                         // Double click
                         } else {
                             Sector sector = galaxy.getSector(c);
@@ -121,6 +130,9 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final Indicator indicator;
     private final Galaxy galaxy;
     private final List<Sector> visibleSectors;
+
+    private final PathRenderer pathRenderer;
+    private Path path;
     
     // UI
     private final List<Label> sectorLabels;
@@ -159,7 +171,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         bgRenderer = new BackgroundRenderer();
         starRenderer = new StarRenderer();        
         indicator = new Indicator();        
-        indicator.setPosition(target);
+        indicator.setPosition(target);        
+        pathRenderer = new PathRenderer();
         
         game.getPlayer().getMap().addChangeListener(this);
     }
@@ -242,6 +255,10 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         indicator.render(cam);
 
         starRenderer.render(cam, visibleSectors);
+        
+        if (path != null) {
+            pathRenderer.render(cam, path);
+        }
         
         // UI pass
         getStage().draw();

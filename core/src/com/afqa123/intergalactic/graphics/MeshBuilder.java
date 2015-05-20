@@ -1,6 +1,7 @@
 package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.math.Geometry;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -10,8 +11,33 @@ import java.util.List;
 
 public class MeshBuilder {
 
-    private static final int VERTEX_SIZE = 6;
+    // TODO: make builder more flexible by allowing selection of vertex type
+    private enum VertexType {
+
+        POS3_NOR3(6),
+        POS3_COL4(7),
+        POS3_UV2(5),
+        POS3_NOR3_UV2(8);
+        
+        private final int size;
+        
+        private VertexType(int size) {
+            this.size = size;
+        }
+        
+        public int size() {
+            return size;
+        }        
+    };
     
+    /**
+     * Builds up a sphere mesh of {@code POS3_NOR3} vertices with a given number
+     * of slices and stacks.
+     * 
+     * @param slices The number of slices.
+     * @param stacks The number of stacks.
+     * @return The mesh.
+     */
     public Mesh buildSphere(int slices, int stacks) {
         List<Float> vertexData = new ArrayList<>();
         List<Float> normalData = new ArrayList<>();
@@ -23,14 +49,15 @@ public class MeshBuilder {
             new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE));
         
         // Build up vertex array
-        float[] vertices = new float[numVertices * VERTEX_SIZE];
+        float[] vertices = new float[numVertices * VertexType.POS3_NOR3.size()];
         for (int i = 0; i < numVertices; i++) {
-            vertices[i * VERTEX_SIZE + 0] = vertexData.get(i * 3 + 0);
-            vertices[i * VERTEX_SIZE + 1] = vertexData.get(i * 3 + 1);
-            vertices[i * VERTEX_SIZE + 2] = vertexData.get(i * 3 + 2);
-            vertices[i * VERTEX_SIZE + 3] = normalData.get(i * 3 + 0);
-            vertices[i * VERTEX_SIZE + 4] = normalData.get(i * 3 + 1);
-            vertices[i * VERTEX_SIZE + 5] = normalData.get(i * 3 + 2);            
+            int offset = i * VertexType.POS3_NOR3.size();
+            vertices[offset++] = vertexData.get(i * 3 + 0);
+            vertices[offset++] = vertexData.get(i * 3 + 1);
+            vertices[offset++] = vertexData.get(i * 3 + 2);
+            vertices[offset++] = normalData.get(i * 3 + 0);
+            vertices[offset++] = normalData.get(i * 3 + 1);
+            vertices[offset++] = normalData.get(i * 3 + 2);            
         }
         mesh.setVertices(vertices);        
 
@@ -77,15 +104,16 @@ public class MeshBuilder {
     }
     
     /**
-     * Builds up vertices for a spiral.
+     * Builds up a spiral mesh of {@code POS3_COL4} vertices.
      * 
      * @param numSegments Number of spiral segments
      * @param step Step between each segments in radians.
      * @param radius Max radius of the spiral.
-     * @return A list of vertices.
+     * @param color The color.
+     * @return The mesh.
      */
-    public Mesh buildSpiral(int numSegments, float step, float radius) {        
-        float[] vertices = new float[numSegments * 7];
+    public Mesh buildSpiral(int numSegments, float step, float radius, Color color) {        
+        float[] vertices = new float[numSegments * VertexType.POS3_COL4.size()];
         
         Mesh mesh = new Mesh(true, numSegments, 0, 
             new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
@@ -93,16 +121,99 @@ public class MeshBuilder {
 
         float angle = 0.0f;
         for (int idx = 0; idx < numSegments; idx++) {
-            int offset = idx * 7;
+            int offset = idx * VertexType.POS3_COL4.size();
             vertices[offset++] = (float)Math.cos(angle) * (float)idx / (float)numSegments * radius;
             vertices[offset++] = (float)Math.sin(angle) * (float)idx / (float)numSegments * radius;
             vertices[offset++] = 0.0f;
-            vertices[offset++] = 1.0f;
-            vertices[offset++] = 1.0f;
-            vertices[offset++] = 1.0f;            
-            vertices[offset++] = 1.0f;            
+            vertices[offset++] = color.r;
+            vertices[offset++] = color.g;
+            vertices[offset++] = color.b;            
+            vertices[offset++] = color.a;            
             angle += step;
         }        
+        mesh.setVertices(vertices);
+        
+        return mesh;
+    }
+    
+    /**
+     * Builds up a cube mesh of {@code POS3_NOR3} vertices.
+     * 
+     * @return The mesh.
+     */
+    public Mesh buildCube() {
+        final float[] vertices = new float[] {
+            // bottom face
+            -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
+             1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
+            -1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f,
+             1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
+             1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f,
+            -1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f,
+            // top face
+            -1.0f, 1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
+             1.0f, 1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
+            -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+             1.0f, 1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
+             1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+            -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+            // back face
+             1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
+             1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
+             1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
+            // front face
+            -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+             1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+             1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+             1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            // left face
+            -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+            -1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f,
+            -1.0f,  1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+            -1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f,
+            -1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 0.0f,
+            -1.0f,  1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+            // right face
+            1.0f, -1.0f,  1.0f, 1.0f, 0.0f, 0.0f,
+            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+            1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f,
+            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+            1.0f,  1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+            1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f
+        };
+
+        Mesh mesh = new Mesh(true, vertices.length / VertexType.POS3_NOR3.size(), 0, 
+            new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
+            new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE));
+        mesh.setVertices(vertices);
+        
+        return mesh;
+    }
+
+    /**
+     * Builds up a square mesh of {@code POS3_COL4} vertices.
+     * 
+     * @param Color The color.
+     * @return The mesh.
+     */
+    public Mesh buildSquare(Color color) {
+        Mesh mesh = new Mesh(true, 6, 0, 
+            new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
+            new VertexAttribute(VertexAttributes.Usage.ColorUnpacked, 4, ShaderProgram.COLOR_ATTRIBUTE));
+
+        float[] vertices = new float[] { 
+            -1.0f, 1.0f,  1.0f, color.r, color.g, color.b, color.a,
+             1.0f, 1.0f,  1.0f, color.r, color.g, color.b, color.a,
+            -1.0f, 1.0f, -1.0f, color.r, color.g, color.b, color.a,
+             1.0f, 1.0f,  1.0f, color.r, color.g, color.b, color.a,
+             1.0f, 1.0f, -1.0f, color.r, color.g, color.b, color.a,
+            -1.0f, 1.0f, -1.0f, color.r, color.g, color.b, color.a
+        };        
         mesh.setVertices(vertices);
         
         return mesh;
