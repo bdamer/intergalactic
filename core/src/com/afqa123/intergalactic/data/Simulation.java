@@ -56,6 +56,10 @@ public class Simulation {
         turn++;
         Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", turn));
 
+        for (Ship s : player.getShips()) {
+            s.move();
+        }
+        
         // TODO: simulate combat before or after sectors?
         
         List<Sector> sectors = galaxy.getStarSystems();

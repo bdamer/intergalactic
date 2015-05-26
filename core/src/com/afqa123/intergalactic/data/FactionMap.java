@@ -49,6 +49,17 @@ public class FactionMap {
         public void setStatus(SectorStatus status) {
             this.status = status;
         }
+        
+        /**
+         * Sets status only if the new value is "better" than the previous value.
+         * 
+         * @param s The new status.
+         */
+        public void addStatus(SectorStatus s) {
+            if (status == null || status.ordinal() < s.ordinal()) {
+                status = s;
+            }
+        }
     };
 
     private final Faction faction;
@@ -151,6 +162,23 @@ public class FactionMap {
                 s.status = SectorStatus.KNOWN;
             }
         }
+    }
+    
+    public void explore(HexCoordinate c, int radius) {
+        // Mark this sector as explored
+        SectorEntry s = getSector(c);
+        s.addStatus(SectorStatus.EXPLORED);        
+        // Mark neighbors as known
+        for (int i = 1; i <= radius; i++) {
+            HexCoordinate[] ring = c.getRing(i);
+            for (HexCoordinate hc : ring) {
+                s = getSector(hc);
+                if (s != null) {
+                    s.addStatus(SectorStatus.KNOWN);
+                }
+            }
+        }        
+        update();
     }
     
     public void addChangeListener(ChangeListener l) {

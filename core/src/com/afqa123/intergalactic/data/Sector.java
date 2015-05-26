@@ -98,35 +98,35 @@ public final class Sector {
         if (category != null) {
             switch (category) {
                 case BLUE:
-                    scale = 0.4f;
+                    scale = 1.0f;
                     turbulence = 1.0f / 30000.0f;
                     material = new Vector3(0.0f, 0.0f, 1.0f);
                     gradient = 20.0f / 32.0f;
                     break;
                 case WHITE:
-                    scale = 0.3f;
+                    scale = 0.8f;
                     turbulence = 1.0f / 30000.0f;
                     material = new Vector3(1.0f, 1.0f, 1.0f);
                     gradient = 15.0f / 32.0f;
                     break;
                 case YELLOW:
-                    scale = 0.25f;
+                    scale = 0.6f;
                     turbulence = 1.0f / 35000.0f;
                     material = new Vector3(1.0f, 1.0f, 0.0f);
                     gradient = 10.0f / 32.0f;
                     break;
                 case ORANGE:
-                    scale = 0.2f;
+                    scale = 0.5f;
                     turbulence = 1.0f / 30000.0f;
                     material = new Vector3(1.0f, 0.35f, 0.0f);
                     gradient = 5.0f / 32.0f;
                     break;
                 case RED:
-                    scale = 0.125f;
+                    scale = 0.3f;
                     turbulence = 1.0f / 30000.0f;
                     material = new Vector3(1.0f, 0.0f, 0.0f);
                     gradient = 0.0f / 32.0f;
-                    break;   
+                    break;
                 default:
                     throw new RuntimeException("Unsupported sector category: " + category);
             }                    

@@ -5,17 +5,18 @@ import com.afqa123.intergalactic.data.Faction;
 import com.afqa123.intergalactic.data.FactionMap;
 import com.afqa123.intergalactic.data.FactionMap.SectorEntry;
 import com.afqa123.intergalactic.data.Galaxy;
+import com.afqa123.intergalactic.data.Range;
 import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.data.SectorStatus;
+import com.afqa123.intergalactic.data.Ship;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.Indicator;
 import com.afqa123.intergalactic.graphics.PathRenderer;
+import com.afqa123.intergalactic.graphics.ShipRenderer;
 import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.afqa123.intergalactic.math.HexCoordinate;
-import com.afqa123.intergalactic.util.AStarPathfinder;
-import com.afqa123.intergalactic.util.Pathfinder;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -36,6 +37,8 @@ import java.util.List;
 
 public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeListener {
 
+    private final static Vector3 CAMERA_OFFSET = new Vector3(0.0f, 10.0f, 5.0f);
+    
     private class GalaxyScreenInputProcessor extends InputAdapter {
 
         private static final int DRAG_RECT = 8;
@@ -48,11 +51,15 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         
         @Override
         public boolean keyDown(int i) {
-            if (i == Input.Keys.ESCAPE) {
-                setDone(true);
-                return true;
-            } else {
-                return false;
+            switch (i) {
+                case Input.Keys.ESCAPE:
+                    setDone(true);
+                    return true;
+                case Input.Keys.ENTER:
+                    getGame().turn();
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -82,11 +89,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                         // Regular click
                         if (dt > DOUBLE_CLICK) {
                             indicator.setPosition(c.toWorld());
-
                             // Testing for now...
-                            Pathfinder finder = new AStarPathfinder();
-                            path = finder.findPath(HexCoordinate.ORIGIN, c);
-                            
+                            ship.setTarget(c);                            
                         // Double click
                         } else {
                             Sector sector = galaxy.getSector(c);
@@ -132,7 +136,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final List<Sector> visibleSectors;
 
     private final PathRenderer pathRenderer;
-    private Path path;
+    private final Ship ship;
+    private final ShipRenderer shipRenderer;
     
     // UI
     private final List<Label> sectorLabels;
@@ -161,7 +166,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         Faction player = game.getPlayer();
         Sector home = player.getSectors().get(0);
         Vector3 target = home.getCoordinates().toWorld();
-        cam.position.set(target.x, target.y + 10.0f, target.z + 5.0f);
+        cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
         cam.lookAt(target);
         cam.near = 0.5f;
         cam.far = 100.0f;
@@ -174,12 +179,16 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         indicator.setPosition(target);        
         pathRenderer = new PathRenderer();
         
-        game.getPlayer().getMap().addChangeListener(this);
+        shipRenderer = new ShipRenderer();
+        ship = new Ship("mother", Range.LONG, game.getPlayer());
+        ship.setCoordinates(HexCoordinate.ORIGIN);
+        game.getPlayer().getShips().add(ship);        
     }
     
     @Override
     public void activate() {
         super.activate();
+        getGame().getPlayer().getMap().addChangeListener(this);
 
         // Update viewport in case it changed
         cam.viewportWidth = Gdx.graphics.getWidth();
@@ -196,7 +205,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
 
     @Override
     public void deactivate() {
-        
+        getGame().getPlayer().getMap().removeChangeListener(this);
     }
     
     @Override
@@ -254,8 +263,10 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         gridRenderer.render(cam);
         indicator.render(cam);
 
-        starRenderer.render(cam, visibleSectors);
+        starRenderer.render(cam, visibleSectors);        
+        shipRenderer.render(cam, getGame().getPlayer().getShips());
         
+        Path path = ship.getPath();
         if (path != null) {
             pathRenderer.render(cam, path);
         }

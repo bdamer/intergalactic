@@ -24,7 +24,7 @@ public class BackgroundRenderer {
             new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE));
         texture = Assets.get("textures/nebula32.png");
         modelM = new Matrix4();
-        modelM.setToTranslationAndScaling(0.0f, -1.0f, 0.0f, 25.0f, 1.0f, 25.0f);
+        modelM.setToTranslationAndScaling(0.0f, -2.0f, 0.0f, 25.0f, 1.0f, 25.0f);
         buildMesh();
     }
     

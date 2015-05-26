@@ -12,7 +12,10 @@ public class DesktopLauncher {
         //config.backgroundFPS = 0;        
         config.width = 960;
         config.height = 540;
-        config.resizable = false;
+        config.resizable = false;        
+        //config.width = 1366;
+        //config.height = 768;
+        //config.fullscreen = true;
         config.title = "Intergalactic";
 		new LwjglApplication(new IntergalacticGame(), config);
 	}

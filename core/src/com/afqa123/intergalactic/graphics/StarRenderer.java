@@ -16,7 +16,6 @@ public class StarRenderer implements Disposable {
 
     private static final int SLICES = 32;
     private static final int STACKS = 24;
-    private static final float OFFSET = -0.25f;
     private final ShaderProgram sp;
     private final Texture explosion;
     private final Mesh mesh;        
@@ -38,7 +37,7 @@ public class StarRenderer implements Disposable {
         for (Sector sector : sectors) {
             float scale = sector.getScale();
             Vector3 pos = sector.getCoordinates().toWorld();
-            pos.y -= OFFSET;
+            pos.y -= scale;
             if (!cam.frustum.sphereInFrustum(pos, scale)) {
                 continue;
             }

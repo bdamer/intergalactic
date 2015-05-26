@@ -9,6 +9,7 @@ public class Faction {
     private final boolean player;
     private final List<Sector> sectors = new ArrayList<>();
     private final FactionMap map;
+    private final List<Ship> ships = new ArrayList<>();
     
     public Faction(String name, boolean player, Galaxy galaxy) {
         this.name = name;
@@ -30,5 +31,9 @@ public class Faction {
     
     public FactionMap getMap() {
         return map;
+    }
+    
+    public List<Ship> getShips() {
+        return ships;
     }
 }

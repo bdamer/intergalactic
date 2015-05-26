@@ -113,12 +113,17 @@ public class IntergalacticGame extends ApplicationAdapter {
     
 	@Override
 	public void render () {
-        screen.update();        
-        screen.render();
-        if (screen.isDone()) {
+        try { 
+            screen.update();        
+            screen.render();
+            if (screen.isDone()) {
+                Gdx.app.exit();
+            }
+            fps.log();
+        } catch (Throwable t) {
+            Gdx.app.error(IntergalacticGame.class.getName(), "Error during rendering.", t);
             Gdx.app.exit();
         }
-        fps.log();
 	}   
 
     @Override

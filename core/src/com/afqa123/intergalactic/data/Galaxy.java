@@ -57,7 +57,7 @@ public class Galaxy {
         count = 0;
         for (int y = 0; y < sectors.length; y++) {
             for (int x = 0; x < sectors[y].length; x++) {
-                sectors[y][x] = new Sector(null, new HexCoordinate(offsetToAxial(x, y)), null);        
+                sectors[y][x] = new Sector(null, new HexCoordinate(offsetToAxial(x, y)), null);
                 count++;
             }
         }
@@ -85,30 +85,34 @@ public class Galaxy {
     public void randomizeSectorsSpiral() {
         Gdx.app.log(Galaxy.class.getName(), "Building spiral galaxy.");
         
-        // TODO: these should not be fixed, but instead change over time 
-        // depending on the arc length for the current radius so that 
-        // we get an even distribution
-        final float MIN_ANGLE = 0.25f;  // min increase in angle per step
-        final float MAX_ANGLE = 1.00f;  // max increase in angle per step        
+        final float MIN_ANGLE = 0.4f;  // min increase in angle per step
+        final float MAX_ANGLE = 1.5f;  // max increase in angle per step        
         // TODO: HEIGHT * width at mid point should give us max radius
         final float RADIUS = 20.0f;     // radius of the spiral 
         // TODO: base on size of galaxy [tiny, small, medium, large, huge]
         final float NUM_ROT = 3.0f;     // number of circles in this spiral
         
-        float rad = 0.0f;
+        float ratio = 0.0f;
         float angle = 0.0f;
-        while (rad < RADIUS) {
-            Vector3 pos = new Vector3((float)Math.cos(angle) * rad,
+        while (ratio < 1.0) {
+            // determine the ratio of the current angle to the max angle 
+            ratio = angle / (NUM_ROT * (float)(2.0 * Math.PI));
+            Vector3 pos = new Vector3((float)Math.cos(angle) * RADIUS * ratio,
                                       0.0f,
-                                      (float)Math.sin(angle) * rad);
+                                      (float)Math.sin(angle) * RADIUS * ratio);
             HexCoordinate coord = new HexCoordinate(pos);
             Vector2 offset = axialToOffset((int)coord.x, (int)coord.y);
+            
             // only create star sector if there currently is none at these coordinates.
+            // TODO: additionally, perform check that there are no stars next to this
             if (sectors[(int)offset.y][(int)offset.x].getCategory() == null) {
                 sectors[(int)offset.y][(int)offset.x] = createStarSector(coord);
             }
-            angle += MIN_ANGLE + Math.random() * (MAX_ANGLE - MIN_ANGLE);
-            rad = RADIUS * angle / (NUM_ROT * 2.0f * (float)Math.PI);
+            
+            // Angle changes based on inverse ratio, so that we end up with an
+            // event distribution (i.e., the increase in angle gets smaller
+            // as the radius increases).
+            angle += MIN_ANGLE + Math.random() * (1.0f - ratio) * (MAX_ANGLE - MIN_ANGLE);
         }
     }
     
