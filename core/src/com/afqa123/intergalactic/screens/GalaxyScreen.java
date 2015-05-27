@@ -16,10 +16,10 @@ import com.afqa123.intergalactic.graphics.Indicator;
 import com.afqa123.intergalactic.graphics.PathRenderer;
 import com.afqa123.intergalactic.graphics.ShipRenderer;
 import com.afqa123.intergalactic.graphics.StarRenderer;
+import com.afqa123.intergalactic.input.SmartInputAdapter;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -31,7 +31,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.TimeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,16 +38,10 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
 
     private final static Vector3 CAMERA_OFFSET = new Vector3(0.0f, 10.0f, 5.0f);
     
-    private class GalaxyScreenInputProcessor extends InputAdapter {
+    private class GalaxyScreenInputProcessor extends SmartInputAdapter {
 
-        private static final int DRAG_RECT = 8;
         private static final float SCROLL_SPEED = 0.05f;
-        private static final long DOUBLE_CLICK = 200l;
-        private int lastX;
-        private int lastY;
-        private boolean dragging;
-        private long lastUp;
-        
+
         @Override
         public boolean keyDown(int i) {
             switch (i) {
@@ -64,66 +57,49 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         }
 
         @Override
-        public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-            lastX = screenX;
-            lastY = screenY;
-            dragging = false;
-            return true;                
+        public void onDrag(int dx, int dy) {
+            cam.position.add(SCROLL_SPEED * (float)-dx, 0, SCROLL_SPEED * (float)-dy);
+            cam.update();
         }
 
         @Override
-        public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-            if (!dragging) {
-                Ray r = cam.getPickRay(screenX, screenY);
-                // compute intersection with xz-plane
-                final Vector3 normal = new Vector3(0.0f, 1.0f, 0.0f);
-                float t = -r.origin.dot(normal) / r.direction.dot(normal);            
-                if (t > 0) {
-                    Vector3 hit = new Vector3(r.origin.x + r.direction.x * t,
-                            r.origin.y + r.direction.y * t,
-                            r.origin.z + r.direction.z * t);                
-                    HexCoordinate c = new HexCoordinate(hit);
-                    if (HexCoordinate.ORIGIN.getDistance(c) < galaxy.getRadius()) {
-                        Gdx.app.log(GalaxyScreen.class.getName(), String.format("Sector: %d / %d", c.x, c.y));
-                        long dt = TimeUtils.timeSinceMillis(lastUp);
-                        // Regular click
-                        if (dt > DOUBLE_CLICK) {
-                            indicator.setPosition(c.toWorld());
-                            // Testing for now...
-                            ship.setTarget(c);                            
-                        // Double click
-                        } else {
-                            Sector sector = galaxy.getSector(c);
-                            SectorEntry entry = getGame().getPlayer().getMap().getSector(c);
-                            if (sector.getCategory() != null && entry.getStatus() == SectorStatus.EXPLORED) {
-                                getGame().pushScreen(new SectorScreen(getGame(), sector));
-                            }
-                        }                    
-                    }
+        public void onClick(int x, int y) {
+            HexCoordinate c = pickSector(x, y);
+            indicator.setPosition(c.toWorld());
+        }
+
+        @Override
+        public void onLongClick(int x, int y) {
+            HexCoordinate c = pickSector(x, y);
+            // Testing for now...
+            ship.setTarget(c);            
+        }
+
+        @Override
+        public void onDoubleClick(int x, int y) {
+            HexCoordinate c = pickSector(x, y);
+            Sector sector = galaxy.getSector(c);
+            SectorEntry entry = getGame().getPlayer().getMap().getSector(c);
+            if (sector.getCategory() != null && entry.getStatus() == SectorStatus.EXPLORED) {
+                getGame().pushScreen(new SectorScreen(getGame(), sector));
+            }        
+        }
+        
+        private HexCoordinate pickSector(int x, int y) {
+            Ray r = cam.getPickRay(x, y);
+            // compute intersection with xz-plane
+            final Vector3 normal = new Vector3(0.0f, 1.0f, 0.0f);
+            float t = -r.origin.dot(normal) / r.direction.dot(normal);            
+            if (t > 0) {
+                Vector3 hit = new Vector3(r.origin.x + r.direction.x * t,
+                        r.origin.y + r.direction.y * t,
+                        r.origin.z + r.direction.z * t);                
+                HexCoordinate c = new HexCoordinate(hit);
+                if (HexCoordinate.ORIGIN.getDistance(c) < galaxy.getRadius()) {
+                    return c;
                 }
-                lastUp = TimeUtils.millis();
             }
-            return true;
-        }
-
-        @Override
-        public boolean touchDragged(int screenX, int screenY, int pointer) {
-            // Check if we've moved enough to start dragging
-            if (!dragging) {
-                int dx = screenX - lastX;
-                int dy = screenY - lastY;
-                dragging = (dx * dx + dy * dy) >= DRAG_RECT;
-            }
-            
-            if (dragging) {
-                float dx = SCROLL_SPEED * (float)(screenX - lastX);
-                float dy = SCROLL_SPEED * (float)(screenY - lastY);            
-                cam.position.add(-dx, 0, -dy);
-                cam.update();            
-                lastX = screenX;
-                lastY = screenY;
-            }            
-            return true;                
+            return null;
         }
     }
     
@@ -134,7 +110,6 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final Indicator indicator;
     private final Galaxy galaxy;
     private final List<Sector> visibleSectors;
-
     private final PathRenderer pathRenderer;
     private final Ship ship;
     private final ShipRenderer shipRenderer;

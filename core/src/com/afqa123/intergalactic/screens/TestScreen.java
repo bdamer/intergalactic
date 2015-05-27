@@ -1,19 +1,14 @@
 package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
-import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.graphics.CubeRenderer;
-import com.afqa123.intergalactic.ui.ProductionGroup;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 public class TestScreen extends AbstractScreen {
 
