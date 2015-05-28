@@ -13,10 +13,18 @@ import java.util.Set;
 public class Simulation {
 
     public interface StepListener {
+        
+        /**
+         * Called before a step is simulated.
+         * 
+         * @return True if the step can be simulated, otherwise false.
+         */
+        boolean prepareStep();
+        
         /**
          * Called after a step has been simulated.
          */
-        void step();
+        void afterStep();
     };
     
     private int turn;
@@ -54,23 +62,32 @@ public class Simulation {
         // TODO: compute automatically based on number of terraformed planets
         home.setMaxPopulation(10);
         home.computerModifiers();
-        player.getSectors().add(home);
-        player.getMap().addHomeColony(home);
+        player.addColony(home);
+                
+        Ship ship = new Ship("mother", player, Range.SHORT, 1, 2);
+        ship.setCoordinates(HexCoordinate.ORIGIN);        
+        player.addUnit(ship);
+        
+        ship = new Ship("mother2", player, Range.LONG, 2, 3);
+        ship.setCoordinates(new HexCoordinate(0, 1));        
+        player.addUnit(ship);
+        
         player.getMap().update();
     }
     
     /**
      * Computes the next turn of the simulation.
+     * // TODO: this will have to be done for each player
      */
     public void turn() {
-        turn++;
-        Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", turn));
-
-        for (Unit u : player.getUnits()) {
-            u.move();
+        for (StepListener listener : listeners) {
+            if (!listener.prepareStep()) {
+                return;
+            }
         }
         
-        // TODO: simulate combat before or after sectors?
+        turn++;
+        Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", turn));
         
         List<Sector> sectors = galaxy.getStarSystems();
         float science = 0.0f;
@@ -83,9 +100,13 @@ public class Simulation {
         
         // TODO: apply science output to current research project
         Gdx.app.debug(Simulation.class.getName(), String.format("Science output: %f", science));
+
+        for (Unit u : player.getUnits()) {
+            u.step();
+        }
         
         for (StepListener listener : listeners) {
-            listener.step();
+            listener.afterStep();
         }
     }    
     

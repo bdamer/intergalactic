@@ -14,6 +14,7 @@ public class MeshBuilder {
     // TODO: make builder more flexible by allowing selection of vertex type
     private enum VertexType {
 
+        POS3(3),
         POS3_NOR3(6),
         POS3_COL4(7),
         POS3_UV2(5),
@@ -196,26 +197,22 @@ public class MeshBuilder {
     }
 
     /**
-     * Builds up a square mesh of {@code POS3_COL4} vertices.
+     * Builds up a square mesh of {@code POS3} vertices.
      * 
-     * @param Color The color.
      * @return The mesh.
      */
-    public Mesh buildSquare(Color color) {
+    public Mesh buildSquare() {
         Mesh mesh = new Mesh(true, 6, 0, 
-            new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
-            new VertexAttribute(VertexAttributes.Usage.ColorUnpacked, 4, ShaderProgram.COLOR_ATTRIBUTE));
-
+            new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE));
         float[] vertices = new float[] { 
-            -1.0f, 1.0f,  1.0f, color.r, color.g, color.b, color.a,
-             1.0f, 1.0f,  1.0f, color.r, color.g, color.b, color.a,
-            -1.0f, 1.0f, -1.0f, color.r, color.g, color.b, color.a,
-             1.0f, 1.0f,  1.0f, color.r, color.g, color.b, color.a,
-             1.0f, 1.0f, -1.0f, color.r, color.g, color.b, color.a,
-            -1.0f, 1.0f, -1.0f, color.r, color.g, color.b, color.a
+            -1.0f, 1.0f,  1.0f,
+             1.0f, 1.0f,  1.0f,
+            -1.0f, 1.0f, -1.0f,
+             1.0f, 1.0f,  1.0f,
+             1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f
         };        
-        mesh.setVertices(vertices);
-        
+        mesh.setVertices(vertices);        
         return mesh;
     }
 }

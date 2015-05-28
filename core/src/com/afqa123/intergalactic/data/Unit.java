@@ -10,10 +10,16 @@ public interface Unit {
     Faction getOwner();
     
     HexCoordinate getCoordinates();
+
+    int getScanRange();
     
     Path getPath();
     
     void selectTarget(HexCoordinate target);
     
-    void move();    
+    void move();
+    
+    boolean isReadyForStep();
+    
+    void step();
 }

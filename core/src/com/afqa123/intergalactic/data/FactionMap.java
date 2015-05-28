@@ -150,8 +150,8 @@ public class FactionMap {
         return map;
     }
     
-    public void addHomeColony(Sector home) {
-        HexCoordinate c = home.getCoordinates();
+    public void addColony(Sector colony) {
+        HexCoordinate c = colony.getCoordinates();
         SectorEntry s = getSector(c);
         if (s != null) {
             s.status = SectorStatus.EXPLORED;

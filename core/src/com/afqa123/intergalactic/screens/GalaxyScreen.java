@@ -5,11 +5,9 @@ import com.afqa123.intergalactic.data.Faction;
 import com.afqa123.intergalactic.data.FactionMap;
 import com.afqa123.intergalactic.data.FactionMap.SectorEntry;
 import com.afqa123.intergalactic.data.Galaxy;
-import com.afqa123.intergalactic.data.Range;
 import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.data.SectorStatus;
-import com.afqa123.intergalactic.data.Ship;
 import com.afqa123.intergalactic.data.Simulation.StepListener;
 import com.afqa123.intergalactic.data.Unit;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
@@ -123,12 +121,17 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 HexCoordinate c = pickSector(x, y);
                 Unit u = getGame().getPlayer().findUnitInSector(c);
                 if (u != null) {
-                    selectedUnit = u;
-                    indicator.setPosition(c.toWorld());
+                    selectUnit(u);
                 }
                 return true;
             } else if (button == Input.Buttons.RIGHT) {
                 rightDown = false;
+                if (selectedUnit != null && selectedUnit.getPath() != null) {
+                    selectedUnit.getPath().dropInvalidSteps();
+                    selectedUnit.move();
+                    Vector3 target = selectedUnit.getCoordinates().toWorld();
+                    indicator.setPosition(target);
+                }
                 return true;
             } else {
                 return false;
@@ -194,7 +197,6 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final List<Sector> visibleSectors;
     private final PathRenderer pathRenderer;
     private final ShipRenderer shipRenderer;
-
     private Unit selectedUnit;
     
     // UI
@@ -237,14 +239,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         indicator.setPosition(target);        
         pathRenderer = new PathRenderer();
         
-        shipRenderer = new ShipRenderer();
-        
-        Ship ship = new Ship("mother", Range.LONG, game.getPlayer());
-        ship.setCoordinates(HexCoordinate.ORIGIN);        
-        game.getPlayer().getUnits().add(ship);   
-        ship = new Ship("mother2", Range.LONG, game.getPlayer());
-        ship.setCoordinates(new HexCoordinate(2, 0));        
-        game.getPlayer().getUnits().add(ship);   
+        shipRenderer = new ShipRenderer();        
     }
     
     @Override
@@ -308,7 +303,32 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     }
     
     @Override
-    public void step() {
+    public boolean prepareStep() {
+        List<Unit> units = getGame().getPlayer().getUnits();
+        int i = 0;
+        while (i < units.size()) {
+            Unit u = units.get(i);
+            // check if unit is done for this turn
+            if (!u.isReadyForStep()) {
+                // if not, select it and see if it has a path. if it doesn't 
+                // have a path, force player interaction, otherwise continue
+                // moving along path.
+                selectUnit(u);                
+                if (u.getPath() == null) {
+                    return false;
+                }
+                u.move();
+            } else {
+                // only increment if unit was ready, otherwise we'll check again 
+                // during the next iteration
+                i++;
+            }
+        }
+        return true;
+    }
+    
+    @Override
+    public void afterStep() {
         if (selectedUnit != null) {
             indicator.setPosition(selectedUnit.getCoordinates().toWorld());
         }
@@ -372,5 +392,15 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             }
         }
         return null;
+    }
+    
+    private void selectUnit(Unit unit) {
+        selectedUnit = unit;
+        Vector3 target = selectedUnit.getCoordinates().toWorld();
+        indicator.setPosition(target);
+        // Focus camera on target
+        cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
+        cam.lookAt(target);
+        cam.update();
     }
 }

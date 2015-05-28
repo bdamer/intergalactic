@@ -33,30 +33,35 @@ public class IntergalacticGame extends ApplicationAdapter {
     
 	@Override
 	public void create () {
-        // Application settings
-        Gdx.app.setLogLevel(Application.LOG_DEBUG);
-        // OpenGL settings
-        // Disabled since it screws with effects
-        //Gdx.gl.glEnable(GL20.GL_CULL_FACE);
-        //Gdx.gl.glCullFace(GL20.GL_BACK);
-        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        try {
+            // Application settings
+            Gdx.app.setLogLevel(Application.LOG_DEBUG);
+            // OpenGL settings
+            // Disabled since it screws with effects
+            //Gdx.gl.glEnable(GL20.GL_CULL_FACE);
+            //Gdx.gl.glCullFace(GL20.GL_BACK);
+            Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-        fps = new FPSLogger();
-        
-        loadAssets();
+            //fps = new FPSLogger();
 
-        galaxy = new Galaxy(15);
-        player = new Faction("Player", true, galaxy);       
-        simulation = new Simulation(galaxy, player);
-        // TODO: load from file, etc.
-        simulation.init();
+            loadAssets();
 
-        //screen = new BloomTestScreen();
-        //screen = new TestScreen(this);
-        screen = new GalaxyScreen(this, galaxy);
-        screen.activate();
+            galaxy = new Galaxy(15);
+            player = new Faction("Player", true, galaxy);       
+            simulation = new Simulation(galaxy, player);
+            // TODO: load from file, etc.
+            simulation.init();
+
+            //screen = new BloomTestScreen();
+            //screen = new TestScreen(this);
+            screen = new GalaxyScreen(this, galaxy);
+            screen.activate();
+        } catch (Throwable t) {
+            Gdx.app.error(IntergalacticGame.class.getName(), "Error during init.", t);
+            Gdx.app.exit();
+        }
     }
 
     private void loadAssets() {
@@ -75,6 +80,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         // Scene shaders
         Assets.load("shaders/sc_color.vsh", String.class);
         Assets.load("shaders/sc_color.fsh", String.class);
+        Assets.load("shaders/sc_default.vsh", String.class);
+        Assets.load("shaders/sc_default.fsh", String.class);
         Assets.load("shaders/sc_sphere.vsh", String.class);
         Assets.load("shaders/sc_sphere.fsh", String.class);
         Assets.load("shaders/sc_star.vsh", String.class);
@@ -82,8 +89,6 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("shaders/sc_star_noise.vsh", String.class);
         Assets.load("shaders/sc_star_noise.fsh", String.class);
 
-        Assets.load("shaders/default.vsh", String.class);
-        Assets.load("shaders/default.fsh", String.class);
         Assets.load("shaders/textured.vsh", String.class);
         Assets.load("shaders/textured.fsh", String.class);
         Assets.load("shaders/transparency.fsh", String.class);
@@ -119,7 +124,8 @@ public class IntergalacticGame extends ApplicationAdapter {
             if (screen.isDone()) {
                 Gdx.app.exit();
             }
-            fps.log();
+            if (fps != null) 
+                fps.log();
         } catch (Throwable t) {
             Gdx.app.error(IntergalacticGame.class.getName(), "Error during rendering.", t);
             Gdx.app.exit();

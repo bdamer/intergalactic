@@ -1,6 +1,9 @@
 package com.afqa123.intergalactic.util;
 
+import com.afqa123.intergalactic.data.FactionMap;
+import com.afqa123.intergalactic.data.Range;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.util.Path.PathStep;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -13,7 +16,8 @@ import java.util.Set;
 public class AStarPathfinder implements Pathfinder {
 
     // Base cost to move from one tile to another
-    private final static float COST = 1.0f;
+    private final static float BASE_COST = 1.0f;
+    private final static float INVALID_COST = 10.0f;
     
     private class PathNode {
         
@@ -23,12 +27,15 @@ public class AStarPathfinder implements Pathfinder {
         final float cost;
         // estimated cost from here to target
         final float estimatedCost;
+        final boolean invalid;
 
         public PathNode(HexCoordinate coord, PathNode parent) {
             this.coord = coord;
             this.parent = parent;
+            Range range = map.getSector(coord).getRange();
+            invalid  = (range == null || range.ordinal() > validRange.ordinal());
             // TODO: cost needs to include sector information from map
-            this.cost = COST + (parent != null ? parent.cost : 0.0f);
+            this.cost = BASE_COST + (parent != null ? parent.cost : 0.0f) + (invalid ? INVALID_COST : 0.0f);
             this.estimatedCost = coord.getDistance(to);
         }
         
@@ -78,9 +85,13 @@ public class AStarPathfinder implements Pathfinder {
     
     private final Set<PathNode> visited;
     private final PriorityList<PathNode> candidates;
+    private final Range validRange;
+    private final FactionMap map;
     private HexCoordinate to;
     
-    public AStarPathfinder() {
+    public AStarPathfinder(Range validRange, FactionMap map) {
+        this.validRange = validRange;
+        this.map = map;
         candidates = new PriorityList<>(new Comparator<PathNode>() {
             @Override
             public int compare(PathNode o1, PathNode o2) {
@@ -115,8 +126,8 @@ public class AStarPathfinder implements Pathfinder {
             if (cur.coord.equals(to)) {
                 // build up path
                 res = new Path();
-                while (cur != null) {
-                    res.push(cur.coord);
+                while (cur.parent != null) {                    
+                    res.push(new PathStep(cur.coord, cur.invalid));
                     cur = cur.parent;
                 }
                 break;

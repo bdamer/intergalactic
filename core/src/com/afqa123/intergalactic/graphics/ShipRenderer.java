@@ -20,7 +20,7 @@ public class ShipRenderer implements Disposable {
     private final Mesh mesh;        
     
     public ShipRenderer() {
-        sp = ShaderFactory.buildShader("shaders/default.vsh", "shaders/default.fsh");
+        sp = ShaderFactory.buildShader("shaders/sc_default.vsh", "shaders/sc_default.fsh");
         mesh = new MeshBuilder().buildCube();
     }
     
