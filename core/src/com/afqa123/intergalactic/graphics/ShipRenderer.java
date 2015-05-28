@@ -1,6 +1,6 @@
 package com.afqa123.intergalactic.graphics;
 
-import com.afqa123.intergalactic.data.Ship;
+import com.afqa123.intergalactic.data.Unit;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import java.util.List;
 
+// TODO: clean up naming -> unit renderer?
 public class ShipRenderer implements Disposable {
 
     private static final float SIZE = 0.25f;
@@ -23,13 +24,13 @@ public class ShipRenderer implements Disposable {
         mesh = new MeshBuilder().buildCube();
     }
     
-    public void render(Camera cam, List<Ship> ships) {
+    public void render(Camera cam, List<Unit> ships) {
         Matrix4 mvp = new Matrix4();
         Matrix4 model = new Matrix4();
         
         sp.begin();
 
-        for (Ship ship : ships) {
+        for (Unit ship : ships) {
             Vector3 pos = ship.getCoordinates().toWorld();
             pos.add(OFFSET);
             if (!cam.frustum.sphereInFrustum(pos, SIZE)) {

@@ -8,9 +8,10 @@ import java.util.Set;
 public class FactionMap {
 
     public interface ChangeListener {
-
+        /**
+         * Called whenever the faction map was updated.
+         */
         void mapChanged();
-    
     };
     
     public class SectorEntry {

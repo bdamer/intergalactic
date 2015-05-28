@@ -3,17 +3,27 @@ package com.afqa123.intergalactic.data;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Simulation engine. Performs updates of sectors and ships.
  */
 public class Simulation {
 
+    public interface StepListener {
+        /**
+         * Called after a step has been simulated.
+         */
+        void step();
+    };
+    
     private int turn;
     private final Galaxy galaxy;
     private final Faction player;
-    
+    private final Set<StepListener> listeners = new HashSet<>();
+
     public Simulation(Galaxy galaxy, Faction player) {
         this.galaxy = galaxy;
         this.player = player;
@@ -56,8 +66,8 @@ public class Simulation {
         turn++;
         Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", turn));
 
-        for (Ship s : player.getShips()) {
-            s.move();
+        for (Unit u : player.getUnits()) {
+            u.move();
         }
         
         // TODO: simulate combat before or after sectors?
@@ -73,5 +83,17 @@ public class Simulation {
         
         // TODO: apply science output to current research project
         Gdx.app.debug(Simulation.class.getName(), String.format("Science output: %f", science));
+        
+        for (StepListener listener : listeners) {
+            listener.step();
+        }
+    }    
+    
+    public void addStepListener(StepListener l) {
+        listeners.add(l);
+    }
+    
+    public void removeStepListener(StepListener l) {
+        listeners.remove(l);
     }    
 }

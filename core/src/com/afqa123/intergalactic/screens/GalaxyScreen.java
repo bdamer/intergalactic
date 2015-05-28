@@ -10,6 +10,8 @@ import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.data.SectorStatus;
 import com.afqa123.intergalactic.data.Ship;
+import com.afqa123.intergalactic.data.Simulation.StepListener;
+import com.afqa123.intergalactic.data.Unit;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.Indicator;
@@ -20,6 +22,7 @@ import com.afqa123.intergalactic.input.SmartInputAdapter;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -34,13 +37,22 @@ import com.badlogic.gdx.utils.Align;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeListener {
+public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeListener, StepListener {
 
-    private final static Vector3 CAMERA_OFFSET = new Vector3(0.0f, 10.0f, 5.0f);
+    private static final Vector3 CAMERA_OFFSET = new Vector3(0.0f, 10.0f, 5.0f);
+    private static final float SCROLL_SPEED = 0.05f;
     
-    private class GalaxyScreenInputProcessor extends SmartInputAdapter {
-
-        private static final float SCROLL_SPEED = 0.05f;
+    private class DesktopInputProcessor extends InputAdapter {
+        
+        private static final int DEFAULT_DRAG_THRESHOLD = 8;
+        private final int dragThreshold = DEFAULT_DRAG_THRESHOLD;
+        private boolean dragging;
+        private int touchX;
+        private int touchY;        
+        private boolean leftDown;
+        private boolean rightDown;        
+        private int lastX;
+        private int lastY;
 
         @Override
         public boolean keyDown(int i) {
@@ -49,7 +61,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                     setDone(true);
                     return true;
                 case Input.Keys.ENTER:
-                    getGame().turn();
+                    getGame().getSimulation().turn();
                     return true;
                 default:
                     return false;
@@ -57,49 +69,119 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         }
 
         @Override
-        public void onDrag(int dx, int dy) {
+        public boolean touchDown(int x, int y, int pointer, int button) {
+            lastX = touchX = x;
+            lastY = touchY = y;
+            dragging = false;
+            if (button == Input.Buttons.LEFT) {
+                leftDown = true;
+                return true;
+            } else if (button == Input.Buttons.RIGHT) {
+                rightDown = true;
+                if (selectedUnit != null) {
+                    HexCoordinate c = pickSector(x, y);
+                    selectedUnit.selectTarget(c);
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public boolean touchDragged(int x, int y, int pointer) {
+            if (leftDown) {
+                // Check if we've moved enough to start dragging
+                if (!dragging) {
+                    int dx = x - touchX;
+                    int dy = y - touchY;
+                    dragging = (dx * dx + dy * dy) >= dragThreshold;
+                }
+                if (dragging) {
+                    cam.position.add(SCROLL_SPEED * (float)(lastX - x), 0, SCROLL_SPEED * (float)(lastY - y));
+                    cam.update();
+                    lastX = x;
+                    lastY = y;
+                }
+                return true;
+            } else if (rightDown) {
+                // check if we're looking at new sector and need to recompute path
+                if (selectedUnit != null) {
+                    HexCoordinate c = pickSector(x, y);
+                    selectedUnit.selectTarget(c);
+                }
+                return true;
+            } else {
+                return false;
+            }            
+        }
+
+        @Override
+        public boolean touchUp(int x, int y, int pointer, int button) {
+            if (button == Input.Buttons.LEFT) {
+                leftDown = false;
+                HexCoordinate c = pickSector(x, y);
+                Unit u = getGame().getPlayer().findUnitInSector(c);
+                if (u != null) {
+                    selectedUnit = u;
+                    indicator.setPosition(c.toWorld());
+                }
+                return true;
+            } else if (button == Input.Buttons.RIGHT) {
+                rightDown = false;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+    
+    private class MobileInputProcessor extends SmartInputAdapter {
+
+        // TODO: not needed for mobile
+        @Override
+        public boolean keyDown(int i) {
+            switch (i) {
+                case Input.Keys.ESCAPE:
+                    setDone(true);
+                    return true;
+                case Input.Keys.ENTER:
+                    getGame().getSimulation().turn();
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        @Override
+        public void onDrag(int dx, int dy, int button) {
             cam.position.add(SCROLL_SPEED * (float)-dx, 0, SCROLL_SPEED * (float)-dy);
             cam.update();
         }
 
         @Override
-        public void onClick(int x, int y) {
+        public void onClick(int x, int y, int button) {
             HexCoordinate c = pickSector(x, y);
             indicator.setPosition(c.toWorld());
         }
 
         @Override
-        public void onLongClick(int x, int y) {
+        public void onLongClick(int x, int y, int button) {
             HexCoordinate c = pickSector(x, y);
             // Testing for now...
-            ship.setTarget(c);            
+            if (selectedUnit != null) {
+                selectedUnit.selectTarget(c);            
+            }
         }
 
         @Override
-        public void onDoubleClick(int x, int y) {
+        public void onDoubleClick(int x, int y, int button) {
             HexCoordinate c = pickSector(x, y);
             Sector sector = galaxy.getSector(c);
             SectorEntry entry = getGame().getPlayer().getMap().getSector(c);
             if (sector.getCategory() != null && entry.getStatus() == SectorStatus.EXPLORED) {
                 getGame().pushScreen(new SectorScreen(getGame(), sector));
-            }        
-        }
-        
-        private HexCoordinate pickSector(int x, int y) {
-            Ray r = cam.getPickRay(x, y);
-            // compute intersection with xz-plane
-            final Vector3 normal = new Vector3(0.0f, 1.0f, 0.0f);
-            float t = -r.origin.dot(normal) / r.direction.dot(normal);            
-            if (t > 0) {
-                Vector3 hit = new Vector3(r.origin.x + r.direction.x * t,
-                        r.origin.y + r.direction.y * t,
-                        r.origin.z + r.direction.z * t);                
-                HexCoordinate c = new HexCoordinate(hit);
-                if (HexCoordinate.ORIGIN.getDistance(c) < galaxy.getRadius()) {
-                    return c;
-                }
             }
-            return null;
         }
     }
     
@@ -111,8 +193,9 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final Galaxy galaxy;
     private final List<Sector> visibleSectors;
     private final PathRenderer pathRenderer;
-    private final Ship ship;
     private final ShipRenderer shipRenderer;
+
+    private Unit selectedUnit;
     
     // UI
     private final List<Label> sectorLabels;
@@ -131,7 +214,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         turnButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                getGame().turn();
+                getGame().getSimulation().turn();
             }
         });
         getStage().addActor(turnButton);
@@ -155,15 +238,20 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         pathRenderer = new PathRenderer();
         
         shipRenderer = new ShipRenderer();
-        ship = new Ship("mother", Range.LONG, game.getPlayer());
-        ship.setCoordinates(HexCoordinate.ORIGIN);
-        game.getPlayer().getShips().add(ship);        
+        
+        Ship ship = new Ship("mother", Range.LONG, game.getPlayer());
+        ship.setCoordinates(HexCoordinate.ORIGIN);        
+        game.getPlayer().getUnits().add(ship);   
+        ship = new Ship("mother2", Range.LONG, game.getPlayer());
+        ship.setCoordinates(new HexCoordinate(2, 0));        
+        game.getPlayer().getUnits().add(ship);   
     }
     
     @Override
     public void activate() {
         super.activate();
         getGame().getPlayer().getMap().addChangeListener(this);
+        getGame().getSimulation().addStepListener(this);
 
         // Update viewport in case it changed
         cam.viewportWidth = Gdx.graphics.getWidth();
@@ -172,7 +260,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         
         InputMultiplexer m = new InputMultiplexer();
         m.addProcessor(Gdx.input.getInputProcessor());
-        m.addProcessor(new GalaxyScreenInputProcessor());
+        m.addProcessor(new DesktopInputProcessor());
         Gdx.input.setInputProcessor(m);
         
         mapChanged();
@@ -181,6 +269,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     @Override
     public void deactivate() {
         getGame().getPlayer().getMap().removeChangeListener(this);
+        getGame().getSimulation().removeStepListener(this);
     }
     
     @Override
@@ -219,6 +308,13 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     }
     
     @Override
+    public void step() {
+        if (selectedUnit != null) {
+            indicator.setPosition(selectedUnit.getCoordinates().toWorld());
+        }
+    }
+    
+    @Override
     public void update() {
         // Create ui components
         for (int i = 0; i < visibleSectors.size(); i++) {
@@ -226,7 +322,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             Vector3 screen = cam.project(sector.getCoordinates().toWorld());
             Label label = sectorLabels.get(i);
             label.setPosition(screen.x, screen.y + 40.0f * sector.getScale(), Align.bottom);
-        }                
+        }
     }
     
     @Override
@@ -238,12 +334,14 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         gridRenderer.render(cam);
         indicator.render(cam);
 
-        starRenderer.render(cam, visibleSectors);        
-        shipRenderer.render(cam, getGame().getPlayer().getShips());
+        starRenderer.render(cam, visibleSectors);
+        shipRenderer.render(cam, getGame().getPlayer().getUnits());
         
-        Path path = ship.getPath();
-        if (path != null) {
-            pathRenderer.render(cam, path);
+        if (selectedUnit != null) {
+            Path path = selectedUnit.getPath();
+            if (path != null) {
+                pathRenderer.render(cam, path);
+            }            
         }
         
         // UI pass
@@ -257,5 +355,22 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         bgRenderer.dispose();
         starRenderer.dispose();
         indicator.dispose();
+    }
+    
+    private HexCoordinate pickSector(int x, int y) {
+        Ray r = cam.getPickRay(x, y);
+        // compute intersection with xz-plane
+        final Vector3 normal = new Vector3(0.0f, 1.0f, 0.0f);
+        float t = -r.origin.dot(normal) / r.direction.dot(normal);            
+        if (t > 0) {
+            Vector3 hit = new Vector3(r.origin.x + r.direction.x * t,
+                    r.origin.y + r.direction.y * t,
+                    r.origin.z + r.direction.z * t);                
+            HexCoordinate c = new HexCoordinate(hit);
+            if (HexCoordinate.ORIGIN.getDistance(c) < galaxy.getRadius()) {
+                return c;
+            }
+        }
+        return null;
     }
 }

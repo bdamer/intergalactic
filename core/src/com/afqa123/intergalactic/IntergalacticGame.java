@@ -146,17 +146,16 @@ public class IntergalacticGame extends ApplicationAdapter {
         this.screen = screens.pop();
         this.screen.activate();
     }
-    
-    public void turn() {
-        // TODO: implement AI turns
-        simulation.turn();
-    }
-    
+        
     public Properties getLabels() {
         return labels;
     }
     
     public Faction getPlayer() {
         return player;
+    }
+    
+    public Simulation getSimulation() {
+        return simulation;
     }
 }

@@ -1,5 +1,6 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.math.HexCoordinate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ public class Faction {
     private final boolean player;
     private final List<Sector> sectors = new ArrayList<>();
     private final FactionMap map;
-    private final List<Ship> ships = new ArrayList<>();
+    private final List<Unit> units = new ArrayList<>();
     
     public Faction(String name, boolean player, Galaxy galaxy) {
         this.name = name;
@@ -33,7 +34,16 @@ public class Faction {
         return map;
     }
     
-    public List<Ship> getShips() {
-        return ships;
+    public List<Unit> getUnits() {
+        return units;
+    }
+    
+    public Unit findUnitInSector(HexCoordinate c) {
+        for (Unit u : units) {
+            if (u.getCoordinates().equals(c)) {
+                return u;
+            }
+        }
+        return null;
     }
 }

@@ -16,6 +16,7 @@ public abstract class SmartInputAdapter implements InputProcessor {
     private boolean dragging;
     private int touchX;
     private int touchY;
+    private int touchButton;
     private int lastX;
     private int lastY;
     
@@ -24,6 +25,7 @@ public abstract class SmartInputAdapter implements InputProcessor {
         lastTouchDown = TimeUtils.millis();
         lastX = touchX = x;
         lastY = touchY = y;
+        touchButton = button;
         dragging = false;        
         return true;
     }
@@ -32,11 +34,11 @@ public abstract class SmartInputAdapter implements InputProcessor {
     public boolean touchUp(int x, int y, int pointer, int button) {
         if (!dragging) {
             if (TimeUtils.timeSinceMillis(lastTouchUp) < doubleTapThreshold) {
-                onDoubleClick(x, y);
+                onDoubleClick(x, y, button);
             } else if (TimeUtils.timeSinceMillis(lastTouchDown) < longTapThreshold) {
-                onClick(x, y);
+                onClick(x, y, button);
             } else {
-                onLongClick(x, y);
+                onLongClick(x, y, button);
             }
         }
         lastTouchUp = TimeUtils.millis();
@@ -52,7 +54,7 @@ public abstract class SmartInputAdapter implements InputProcessor {
             dragging = (dx * dx + dy * dy) >= dragThreshold;
         }
         if (dragging) {
-            onDrag(x - lastX, y - lastY);
+            onDrag(x - lastX, y - lastY, touchButton);
             lastX = x;
             lastY = y;
         }
@@ -79,13 +81,13 @@ public abstract class SmartInputAdapter implements InputProcessor {
         return false;
     }
     
-    public abstract void onDrag(int dx, int dy);
+    public abstract void onDrag(int dx, int dy, int button);
     
-    public abstract void onClick(int x, int y);
+    public abstract void onClick(int x, int y, int button);
     
-    public abstract void onLongClick(int x, int y);
+    public abstract void onLongClick(int x, int y, int button);
     
-    public abstract void onDoubleClick(int x, int y);
+    public abstract void onDoubleClick(int x, int y, int button);
 
     public long getDoubleTapThreshold() {
         return doubleTapThreshold;

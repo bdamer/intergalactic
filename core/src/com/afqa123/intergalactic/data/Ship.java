@@ -5,7 +5,7 @@ import com.afqa123.intergalactic.util.AStarPathfinder;
 import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.util.Pathfinder;
 
-public class Ship {
+public class Ship implements Unit {
 
     private final String id;
     private final Range range;
@@ -23,6 +23,7 @@ public class Ship {
         this.owner = owner;
     }
 
+    @Override
     public String getId() {
         return id;
     }
@@ -31,10 +32,12 @@ public class Ship {
         return range;
     }
 
+    @Override
     public Faction getOwner() {
         return owner;
     }
 
+    @Override
     public HexCoordinate getCoordinates() {
         return coordinates;
     }
@@ -47,21 +50,24 @@ public class Ship {
         return target;
     }
 
-    public void setTarget(HexCoordinate target) {
+    @Override
+    public void selectTarget(HexCoordinate target) {
         if (target == null) {
             path = null;
             this.target = null;
-        } else {
+        } else if (!target.equals(this.target)) {
             this.target = target;
             Pathfinder finder = new AStarPathfinder();
             path = finder.findPath(coordinates, target);            
         }
     }
 
+    @Override
     public Path getPath() {
         return path;
     }
     
+    @Override
     public void move() {
         if (path != null) {
             path.pop();
