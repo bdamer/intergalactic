@@ -179,12 +179,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
 
         @Override
         public void onDoubleClick(int x, int y, int button) {
-            HexCoordinate c = pickSector(x, y);
-            Sector sector = galaxy.getSector(c);
-            SectorEntry entry = getGame().getPlayer().getMap().getSector(c);
-            if (sector.getCategory() != null && entry.getStatus() == SectorStatus.EXPLORED) {
-                getGame().pushScreen(new SectorScreen(getGame(), sector));
-            }
+            
         }
     }
     
@@ -283,9 +278,10 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         }
         sectorLabels.clear();
         
-        FactionMap playerMap = getGame().getPlayer().getMap();
+        final Faction player = getGame().getPlayer();
+        final FactionMap playerMap = player.getMap();
         List<Sector> sectors = galaxy.getStarSystems();
-        for (Sector sector : sectors) {
+        for (final Sector sector : sectors) {
             SectorStatus status = playerMap.getSector(sector.getCoordinates()).getStatus();
             if (status == SectorStatus.UNKNOWN) {
                 continue;
@@ -293,6 +289,15 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
 
             Label sectorLabel = new Label(sector.getName(), getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
             sectorLabel.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+            sectorLabel.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    // Move to sector screen if this is a player colony
+                    if (sector.getCategory() != null && player.equals(sector.getOwner())) {
+                        getGame().pushScreen(new SectorScreen(getGame(), sector));
+                    }
+                }
+            });
             getStage().addActor(sectorLabel);
             sectorLabel.setVisible(status == SectorStatus.EXPLORED);
             sectorLabels.add(sectorLabel);            
