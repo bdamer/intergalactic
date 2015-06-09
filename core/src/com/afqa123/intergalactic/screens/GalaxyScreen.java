@@ -39,6 +39,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
 
     private static final Vector3 CAMERA_OFFSET = new Vector3(0.0f, 10.0f, 5.0f);
     private static final float SCROLL_SPEED = 0.05f;
+    private static final Color DEFAULT_SECTOR_COLOR = Color.LIGHT_GRAY;
     
     private class DesktopInputProcessor extends InputAdapter {
         
@@ -287,8 +288,9 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 continue;
             }
 
+            Faction owner = sector.getOwner();
             Label sectorLabel = new Label(sector.getName(), getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
-            sectorLabel.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+            sectorLabel.setColor(owner != null ? owner.getColor() : DEFAULT_SECTOR_COLOR);
             sectorLabel.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {

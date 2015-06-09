@@ -8,13 +8,18 @@ import java.util.Properties;
 // Review this - I think having a global / static is the way to go
 public class Assets {
 
-    private static final AssetManager am = new AssetManager();
-    
+    private static AssetManager am;
+
     static {
         // Register custom asset loaders
+        am = new AssetManager();
         am.setLoader(JsonValue.class, new JsonValueAssetLoader(new InternalFileHandleResolver()));
         am.setLoader(Properties.class, new PropertiesAssetLoader(new InternalFileHandleResolver()));
         am.setLoader(String.class, new StringAssetLoader(new InternalFileHandleResolver()));
+    }
+    
+    public static void setAssetManager(AssetManager am) {
+        Assets.am = am;
     }
  
     public static AssetManager getManager() {

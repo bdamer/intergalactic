@@ -2,7 +2,6 @@ package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.data.Unit;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -42,7 +41,7 @@ public class ShipRenderer implements Disposable {
             mvp.mul(model);
 
             sp.setUniformMatrix("u_mvp", mvp);
-            sp.setUniformf("u_color", Color.WHITE);
+            sp.setUniformf("u_color", ship.getOwner().getColor());
             mesh.render(sp, GL20.GL_TRIANGLES);
         }
         

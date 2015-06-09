@@ -11,6 +11,7 @@ import com.afqa123.intergalactic.screens.Screen;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -49,7 +50,7 @@ public class IntergalacticGame extends ApplicationAdapter {
             loadAssets();
 
             galaxy = new Galaxy(15);
-            player = new Faction("Player", true, galaxy);       
+            player = new Faction("Player", new Color(1.0f, 1.0f, 0.0f, 1.0f), true, galaxy);       
             simulation = new Simulation(galaxy, player);
             // TODO: load from file, etc.
             simulation.init();
@@ -72,8 +73,11 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("textures/base-red.png", Texture.class);
         Assets.load("textures/detail.png", Texture.class);
         Assets.load("textures/ui.png", Texture.class);        
-        Assets.load("textures/explosion.png", Texture.class);        
+        Assets.load("textures/explosion.png", Texture.class);
         Assets.load("data/sectors.json", JsonValue.class);
+        Assets.load("data/ships.json", JsonValue.class);
+        Assets.load("data/structures.json", JsonValue.class);
+        
         // TODO: load based on system locale
         Assets.load("localization/default.properties", Properties.class);
         

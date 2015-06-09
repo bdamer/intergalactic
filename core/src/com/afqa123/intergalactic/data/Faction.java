@@ -1,25 +1,32 @@
 package com.afqa123.intergalactic.data;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.badlogic.gdx.graphics.Color;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Faction {
 
     private final String name;
+    private final Color color;
     private final boolean player;
     private final FactionMap map;
     private final List<Sector> sectors = new ArrayList<>();
     private final List<Unit> units = new ArrayList<>();
     
-    public Faction(String name, boolean player, Galaxy galaxy) {
+    public Faction(String name, Color color, boolean player, Galaxy galaxy) {
         this.name = name;
+        this.color = color;
         this.player = player;
         this.map = new FactionMap(this, galaxy.getRadius());
     }
 
     public String getName() {
         return name;
+    }
+
+    public Color getColor() {
+        return color;
     }
 
     public boolean isPlayer() {

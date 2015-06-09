@@ -2,10 +2,10 @@ package com.afqa123.intergalactic.data;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.math.Vector3;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * Class representing a single galactic sector.
@@ -65,7 +65,7 @@ public final class Sector {
     private float industrialMultiplier;
     private float scienceMultiplier;
     // Buildings and production queue
-    private List<Structure> structures;
+    private Set<Structure> structures;
     private Queue<BuildQueueEntry> buildQueue;
     
     // Rendering properties
@@ -91,7 +91,7 @@ public final class Sector {
         // TODO: this is based on the number of terraformed planets in this sector
         this.maxPopulation = 0;
         this.foodProducers = 0;
-        this.structures = new ArrayList<>();
+        this.structures = new HashSet<>();
         this.buildQueue = new LinkedList<>();
         computerModifiers();
         
@@ -250,6 +250,10 @@ public final class Sector {
     
     public float getIndustrialOutput() {
         return (float)(BASE_IND_PRODUCTION + industrialProducers) * industrialMultiplier;
+    }
+
+    public Set<Structure> getStructures() {
+        return structures;
     }
     
     public void computerModifiers() {

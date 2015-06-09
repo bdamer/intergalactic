@@ -3,10 +3,12 @@ package com.afqa123.intergalactic.screens;
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.Sector;
+import com.afqa123.intergalactic.data.Structure;
 import com.afqa123.intergalactic.graphics.SectorRenderer;
 import static com.afqa123.intergalactic.screens.AbstractScreen.STAGE_MARGIN;
 import com.afqa123.intergalactic.ui.ChangeListener;
 import com.afqa123.intergalactic.ui.ProductionGroup;
+import com.afqa123.intergalactic.util.BuildTree;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -18,9 +20,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
+import java.util.List;
 
 public class SectorScreen extends AbstractScreen {
     
@@ -45,6 +49,7 @@ public class SectorScreen extends AbstractScreen {
     private final Label sectorLabel;
     private final Label productionLabel;
     private final TextButton backButton;
+    private final SelectBox buildQueueSelect;
     private final DragAndDrop dnd;
     private final ProductionGroup foodProduction;
     private final ProductionGroup indProduction;
@@ -75,6 +80,15 @@ public class SectorScreen extends AbstractScreen {
             }
         });
         getStage().addActor(backButton);
+
+        buildQueueSelect = new SelectBox<>(getSkin());
+        buildQueueSelect.setWidth(200.0f);
+        buildQueueSelect.setPosition(STAGE_WIDTH - STAGE_MARGIN - buildQueueSelect.getWidth(), 
+                STAGE_HEIGHT - STAGE_MARGIN - buildQueueSelect.getHeight());
+        BuildTree tree = new BuildTree();
+        List<Structure> buildOptions = tree.getBuildOptions(sector);
+        buildQueueSelect.setItems(buildOptions.toArray());
+        getStage().addActor(buildQueueSelect);
         
         Texture texture = Assets.get("textures/ui.png");
         TextureRegion tr = new TextureRegion(texture, 0.125f, 0.0f, 0.15625f, 0.03125f);
@@ -177,7 +191,7 @@ public class SectorScreen extends AbstractScreen {
 
     @Override
     public void dispose() {
-        super.dispose();
+        super.dispose();        
     }
 
     private void updateLabels() {

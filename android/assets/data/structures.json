@@ -31,7 +31,7 @@
         "label": "Nano Fabrication",
         "detail": "Increases industrial production.",
         "provides": "+15% IND",
-        "depends": [ "fabricators", "research_lab" ]
+        "depends": [ "mass_replication", "research_lab" ]
     },
     {
         "id": "offworld_farming",
