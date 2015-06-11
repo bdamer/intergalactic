@@ -5,12 +5,14 @@ public class Structure {
     private final String id;
     private final String label;
     private final String detail;
+    private final int cost;
     private final String[] dependencies;
     
-    public Structure(String id, String label, String detail, String[] dependencies) {
+    public Structure(String id, String label, String detail, int cost, String[] dependencies) {
         this.id = id;
         this.label = label;
         this.detail = detail;
+        this.cost = cost;
         this.dependencies = dependencies;
     }
 
@@ -24,6 +26,10 @@ public class Structure {
 
     public String getDetail() {
         return detail;
+    }
+
+    public int getCost() {
+        return cost;
     }
 
     public String[] getDependencies() {

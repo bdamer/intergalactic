@@ -64,13 +64,13 @@ public class Simulation {
         home.computerModifiers();
         player.addColony(home);
                 
-        Ship ship = new Ship("mother", player, Range.SHORT, 1, 2);
+        /*Ship ship = new Ship("mother", player, Range.SHORT, 1, 2);
         ship.setCoordinates(HexCoordinate.ORIGIN);        
         player.addUnit(ship);
         
         ship = new Ship("mother2", player, Range.LONG, 2, 3);
         ship.setCoordinates(new HexCoordinate(0, 1));        
-        player.addUnit(ship);
+        player.addUnit(ship);*/
         
         player.getMap().update();
     }

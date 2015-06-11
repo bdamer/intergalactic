@@ -2,10 +2,10 @@ package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.asset.Assets;
+import com.afqa123.intergalactic.data.BuildQueueEntry;
 import com.afqa123.intergalactic.data.Sector;
 import com.afqa123.intergalactic.data.Structure;
 import com.afqa123.intergalactic.graphics.SectorRenderer;
-import static com.afqa123.intergalactic.screens.AbstractScreen.STAGE_MARGIN;
 import com.afqa123.intergalactic.ui.ChangeListener;
 import com.afqa123.intergalactic.ui.ProductionGroup;
 import com.afqa123.intergalactic.util.BuildTree;
@@ -22,9 +22,14 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ArraySelection;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 public class SectorScreen extends AbstractScreen {
     
@@ -39,7 +44,7 @@ public class SectorScreen extends AbstractScreen {
                 return false;
             }
         }
-    }
+    };
     
     private final PerspectiveCamera cam;
     private final Sector sector;
@@ -49,7 +54,9 @@ public class SectorScreen extends AbstractScreen {
     private final Label sectorLabel;
     private final Label productionLabel;
     private final TextButton backButton;
+    private final TextButton buildQueueButton;
     private final SelectBox buildQueueSelect;
+    private final Label buildQueueLabel;
     private final DragAndDrop dnd;
     private final ProductionGroup foodProduction;
     private final ProductionGroup indProduction;
@@ -81,14 +88,31 @@ public class SectorScreen extends AbstractScreen {
         });
         getStage().addActor(backButton);
 
+        buildQueueButton = new TextButton(getGame().getLabels().getProperty("BUTTON_ADD"), getSkin());
+        buildQueueButton.setPosition(STAGE_WIDTH - STAGE_MARGIN - buildQueueButton.getWidth(), 
+                STAGE_HEIGHT - STAGE_MARGIN - buildQueueButton.getHeight());
+        buildQueueButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ArraySelection s = buildQueueSelect.getSelection();
+                if (!s.isEmpty()) {
+                    sector.getBuildQueue().add((BuildQueueEntry)s.getLastSelected());
+                    updateControls();
+                }
+            }
+        });
+        getStage().addActor(buildQueueButton);
+        
         buildQueueSelect = new SelectBox<>(getSkin());
         buildQueueSelect.setWidth(200.0f);
-        buildQueueSelect.setPosition(STAGE_WIDTH - STAGE_MARGIN - buildQueueSelect.getWidth(), 
+        buildQueueSelect.setPosition(buildQueueButton.getX() - buildQueueSelect.getWidth(), 
                 STAGE_HEIGHT - STAGE_MARGIN - buildQueueSelect.getHeight());
-        BuildTree tree = new BuildTree();
-        List<Structure> buildOptions = tree.getBuildOptions(sector);
-        buildQueueSelect.setItems(buildOptions.toArray());
         getStage().addActor(buildQueueSelect);
+
+        buildQueueLabel = new Label(null, getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
+        buildQueueLabel.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        buildQueueLabel.setPosition(buildQueueSelect.getX(), buildQueueSelect.getY());
+        getStage().addActor(buildQueueLabel);        
         
         Texture texture = Assets.get("textures/ui.png");
         TextureRegion tr = new TextureRegion(texture, 0.125f, 0.0f, 0.15625f, 0.03125f);
@@ -101,7 +125,7 @@ public class SectorScreen extends AbstractScreen {
                 sector.setFoodProducers(value);
                 sector.computerModifiers();
                 // TODO: replace with ModelChangedListener...
-                updateLabels();
+                updateControls();
             }            
         });
         getStage().addActor(foodProduction);
@@ -113,7 +137,7 @@ public class SectorScreen extends AbstractScreen {
             public void valueChanged(Integer value) {
                 sector.setIndustrialProducers(value);
                 sector.computerModifiers();
-                updateLabels();
+                updateControls();
             }            
         });
         getStage().addActor(indProduction);
@@ -125,7 +149,7 @@ public class SectorScreen extends AbstractScreen {
             public void valueChanged(Integer value) {
                 sector.setScienceProducers(value);
                 sector.computerModifiers();
-                updateLabels();
+                updateControls();
             }            
         });
         getStage().addActor(sciProduction);  
@@ -154,7 +178,7 @@ public class SectorScreen extends AbstractScreen {
         im.addProcessor(new SectorScreenInputProcessor());
         Gdx.input.setInputProcessor(im);
         
-        updateLabels();
+        updateControls();
     }
 
     @Override
@@ -194,15 +218,58 @@ public class SectorScreen extends AbstractScreen {
         super.dispose();        
     }
 
-    private void updateLabels() {
+    private void updateControls() {
         // update UI from sector
-        String info = String.format("%s\nPopulation: %d / %d\nGrowth: %.2f %%\nMorale: %s", 
-                sector.getName(), (int)sector.getPopulation(), sector.getMaxPopulation(), 
-                sector.getGrowthRate(), sector.getMorale().getLabel());                
-        sectorLabel.setText(info);
+        StringBuilder sb = new StringBuilder();
+        sb.append(sector.getName());
+        sb.append("\nPopulation: ");
+        sb.append((int)sector.getPopulation());
+        sb.append(" / ");
+        sb.append(sector.getMaxPopulation());
+        sb.append("\n");        
+        if (sector.getGrowthRate() >= 0.0f) {
+            sb.append("Growth in ");
+            sb.append(sector.getTurnsUntilGrowth());
+            sb.append(" Turn(s)");
+        } else {
+            sb.append("Food shortage!");
+        }
+        sb.append(String.format(" (%.2f %%)", sector.getGrowthRate()));
+        sb.append("\nMorale: ");
+        sb.append(sector.getMorale().getLabel());
+        sectorLabel.setText(sb.toString());
                 
         String prod = String.format("\nFood %.2f\nInd %.2f\nSci %.2f",
                 sector.getNetFoodOutput(), sector.getIndustrialOutput(), sector.getScientificOutput());
         productionLabel.setText(prod);
+
+        BuildTree tree = new BuildTree();
+
+        // Populate build queue list
+        Set<Structure> inQueue = new HashSet<>();
+        Queue<BuildQueueEntry> queue = sector.getBuildQueue();
+        sb.setLength(0);
+        float height = 0;
+        for (BuildQueueEntry e : queue) {
+            e.computeTurns();
+            inQueue.add(e.getStructure());
+            sb.append(e.toString());
+            sb.append("\n");
+            height += 10.0f; // TODO: this is not accurate
+        }
+        buildQueueLabel.setText(sb);
+        buildQueueLabel.setPosition(buildQueueSelect.getX(), 
+            buildQueueSelect.getY() - buildQueueSelect.getHeight() - height);
+        
+        // Populate build option dropdown
+        List<Structure> availableStructures = tree.getAvailableStructures(sector);
+        List<BuildQueueEntry> buildOptionLabels = new ArrayList<>();
+        for (Structure struct : availableStructures) {
+            if (inQueue.contains(struct)) {
+                continue;
+            }            
+            buildOptionLabels.add(new BuildQueueEntry(sector, struct));
+        }        
+        buildQueueSelect.setItems(buildOptionLabels.toArray());
     }
 }

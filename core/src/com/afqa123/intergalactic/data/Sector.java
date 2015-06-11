@@ -17,6 +17,8 @@ public final class Sector {
     private static final int BASE_IND_PRODUCTION = 0;
     private static final int BASE_SCI_PRODUCTION = 0;
     
+    private static final float TURBULENCE = 1.0f / 50000.0f;
+    
     public enum StarCategory {
         BLUE,       // gigantic
         WHITE,      // large
@@ -51,10 +53,11 @@ public final class Sector {
     private final StarCategory category;
     
     // Game stats (updated each turn)
-    private float population;
+    private double population;
     private int maxPopulation;
+    private double growthRate;
+
     private float morale;
-    private float growthRate;
     private float foodConsumptionRate;
     // Members of population allocated to production
     private int foodProducers;
@@ -87,7 +90,7 @@ public final class Sector {
         this.category = category;
         this.seed = System.currentTimeMillis() - (long)(Math.random() * 1000000.0);
 
-        this.population = 0;
+        this.population = 0.0;
         // TODO: this is based on the number of terraformed planets in this sector
         this.maxPopulation = 0;
         this.foodProducers = 0;
@@ -99,31 +102,31 @@ public final class Sector {
             switch (category) {
                 case BLUE:
                     scale = 1.0f;
-                    turbulence = 1.0f / 30000.0f;
+                    turbulence = TURBULENCE;
                     material = new Vector3(0.0f, 0.0f, 1.0f);
                     gradient = 20.0f / 32.0f;
                     break;
                 case WHITE:
                     scale = 0.8f;
-                    turbulence = 1.0f / 30000.0f;
+                    turbulence = TURBULENCE;
                     material = new Vector3(1.0f, 1.0f, 1.0f);
                     gradient = 15.0f / 32.0f;
                     break;
                 case YELLOW:
                     scale = 0.6f;
-                    turbulence = 1.0f / 35000.0f;
+                    turbulence = TURBULENCE;
                     material = new Vector3(1.0f, 1.0f, 0.0f);
                     gradient = 10.0f / 32.0f;
                     break;
                 case ORANGE:
                     scale = 0.5f;
-                    turbulence = 1.0f / 30000.0f;
+                    turbulence = TURBULENCE;
                     material = new Vector3(1.0f, 0.35f, 0.0f);
                     gradient = 5.0f / 32.0f;
                     break;
                 case RED:
                     scale = 0.3f;
-                    turbulence = 1.0f / 30000.0f;
+                    turbulence = TURBULENCE;
                     material = new Vector3(1.0f, 0.0f, 0.0f);
                     gradient = 0.0f / 32.0f;
                     break;
@@ -178,11 +181,11 @@ public final class Sector {
         this.owner = owner;
     }    
     
-    public float getPopulation() {
+    public double getPopulation() {
         return population;
     }
 
-    public void setPopulation(float population) {
+    public void setPopulation(double population) {
         this.population = population;
     }
 
@@ -208,11 +211,11 @@ public final class Sector {
         }
     }
 
-    public float getGrowthRate() {
+    public double getGrowthRate() {
         return growthRate;
     }
 
-    public void setGrowthRate(float growthRate) {
+    public void setGrowthRate(double growthRate) {
         this.growthRate = growthRate;
     }
 
@@ -252,6 +255,10 @@ public final class Sector {
         return (float)(BASE_IND_PRODUCTION + industrialProducers) * industrialMultiplier;
     }
 
+    public Queue<BuildQueueEntry> getBuildQueue() {
+        return buildQueue;
+    }
+    
     public Set<Structure> getStructures() {
         return structures;
     }
@@ -261,8 +268,8 @@ public final class Sector {
         scienceMultiplier = 1.0f;
         foodMultiplier = 1.0f;
         industrialMultiplier = 1.0f;
-        foodConsumptionRate = 1.0f;
-        growthRate = 0.25f;
+        foodConsumptionRate = 0.3f;
+        growthRate = 0.1;
         // TODO: or is morale different from other values in that it changes
         // more slowly, over time?
         morale = 0.5f;
@@ -272,11 +279,19 @@ public final class Sector {
         }
 
         if (getNetFoodOutput() < 0.0f) {
-            growthRate = -0.25f;
+            growthRate = -0.25;
             morale -= 0.25f;
         } else {
             // TODO: add bonus to growth based on food surplus
         }
+    }
+    
+    public int getTurnsUntilGrowth() {
+        double diff = Math.ceil(population) - population;
+        if (diff == 0.0) {
+            diff = 1.0;
+        }
+        return (int)Math.ceil(diff / growthRate);
     }
     
     /**
@@ -284,9 +299,9 @@ public final class Sector {
      */
     public void growPopulation() {
         int oldPopulation = (int)population;
-        population += population * growthRate;
-        if (population < 1.0f) {
-            population = 1.0f;
+        population += growthRate;
+        if (population < 1.0) {
+            population = 1.0;
         } else if (population > maxPopulation) {
             population = maxPopulation;
         }
@@ -321,7 +336,8 @@ public final class Sector {
             entry.setCost(remaining);
         } else {
             buildQueue.remove();
-            // TODO: add entry to list of structures or create new ship entity
+            // add entry to list of structures or create new ship entity
+            structures.add(entry.getStructure());
         }
     }    
 }

@@ -24,7 +24,8 @@ public class BuildTree {
             for (int i = 0; i < depends.size; i++) {
                 dependList[i] = depends.getString(i);
             }
-            Structure s = new Structure(it.getString("id"), it.getString("label"), it.getString("detail"), dependList);            
+            Structure s = new Structure(it.getString("id"), it.getString("label"), 
+                it.getString("detail"), it.getInt("cost"), dependList);            
             db.put(s.getId(), s);
         }
         
@@ -38,7 +39,7 @@ public class BuildTree {
      * @param sector The sector.
      * @return The list of queue entries.
      */
-    public List<Structure> getBuildOptions(final Sector sector) {
+    public List<Structure> getAvailableStructures(final Sector sector) {
         if (db == null) {
             initialize();
         }
