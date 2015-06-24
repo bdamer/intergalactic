@@ -102,11 +102,12 @@ public class Galaxy {
                                       0.0f,
                                       (float)Math.sin(angle) * RADIUS * ratio);
             HexCoordinate coord = new HexCoordinate(pos);
-            Vector2 offset = axialToOffset((int)coord.x, (int)coord.y);
+            
             
             // only create star sector if there currently is none at these coordinates.
             // TODO: additionally, perform check that there are no stars next to this
-            if (sectors[(int)offset.y][(int)offset.x].getCategory() == null) {
+            if (isValidCoordinateForSector(coord)) {
+                Vector2 offset = axialToOffset((int)coord.x, (int)coord.y);
                 sectors[(int)offset.y][(int)offset.x] = createStarSector(coord);
             }
             
@@ -115,6 +116,21 @@ public class Galaxy {
             // as the radius increases).
             angle += MIN_ANGLE + Math.random() * (1.0f - ratio) * (MAX_ANGLE - MIN_ANGLE);
         }
+    }
+    
+    private boolean isValidCoordinateForSector(HexCoordinate coord) {
+        Vector2 offset = axialToOffset((int)coord.x, (int)coord.y);
+        if (sectors[(int)offset.y][(int)offset.x].getCategory() != null) {
+            return false;
+        }
+        HexCoordinate[] neighbors = coord.getRing(1);
+        for (HexCoordinate n : neighbors) {
+            offset = axialToOffset((int)n.x, (int)n.y);
+            if (sectors[(int)offset.y][(int)offset.x].getCategory() != null) {
+                return false;
+            }            
+        }
+        return true;
     }
     
     private Sector createStarSector(HexCoordinate coord) {
