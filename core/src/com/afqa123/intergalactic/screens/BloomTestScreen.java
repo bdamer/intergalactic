@@ -1,6 +1,6 @@
 package com.afqa123.intergalactic.screens;
 
-import com.afqa123.intergalactic.data.Sector;
+import com.afqa123.intergalactic.data.entities.Sector;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.afqa123.intergalactic.math.HexCoordinate;

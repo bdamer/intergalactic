@@ -1,15 +1,15 @@
 package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
-import com.afqa123.intergalactic.data.Faction;
+import com.afqa123.intergalactic.data.entities.Faction;
 import com.afqa123.intergalactic.data.FactionMap;
 import com.afqa123.intergalactic.data.FactionMap.SectorEntry;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.util.Path;
-import com.afqa123.intergalactic.data.Sector;
-import com.afqa123.intergalactic.data.SectorStatus;
+import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.data.entities.SectorStatus;
 import com.afqa123.intergalactic.data.Simulation.StepListener;
-import com.afqa123.intergalactic.data.Unit;
+import com.afqa123.intergalactic.data.entities.Unit;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.Indicator;

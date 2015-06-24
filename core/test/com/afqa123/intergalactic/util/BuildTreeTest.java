@@ -2,9 +2,9 @@ package com.afqa123.intergalactic.util;
 
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.asset.TestAssetManager;
-import com.afqa123.intergalactic.data.Sector;
-import com.afqa123.intergalactic.data.Sector.StarCategory;
-import com.afqa123.intergalactic.data.Structure;
+import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.data.entities.Sector.StarCategory;
+import com.afqa123.intergalactic.data.model.BuildOption;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.List;
@@ -25,62 +25,62 @@ public class BuildTreeTest {
     public void testGetAvailableStructures() {
         Sector sector = new Sector("Sol", new HexCoordinate(0,0), StarCategory.YELLOW);
         BuildTree bt = new BuildTree();
-        List<Structure> actual = bt.getAvailableStructures(sector);
+        List<BuildOption> actual = bt.getBuildOptions(sector);
         Assert.assertEquals(5, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("barracks")));
         sector.getStructures().add(bt.getStructure("barracks"));
 
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(4, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("climate_control")));
         sector.getStructures().add(bt.getStructure("climate_control"));
                 
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(3, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("fabricators")));
         sector.getStructures().add(bt.getStructure("fabricators"));
 
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(2, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("shipyard")));
         sector.getStructures().add(bt.getStructure("shipyard"));
 
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(2, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("offworld_farming")));
         sector.getStructures().add(bt.getStructure("offworld_farming"));        
         
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(1, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("research_lab")));
         sector.getStructures().add(bt.getStructure("research_lab"));
     
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(3, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("mass_replication")));
         sector.getStructures().add(bt.getStructure("mass_replication"));
 
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(3, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("nano_fabrication")));
         sector.getStructures().add(bt.getStructure("nano_fabrication"));
     
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(2, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("scanner")));
         sector.getStructures().add(bt.getStructure("scanner"));
 
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(1, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("science_academy")));
         sector.getStructures().add(bt.getStructure("science_academy"));
     
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(2, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("shield_generator")));
         sector.getStructures().add(bt.getStructure("shield_generator"));
 
-        actual = bt.getAvailableStructures(sector);
+        actual = bt.getBuildOptions(sector);
         Assert.assertEquals(1, actual.size());
         Assert.assertTrue(actual.contains(bt.getStructure("orbital_laser")));
         sector.getStructures().add(bt.getStructure("orbital_laser"));

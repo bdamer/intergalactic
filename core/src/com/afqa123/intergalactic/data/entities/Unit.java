@@ -1,4 +1,4 @@
-package com.afqa123.intergalactic.data;
+package com.afqa123.intergalactic.data.entities;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.util.Path;

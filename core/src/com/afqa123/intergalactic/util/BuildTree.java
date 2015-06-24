@@ -1,8 +1,11 @@
 package com.afqa123.intergalactic.util;
 
 import com.afqa123.intergalactic.asset.Assets;
-import com.afqa123.intergalactic.data.Sector;
-import com.afqa123.intergalactic.data.Structure;
+import com.afqa123.intergalactic.data.entities.Range;
+import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.data.model.BuildOption;
+import com.afqa123.intergalactic.data.model.ShipType;
+import com.afqa123.intergalactic.data.model.Structure;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +15,7 @@ import java.util.Set;
 
 public class BuildTree {
 
-    private static Map<String,Structure> db;
+    private static Map<String,BuildOption> db;
 
     private void initialize() {
         db = new HashMap<>();
@@ -29,7 +32,18 @@ public class BuildTree {
             db.put(s.getId(), s);
         }
         
-        //JsonValue ships = Assets.get("data/ships.json");        
+        JsonValue ships = Assets.get("data/ships.json");        
+        for (JsonValue it : ships) {
+            JsonValue depends = it.get("depends");
+            String[] dependList = new String[depends.size];
+            for (int i = 0; i < depends.size; i++) {
+                dependList[i] = depends.getString(i);
+            }
+            ShipType s = new ShipType(it.getString("id"), it.getString("label"), 
+                it.getString("detail"), it.getInt("cost"), dependList,
+                Range.valueOf(it.getString("range")), it.getInt("movementRange"), it.getInt("scanRange"));            
+            db.put(s.getId(), s);
+        }
     }
     
     /**
@@ -37,40 +51,40 @@ public class BuildTree {
      * in a sector.
      * 
      * @param sector The sector.
-     * @return The list of queue entries.
+     * @return The list of build options.
      */
-    public List<Structure> getAvailableStructures(final Sector sector) {
+    public List<BuildOption> getBuildOptions(final Sector sector) {
         if (db == null) {
             initialize();
         }
-        
-        List<Structure> res = new ArrayList<>();
-        for (Structure struct : db.values()) {
-            if (canBuild(sector, struct)) {
-                res.add(struct);
+        List<BuildOption> res = new ArrayList<>();
+        for (BuildOption option : db.values()) {
+            if (canBuild(sector, option)) {
+                res.add(option);
             }
         }        
         return res;
     }
-    
+        
     /**
-     * Checks if a structure is available to be built in a sector.
+     * Checks if a structure or ship is available to be built in a sector.
      * 
      * @param sector The sector.
-     * @param entry The entry.
+     * @param option The ship or structure.
      * @return True if the entry can be built.
      */
-    public boolean canBuild(final Sector sector, final Structure struct) {
+    public boolean canBuild(final Sector sector, final BuildOption option) {
         if (db == null) {
             initialize();
         }
-
+        // Do not allow duplicate structures
         Set<Structure> built = sector.getStructures();
-        if (built.contains(struct)) {
+        if ((option instanceof Structure) && built.contains((Structure)option)) {
             return false;
-        }
-        for (String id : struct.getDependencies()) {
-            if (!built.contains(db.get(id))) {
+        }   
+        // Check if dependencies have been met
+        for (String id : option.getDependencies()) {
+            if (!built.contains((Structure)db.get(id))) {
                 return false;
             }
         } 
@@ -87,6 +101,13 @@ public class BuildTree {
         if (db == null) {
             initialize();
         }
-        return db.get(id);
+        return (Structure)db.get(id);
+    }
+    
+    public ShipType getShip(final String id) {
+        if (db == null) {
+            initialize();
+        }
+        return (ShipType)db.get(id);
     }
 }

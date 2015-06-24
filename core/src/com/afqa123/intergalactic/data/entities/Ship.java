@@ -1,5 +1,8 @@
-package com.afqa123.intergalactic.data;
+package com.afqa123.intergalactic.data.entities;
 
+import com.afqa123.intergalactic.data.model.ShipType;
+import com.afqa123.intergalactic.data.entities.Faction;
+import com.afqa123.intergalactic.data.entities.Unit;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.util.AStarPathfinder;
 import com.afqa123.intergalactic.util.Path;
@@ -8,11 +11,8 @@ import com.afqa123.intergalactic.util.Pathfinder;
 
 public class Ship implements Unit {
 
-    private final String id;
-    private final Range range;
+    private final ShipType type;    
     private final Faction owner;
-    private final int scanRange;
-    private final int movementRange;
     private HexCoordinate coordinates;
     private HexCoordinate target;
     // Path from current coordinates to target
@@ -20,22 +20,21 @@ public class Ship implements Unit {
     // Movement points remaining this turn
     private float movementPoints;
     
-    public Ship(String id, Faction owner, Range range, int movementRange, int scanRange) {
-        this.id = id;
+    /**
+     * Creates a new ship of a given type.
+     * 
+     * @param type The ship type.
+     * @param owner The owner faction.
+     */
+    public Ship(ShipType type, Faction owner) {
+        this.type = type;
         this.owner = owner;
-        this.range = range;
-        this.movementRange = movementRange;
-        this.scanRange = scanRange;
-        this.movementPoints = movementRange;
+        this.movementPoints = type.getMovementRange();
     }
 
     @Override
     public String getId() {
-        return id;
-    }
-
-    public Range getRange() {
-        return range;
+        return type.getId();
     }
 
     @Override
@@ -45,7 +44,7 @@ public class Ship implements Unit {
 
     @Override
     public int getScanRange() {
-        return scanRange;
+        return type.getScanRange();
     }
     
     @Override
@@ -68,7 +67,7 @@ public class Ship implements Unit {
             this.target = null;
         } else if (!target.equals(this.target)) {
             this.target = target;
-            Pathfinder finder = new AStarPathfinder(range, owner.getMap());
+            Pathfinder finder = new AStarPathfinder(type.getRange(), owner.getMap());
             path = finder.findPath(coordinates, target);
         }
     }
@@ -93,7 +92,7 @@ public class Ship implements Unit {
             // TODO: check if target is valid
             // TODO: animate
             coordinates = step.coordinate;
-            owner.getMap().explore(step.coordinate, scanRange);
+            owner.getMap().explore(step.coordinate, type.getScanRange());
             movementPoints -= cost;
             path.pop();
         }
@@ -105,7 +104,7 @@ public class Ship implements Unit {
     
     @Override
     public void step() {
-        movementPoints = movementRange;
+        movementPoints = type.getMovementRange();
     }
 
     @Override

@@ -1,5 +1,8 @@
-package com.afqa123.intergalactic.data;
+package com.afqa123.intergalactic.data.entities;
 
+import com.afqa123.intergalactic.data.FactionMap;
+import com.afqa123.intergalactic.data.Galaxy;
+import com.afqa123.intergalactic.data.entities.Unit;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.graphics.Color;
 import java.util.ArrayList;

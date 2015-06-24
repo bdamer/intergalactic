@@ -1,5 +1,6 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.data.entities.Sector;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.math.Vector2;
 import org.junit.Assert;

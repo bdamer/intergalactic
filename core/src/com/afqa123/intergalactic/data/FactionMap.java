@@ -1,5 +1,9 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.data.entities.SectorStatus;
+import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.data.entities.Range;
+import com.afqa123.intergalactic.data.entities.Faction;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import java.util.HashSet;
 import java.util.List;

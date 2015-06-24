@@ -3,18 +3,30 @@
         "id": "colony_ship",
         "label": "Colony Ship",
         "detail": "Allows the colonization of other systems.",
-        "depends": ["shipyard"]
+        "cost": 15,
+        "depends": ["shipyard"],
+        "range": "SHORT",
+        "movementRange": 1,
+        "scanRange": 1
     },
     {
         "id": "raider",
         "label": "Raider",
         "detail": "Lightly armored fighter craft.",
-        "depends": ["barracks","shipyard"]
+        "cost": 10,
+        "depends": ["barracks","shipyard"],
+        "range": "MEDIUM",
+        "movementRange": 2,
+        "scanRange": 2
     },
     {
         "id": "scout",
         "label": "Scout",
         "detail": "Unarmored long-range scout ship.",
-        "depends": ["research_lab","shipyard"]
+        "cost": 5,
+        "depends": ["research_lab","shipyard"],
+        "range": "LONG",
+        "movementRange": 2,
+        "scanRange": 3
     }
 ]

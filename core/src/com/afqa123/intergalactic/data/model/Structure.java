@@ -1,6 +1,6 @@
-package com.afqa123.intergalactic.data;
+package com.afqa123.intergalactic.data.model;
 
-public class Structure {
+public class Structure implements BuildOption {
 
     private final String id;
     private final String label;
@@ -16,22 +16,32 @@ public class Structure {
         this.dependencies = dependencies;
     }
 
+    @Override
     public String getId() {
         return id;
     }
-    
+
+    @Override
     public String getLabel() {
         return label;
     }
 
+    @Override
     public String getDetail() {
         return detail;
     }
 
+    @Override
     public int getCost() {
         return cost;
     }
 
+    @Override
+    public boolean isUnique() {
+        return true;
+    }
+    
+    @Override
     public String[] getDependencies() {
         return dependencies;
     }

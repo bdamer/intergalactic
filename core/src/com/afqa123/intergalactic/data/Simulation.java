@@ -1,5 +1,8 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.data.entities.Faction;
+import com.afqa123.intergalactic.data.entities.Unit;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
@@ -63,14 +66,6 @@ public class Simulation {
         home.setMaxPopulation(10);
         home.computerModifiers();
         player.addColony(home);
-                
-        /*Ship ship = new Ship("mother", player, Range.SHORT, 1, 2);
-        ship.setCoordinates(HexCoordinate.ORIGIN);        
-        player.addUnit(ship);
-        
-        ship = new Ship("mother2", player, Range.LONG, 2, 3);
-        ship.setCoordinates(new HexCoordinate(0, 1));        
-        player.addUnit(ship);*/
         
         player.getMap().update();
     }

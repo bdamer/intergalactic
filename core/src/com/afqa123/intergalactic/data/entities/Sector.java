@@ -1,5 +1,9 @@
-package com.afqa123.intergalactic.data;
+package com.afqa123.intergalactic.data.entities;
 
+import com.afqa123.intergalactic.data.BuildQueueEntry;
+import com.afqa123.intergalactic.data.model.Structure;
+import com.afqa123.intergalactic.data.model.BuildOption;
+import com.afqa123.intergalactic.data.model.ShipType;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.math.Vector3;
 import java.util.HashSet;
@@ -337,7 +341,14 @@ public final class Sector {
         } else {
             buildQueue.remove();
             // add entry to list of structures or create new ship entity
-            structures.add(entry.getStructure());
+            BuildOption option = entry.getBuildOption();
+            if (option instanceof Structure) {
+                structures.add((Structure)option);
+            } else {
+                Ship ship = new Ship((ShipType)option, owner);
+                ship.setCoordinates(coordinates);        
+                owner.addUnit(ship);
+            }
         }
     }    
 }

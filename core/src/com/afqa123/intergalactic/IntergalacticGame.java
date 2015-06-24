@@ -2,7 +2,7 @@ package com.afqa123.intergalactic;
 
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.asset.FontProvider;
-import com.afqa123.intergalactic.data.Faction;
+import com.afqa123.intergalactic.data.entities.Faction;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.data.Simulation;
 import com.afqa123.intergalactic.graphics.ShaderFactory;

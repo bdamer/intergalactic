@@ -1,7 +1,8 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.data.entities.Sector;
 import com.afqa123.intergalactic.asset.Assets;
-import com.afqa123.intergalactic.data.Sector.StarCategory;
+import com.afqa123.intergalactic.data.entities.Sector.StarCategory;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;

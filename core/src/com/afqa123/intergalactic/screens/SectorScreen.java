@@ -3,8 +3,9 @@ package com.afqa123.intergalactic.screens;
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.BuildQueueEntry;
-import com.afqa123.intergalactic.data.Sector;
-import com.afqa123.intergalactic.data.Structure;
+import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.data.model.BuildOption;
+import com.afqa123.intergalactic.data.model.Structure;
 import com.afqa123.intergalactic.graphics.SectorRenderer;
 import com.afqa123.intergalactic.ui.ChangeListener;
 import com.afqa123.intergalactic.ui.ProductionGroup;
@@ -54,6 +55,7 @@ public class SectorScreen extends AbstractScreen {
     private final Label sectorLabel;
     private final Label productionLabel;
     private final TextButton backButton;
+    private final Label structuresLabel;
     private final TextButton buildQueueButton;
     private final SelectBox buildQueueSelect;
     private final Label buildQueueLabel;
@@ -88,6 +90,10 @@ public class SectorScreen extends AbstractScreen {
         });
         getStage().addActor(backButton);
 
+        structuresLabel = new Label(null, getSkin(), FONT, new Color(0.0f, 1.0f, 0.0f, 1.0f));
+        structuresLabel.setPosition(STAGE_MARGIN, backButton.getY() - backButton.getHeight() - STAGE_MARGIN);
+        getStage().addActor(structuresLabel);
+        
         buildQueueButton = new TextButton(getGame().getLabels().getProperty("BUTTON_ADD"), getSkin());
         buildQueueButton.setPosition(STAGE_WIDTH - STAGE_MARGIN - buildQueueButton.getWidth(), 
                 STAGE_HEIGHT - STAGE_MARGIN - buildQueueButton.getHeight());
@@ -243,16 +249,23 @@ public class SectorScreen extends AbstractScreen {
                 sector.getNetFoodOutput(), sector.getIndustrialOutput(), sector.getScientificOutput());
         productionLabel.setText(prod);
 
-        BuildTree tree = new BuildTree();
-
+        // Populate list of existing structure
+        sb.setLength(0);
+        for (Structure s : sector.getStructures()) {
+            sb.append(s.getLabel());
+            sb.append("\n");
+        }
+        structuresLabel.setText(sb.toString());
+        
         // Populate build queue list
-        Set<Structure> inQueue = new HashSet<>();
+        BuildTree tree = new BuildTree();
+        Set<BuildOption> inQueue = new HashSet<>();
         Queue<BuildQueueEntry> queue = sector.getBuildQueue();
         sb.setLength(0);
         float height = 0;
         for (BuildQueueEntry e : queue) {
             e.computeTurns();
-            inQueue.add(e.getStructure());
+            inQueue.add(e.getBuildOption());
             sb.append(e.toString());
             sb.append("\n");
             height += 10.0f; // TODO: this is not accurate
@@ -262,14 +275,15 @@ public class SectorScreen extends AbstractScreen {
             buildQueueSelect.getY() - buildQueueSelect.getHeight() - height);
         
         // Populate build option dropdown
-        List<Structure> availableStructures = tree.getAvailableStructures(sector);
+        List<BuildOption> availableStructures = tree.getBuildOptions(sector);
         List<BuildQueueEntry> buildOptionLabels = new ArrayList<>();
-        for (Structure struct : availableStructures) {
-            if (inQueue.contains(struct)) {
+        for (BuildOption option : availableStructures) {
+            if (option.isUnique() && inQueue.contains(option)) {
                 continue;
             }            
-            buildOptionLabels.add(new BuildQueueEntry(sector, struct));
-        }        
+            buildOptionLabels.add(new BuildQueueEntry(sector, option));
+        }
+        
         buildQueueSelect.setItems(buildOptionLabels.toArray());
     }
 }

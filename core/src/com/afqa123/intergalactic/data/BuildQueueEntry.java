@@ -1,29 +1,31 @@
 package com.afqa123.intergalactic.data;
 
+import com.afqa123.intergalactic.data.model.Structure;
+import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.data.model.BuildOption;
+
 public class BuildQueueEntry {
 
     private final Sector sector;
-    private final Structure structure;
+    private final BuildOption option;
     private float cost;
     private int turns;
 
     /**
      * Creates a new {@code BuildQueueEntry}.
      * 
-     * @param secctor The sector containing the build queue.
-     * @param id The structure id.
-     * @param label The structure label.
-     * @param initialCost The initial cost of the structure.
+     * @param sector The sector containing the build queue.
+     * @param option The build option.
      */
-    public BuildQueueEntry(final Sector sector, final Structure structure) {
+    public BuildQueueEntry(final Sector sector, final BuildOption option) {
         this.sector = sector;
-        this.structure = structure;
-        this.cost = structure.getCost();
+        this.option = option;
+        this.cost = option.getCost();
         computeTurns();
     }
     
-    public Structure getStructure() {
-        return structure;
+    public BuildOption getBuildOption() {
+        return option;
     }
     
     public float getCost() {
@@ -43,6 +45,6 @@ public class BuildQueueEntry {
     
     @Override
     public String toString() {
-        return String.format("%s (%d)", structure.getLabel(), turns);
+        return String.format("%s (%d)", option.getLabel(), turns);
     }
 }
