@@ -3,12 +3,14 @@ package com.afqa123.intergalactic.util;
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.data.entities.Range;
 import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.data.entities.Unit;
 import com.afqa123.intergalactic.data.model.BuildOption;
 import com.afqa123.intergalactic.data.model.ShipType;
 import com.afqa123.intergalactic.data.model.Structure;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,9 +41,15 @@ public class BuildTree {
             for (int i = 0; i < depends.size; i++) {
                 dependList[i] = depends.getString(i);
             }
+            JsonValue actions = it.get("actions");
+            Set<Unit.Action> actionSet = new HashSet<>();
+            for (String action : actions.asStringArray()) {
+                actionSet.add(Unit.Action.valueOf(action));
+            }
             ShipType s = new ShipType(it.getString("id"), it.getString("label"), 
                 it.getString("detail"), it.getInt("cost"), dependList,
-                Range.valueOf(it.getString("range")), it.getInt("movementRange"), it.getInt("scanRange"));            
+                Range.valueOf(it.getString("range")), it.getInt("movementRange"), 
+                it.getInt("scanRange"), actionSet);            
             db.put(s.getId(), s);
         }
     }

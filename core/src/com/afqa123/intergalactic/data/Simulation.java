@@ -58,16 +58,7 @@ public class Simulation {
         }
         Vector2 offset = galaxy.axialToOffset(c.x, c.y);
         galaxy.getSectors()[(int)offset.x][(int)offset.y] = home;
-        
-        home.setOwner(player);
-        home.setPopulation(2.0f);
-        home.setFoodProducers(2);
-        // TODO: compute automatically based on number of terraformed planets
-        home.setMaxPopulation(10);
-        home.computerModifiers();
         player.addColony(home);
-        
-        player.getMap().update();
     }
     
     /**

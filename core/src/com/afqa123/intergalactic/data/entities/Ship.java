@@ -1,8 +1,6 @@
 package com.afqa123.intergalactic.data.entities;
 
 import com.afqa123.intergalactic.data.model.ShipType;
-import com.afqa123.intergalactic.data.entities.Faction;
-import com.afqa123.intergalactic.data.entities.Unit;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.util.AStarPathfinder;
 import com.afqa123.intergalactic.util.Path;
@@ -111,5 +109,10 @@ public class Ship implements Unit {
     public boolean isReadyForStep() {
         // TODO: include other conditions (fortified, sleep, etc)
         return movementPoints < 1.0f;
+    }
+
+    @Override
+    public boolean canPerformAction(Action action) {
+        return type.getActions().contains(action);
     }
 }

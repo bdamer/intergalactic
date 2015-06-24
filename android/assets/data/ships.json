@@ -7,7 +7,8 @@
         "depends": ["shipyard"],
         "range": "SHORT",
         "movementRange": 1,
-        "scanRange": 1
+        "scanRange": 1,
+        "actions": ["COLONIZE"]
     },
     {
         "id": "raider",
@@ -17,7 +18,8 @@
         "depends": ["barracks","shipyard"],
         "range": "MEDIUM",
         "movementRange": 2,
-        "scanRange": 2
+        "scanRange": 2,
+        "actions": ["INTERCEPT"]
     },
     {
         "id": "scout",
@@ -27,6 +29,7 @@
         "depends": ["research_lab","shipyard"],
         "range": "LONG",
         "movementRange": 2,
-        "scanRange": 3
+        "scanRange": 3,
+        "actions": [ ]
     }
 ]

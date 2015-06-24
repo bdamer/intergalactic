@@ -3,7 +3,6 @@ package com.afqa123.intergalactic.screens;
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.data.entities.Faction;
 import com.afqa123.intergalactic.data.FactionMap;
-import com.afqa123.intergalactic.data.FactionMap.SectorEntry;
 import com.afqa123.intergalactic.data.Galaxy;
 import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.data.entities.Sector;
@@ -61,7 +60,17 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                     return true;
                 case Input.Keys.ENTER:
                     getGame().getSimulation().turn();
-                    return true;
+                    return true;                    
+                case Input.Keys.B:
+                    if (selectedUnit != null && selectedUnit.canPerformAction(Unit.Action.COLONIZE)) {
+                        Sector s = galaxy.getSector(selectedUnit.getCoordinates());
+                        if (s.getCategory() != null && s.getOwner() == null) {
+                            getGame().getPlayer().addColony(s);
+                            getGame().getPlayer().removeUnit(selectedUnit);
+                            selectedUnit = null;
+                        }
+                    }
+                    return true;                    
                 default:
                     return false;
             }

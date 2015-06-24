@@ -49,13 +49,25 @@ public class Faction {
     }
 
     public void addColony(Sector sector) {
+        sector.setOwner(this);
+        sector.setPopulation(2.0f);
+        sector.setFoodProducers(1);
+        sector.setIndustrialProducers(1);
+        // TODO: compute automatically based on number of terraformed planets
+        sector.setMaxPopulation(10);
+        sector.computerModifiers();
         sectors.add(sector);
         map.addColony(sector);
+        map.update();
     }
     
     public void addUnit(Unit unit) {
         units.add(unit);   
         map.explore(unit.getCoordinates(), unit.getScanRange());
+    }
+    
+    public void removeUnit(Unit unit) {
+        units.remove(unit);
     }
     
     public Unit findUnitInSector(HexCoordinate c) {

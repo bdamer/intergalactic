@@ -5,6 +5,10 @@ import com.afqa123.intergalactic.util.Path;
 
 public interface Unit {
 
+    enum Action {
+        COLONIZE, INTERCEPT
+    };
+    
     String getId();
     
     Faction getOwner();
@@ -22,4 +26,6 @@ public interface Unit {
     boolean isReadyForStep();
     
     void step();
+    
+    boolean canPerformAction(Action action);
 }
