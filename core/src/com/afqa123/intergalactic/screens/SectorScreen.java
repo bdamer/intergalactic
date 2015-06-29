@@ -2,10 +2,10 @@ package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.asset.Assets;
-import com.afqa123.intergalactic.data.BuildQueueEntry;
-import com.afqa123.intergalactic.data.entities.Sector;
-import com.afqa123.intergalactic.data.model.BuildOption;
-import com.afqa123.intergalactic.data.model.Structure;
+import com.afqa123.intergalactic.model.BuildQueueEntry;
+import com.afqa123.intergalactic.model.Sector;
+import com.afqa123.intergalactic.model.BuildOption;
+import com.afqa123.intergalactic.model.Structure;
 import com.afqa123.intergalactic.graphics.SectorRenderer;
 import com.afqa123.intergalactic.ui.ChangeListener;
 import com.afqa123.intergalactic.ui.ProductionGroup;
@@ -64,7 +64,7 @@ public class SectorScreen extends AbstractScreen {
     private final ProductionGroup indProduction;
     private final ProductionGroup sciProduction;
         
-    public SectorScreen(final IntergalacticGame game, final Sector sector) {        
+    public SectorScreen(IntergalacticGame game, Sector sector) {        
         super(game);
         this.sector = sector;
         
@@ -102,7 +102,7 @@ public class SectorScreen extends AbstractScreen {
             public void clicked(InputEvent event, float x, float y) {
                 ArraySelection s = buildQueueSelect.getSelection();
                 if (!s.isEmpty()) {
-                    sector.getBuildQueue().add((BuildQueueEntry)s.getLastSelected());
+                    SectorScreen.this.sector.getBuildQueue().add((BuildQueueEntry)s.getLastSelected());
                     updateControls();
                 }
             }
@@ -128,8 +128,8 @@ public class SectorScreen extends AbstractScreen {
         foodProduction.setChangeListener(new ChangeListener<Integer>() {
             @Override
             public void valueChanged(Integer value) {
-                sector.setFoodProducers(value);
-                sector.computerModifiers();
+                SectorScreen.this.sector.setFoodProducers(value);
+                SectorScreen.this.sector.updateModifiers();
                 // TODO: replace with ModelChangedListener...
                 updateControls();
             }            
@@ -141,8 +141,8 @@ public class SectorScreen extends AbstractScreen {
         indProduction.setChangeListener(new ChangeListener<Integer>() {
             @Override
             public void valueChanged(Integer value) {
-                sector.setIndustrialProducers(value);
-                sector.computerModifiers();
+                SectorScreen.this.sector.setIndustrialProducers(value);
+                SectorScreen.this.sector.updateModifiers();
                 updateControls();
             }            
         });
@@ -153,8 +153,8 @@ public class SectorScreen extends AbstractScreen {
         sciProduction.setChangeListener(new ChangeListener<Integer>() {
             @Override
             public void valueChanged(Integer value) {
-                sector.setScienceProducers(value);
-                sector.computerModifiers();
+                SectorScreen.this.sector.setScienceProducers(value);
+                SectorScreen.this.sector.updateModifiers();
                 updateControls();
             }            
         });
@@ -249,25 +249,31 @@ public class SectorScreen extends AbstractScreen {
                 sector.getNetFoodOutput(), sector.getIndustrialOutput(), sector.getScientificOutput());
         productionLabel.setText(prod);
 
+        BuildTree tree = getState().getBuildTree();
+        
         // Populate list of existing structure
         sb.setLength(0);
-        for (Structure s : sector.getStructures()) {
-            sb.append(s.getLabel());
+        for (String id : sector.getStructures()) {
+            sb.append(tree.getStructure(id).getLabel());
             sb.append("\n");
         }
         structuresLabel.setText(sb.toString());
         
         // Populate build queue list
-        BuildTree tree = new BuildTree();
-        Set<BuildOption> inQueue = new HashSet<>();
+        Set<String> inQueue = new HashSet<>();
         Queue<BuildQueueEntry> queue = sector.getBuildQueue();
         sb.setLength(0);
         float height = 0;
         for (BuildQueueEntry e : queue) {
-            e.computeTurns();
-            inQueue.add(e.getBuildOption());
-            sb.append(e.toString());
-            sb.append("\n");
+            inQueue.add(e.getId());
+            sb.append(e.getLabel());
+            sb.append(" (");
+            if (sector.getIndustrialOutput() > 0.0f) {
+                sb.append(Math.round(e.getCost() / sector.getIndustrialOutput()));
+            } else {
+                sb.append(-1);
+            }            
+            sb.append(")\n");
             height += 10.0f; // TODO: this is not accurate
         }
         buildQueueLabel.setText(sb);
@@ -278,10 +284,10 @@ public class SectorScreen extends AbstractScreen {
         List<BuildOption> availableStructures = tree.getBuildOptions(sector);
         List<BuildQueueEntry> buildOptionLabels = new ArrayList<>();
         for (BuildOption option : availableStructures) {
-            if (option.isUnique() && inQueue.contains(option)) {
+            if (option.isUnique() && inQueue.contains(option.getId())) {
                 continue;
             }            
-            buildOptionLabels.add(new BuildQueueEntry(sector, option));
+            buildOptionLabels.add(new BuildQueueEntry(option.getId(), option.getLabel(), option.getCost()));
         }
         
         buildQueueSelect.setItems(buildOptionLabels.toArray());

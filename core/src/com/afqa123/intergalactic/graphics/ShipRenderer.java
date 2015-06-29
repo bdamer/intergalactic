@@ -1,6 +1,6 @@
 package com.afqa123.intergalactic.graphics;
 
-import com.afqa123.intergalactic.data.entities.Unit;
+import com.afqa123.intergalactic.model.Unit;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;

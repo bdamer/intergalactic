@@ -1,9 +1,5 @@
-package com.afqa123.intergalactic.data.entities;
+package com.afqa123.intergalactic.model;
 
-import com.afqa123.intergalactic.data.BuildQueueEntry;
-import com.afqa123.intergalactic.data.model.Structure;
-import com.afqa123.intergalactic.data.model.BuildOption;
-import com.afqa123.intergalactic.data.model.ShipType;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.math.Vector3;
 import java.util.HashSet;
@@ -19,42 +15,14 @@ public final class Sector {
     // TODO: review
     private static final int BASE_FOOD_PRODUCTION = 0;
     private static final int BASE_IND_PRODUCTION = 0;
-    private static final int BASE_SCI_PRODUCTION = 0;
-    
+    private static final int BASE_SCI_PRODUCTION = 0;    
     private static final float TURBULENCE = 1.0f / 50000.0f;
-    
-    public enum StarCategory {
-        BLUE,       // gigantic
-        WHITE,      // large
-        YELLOW,     // average
-        ORANGE,     // small
-        RED         // dwarf
-    };
-
-    public enum Morale {
-        ECSTATIC("Ecstatic"),
-        PLEASED("Pleased"),
-        CONTENT("Content"),
-        DISGRUNTLED("Disgruntled"),
-        REBELLIOUS("Rebellious");
-        
-        private final String label;
-        
-        private Morale(String label) {
-            this.label = label;
-        }
-        
-        public String getLabel() {
-            return label;
-        }
-    };
-    
-    private final String name;
-    private Faction owner;
+    private String name;
+    private String owner;
     
     // Axial coordinates of this sector.
-    private final HexCoordinate coordinates;
-    private final StarCategory category;
+    private HexCoordinate coordinates;
+    private StarType type;
     
     // Game stats (updated each turn)
     private double population;
@@ -72,26 +40,30 @@ public final class Sector {
     private float industrialMultiplier;
     private float scienceMultiplier;
     // Buildings and production queue
-    private Set<Structure> structures;
+    private Set<String> structures;
     private Queue<BuildQueueEntry> buildQueue;
     
     // Rendering properties
     // Base color / material
     // TODO: review - currently not used
-    private final Vector3 material;
+    private Vector3 material;
     // Scale of system on map
-    private final float scale;
+    private float scale;
     // Color gradient
-    private final float gradient;
+    private float gradient;
     // Surface turbulence
-    private final float turbulence;
+    private float turbulence;
     // seed value to animate surface
-    private final long seed;
-        
-    public Sector(String name, HexCoordinate coordinates, StarCategory category) {
+    private long seed;
+    
+    Sector() {
+        // required for serialization
+    }
+    
+    public Sector(String name, HexCoordinate coordinates, StarType type) {
         this.name = name;
         this.coordinates = coordinates;
-        this.category = category;
+        this.type = type;
         this.seed = System.currentTimeMillis() - (long)(Math.random() * 1000000.0);
 
         this.population = 0.0;
@@ -100,10 +72,10 @@ public final class Sector {
         this.foodProducers = 0;
         this.structures = new HashSet<>();
         this.buildQueue = new LinkedList<>();
-        computerModifiers();
+        updateModifiers();
         
-        if (category != null) {
-            switch (category) {
+        if (type != null) {
+            switch (type) {
                 case BLUE:
                     scale = 1.0f;
                     turbulence = TURBULENCE;
@@ -135,7 +107,7 @@ public final class Sector {
                     gradient = 0.0f / 32.0f;
                     break;
                 default:
-                    throw new RuntimeException("Unsupported sector category: " + category);
+                    throw new RuntimeException("Unsupported sector category: " + type);
             }                    
         } else {
             material = null;
@@ -149,8 +121,8 @@ public final class Sector {
         return coordinates;
     }
 
-    public StarCategory getCategory() {
-        return category;
+    public StarType getType() {
+        return type;
     }
 
     public Vector3 getMaterial() {
@@ -177,11 +149,11 @@ public final class Sector {
         return name;
     }
 
-    public Faction getOwner() {
+    public String getOwner() {
         return owner;
     }
 
-    public void setOwner(Faction owner) {
+    public void setOwner(String owner) {
         this.owner = owner;
     }    
     
@@ -221,6 +193,14 @@ public final class Sector {
 
     public void setGrowthRate(double growthRate) {
         this.growthRate = growthRate;
+    }
+
+    public int getTurnsUntilGrowth() {
+        double diff = Math.ceil(population) - population;
+        if (diff == 0.0) {
+            diff = 1.0;
+        }
+        return (int)Math.ceil(diff / growthRate);
     }
 
     public int getFoodProducers() {
@@ -263,11 +243,11 @@ public final class Sector {
         return buildQueue;
     }
     
-    public Set<Structure> getStructures() {
+    public Set<String> getStructures() {
         return structures;
     }
     
-    public void computerModifiers() {
+    public void updateModifiers() {
         // Default everything...
         scienceMultiplier = 1.0f;
         foodMultiplier = 1.0f;
@@ -278,7 +258,7 @@ public final class Sector {
         // more slowly, over time?
         morale = 0.5f;
 
-        for (Structure s : structures) {
+        for (String s : structures) {
             // TODO: update modifiers from structures
         }
 
@@ -290,18 +270,16 @@ public final class Sector {
         }
     }
     
-    public int getTurnsUntilGrowth() {
-        double diff = Math.ceil(population) - population;
-        if (diff == 0.0) {
-            diff = 1.0;
-        }
-        return (int)Math.ceil(diff / growthRate);
+    public void update(State state) {
+        produce(state);
+        growPopulation();
+        updateModifiers();        
     }
     
     /**
      * Grows or shrinks the population based on the current growth rate.
      */
-    public void growPopulation() {
+    private void growPopulation() {
         int oldPopulation = (int)population;
         population += growthRate;
         if (population < 1.0) {
@@ -330,7 +308,7 @@ public final class Sector {
     /**
      * Updates top of production queue.
      */
-    public void produce() {
+    private void produce(State state) {
         BuildQueueEntry entry = buildQueue.peek();
         if (entry == null) {
             return;
@@ -341,13 +319,14 @@ public final class Sector {
         } else {
             buildQueue.remove();
             // add entry to list of structures or create new ship entity
-            BuildOption option = entry.getBuildOption();
-            if (option instanceof Structure) {
-                structures.add((Structure)option);
-            } else {
-                Ship ship = new Ship((ShipType)option, owner);
+            BuildOption option = state.getBuildTree().getBuildOption(entry.getId());
+            if (option instanceof ShipType) {
+                Faction ownerFaction = state.getFactions().get(owner);
+                Ship ship = new Ship((ShipType)option, ownerFaction);
                 ship.setCoordinates(coordinates);        
-                owner.addUnit(ship);
+                state.addUnit(ship);
+            } else {
+                structures.add(entry.getId());
             }
         }
     }    

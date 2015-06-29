@@ -1,4 +1,4 @@
-package com.afqa123.intergalactic.data.entities;
+package com.afqa123.intergalactic.model;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.util.Path;
@@ -19,6 +19,8 @@ public interface Unit {
     
     Path getPath();
     
+    HexCoordinate getTarget();
+    
     void selectTarget(HexCoordinate target);
     
     void move();
@@ -28,4 +30,6 @@ public interface Unit {
     void step();
     
     boolean canPerformAction(Action action);
+
+    void refresh(State state);
 }

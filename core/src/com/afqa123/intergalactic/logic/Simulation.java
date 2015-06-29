@@ -1,9 +1,12 @@
-package com.afqa123.intergalactic.data;
+package com.afqa123.intergalactic.logic;
 
-import com.afqa123.intergalactic.data.entities.Sector;
-import com.afqa123.intergalactic.data.entities.Faction;
-import com.afqa123.intergalactic.data.entities.Unit;
+import com.afqa123.intergalactic.model.Galaxy;
+import com.afqa123.intergalactic.model.Sector;
+import com.afqa123.intergalactic.model.Faction;
+import com.afqa123.intergalactic.model.Unit;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.model.StarType;
+import com.afqa123.intergalactic.model.State;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import java.util.HashSet;
@@ -30,19 +33,18 @@ public class Simulation {
         void afterStep();
     };
     
-    private int turn;
+    private final State state;
     private final Galaxy galaxy;
     private final Faction player;
     private final Set<StepListener> listeners = new HashSet<>();
 
-    public Simulation(Galaxy galaxy, Faction player) {
-        this.galaxy = galaxy;
-        this.player = player;
+    public Simulation(State state) {
+        this.state = state;
+        this.galaxy = state.getGalaxy();
+        this.player = state.getFactions().get("player");
     }
     
-    public void init() {
-        galaxy.randomizeSectorsSpiral();
-        
+    public void init() {        
         // Determine player start planets
 
         // Select random home sector
@@ -52,8 +54,8 @@ public class Simulation {
         // Select sector at origin
         HexCoordinate c = new HexCoordinate(0, 0);
         Sector home = galaxy.getSector(HexCoordinate.ORIGIN);
-        if (home.getCategory() == null) {
-            home = new Sector("Sol", c, Sector.StarCategory.YELLOW);
+        if (home.getType() == null) {
+            home = new Sector("Sol", c, StarType.YELLOW);
             galaxy.getStarSystems().add(home);
         }
         Vector2 offset = galaxy.axialToOffset(c.x, c.y);
@@ -71,23 +73,21 @@ public class Simulation {
                 return;
             }
         }
-        
-        turn++;
-        Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", turn));
+
+        state.increaseTurns();
+        Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", state.getTurn()));
         
         List<Sector> sectors = galaxy.getStarSystems();
         float science = 0.0f;
         for (Sector s : sectors) {
             science += s.getScientificOutput();
-            s.growPopulation();
-            s.produce();
-            s.computerModifiers();
+            s.update(state);
         }
         
         // TODO: apply science output to current research project
         Gdx.app.debug(Simulation.class.getName(), String.format("Science output: %f", science));
 
-        for (Unit u : player.getUnits()) {
+        for (Unit u : state.getUnits()) {
             u.step();
         }
         
@@ -102,5 +102,5 @@ public class Simulation {
     
     public void removeStepListener(StepListener l) {
         listeners.remove(l);
-    }    
+    }
 }

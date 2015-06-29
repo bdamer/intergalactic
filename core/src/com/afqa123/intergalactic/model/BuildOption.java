@@ -1,4 +1,4 @@
-package com.afqa123.intergalactic.data.model;
+package com.afqa123.intergalactic.model;
 
 public interface BuildOption {
     

@@ -1,9 +1,10 @@
 package com.afqa123.intergalactic.screens;
 
-import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.model.StarType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
@@ -90,7 +91,7 @@ public class BloomTestScreen implements Screen {
         
         // Test code here:
         sectors = new ArrayList<>();
-        sectors.add(new Sector("Centauri Prime", new HexCoordinate(0,0), Sector.StarCategory.BLUE));
+        sectors.add(new Sector("Centauri Prime", new HexCoordinate(0,0), StarType.BLUE));
         renderer = new StarRenderer();
 
         fbo0 = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);

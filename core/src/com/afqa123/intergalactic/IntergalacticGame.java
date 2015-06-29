@@ -2,12 +2,15 @@ package com.afqa123.intergalactic;
 
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.asset.FontProvider;
-import com.afqa123.intergalactic.data.entities.Faction;
-import com.afqa123.intergalactic.data.Galaxy;
-import com.afqa123.intergalactic.data.Simulation;
+import com.afqa123.intergalactic.model.Faction;
+import com.afqa123.intergalactic.model.Galaxy;
+import com.afqa123.intergalactic.logic.Simulation;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
+import com.afqa123.intergalactic.logic.generators.GalaxyGenerator;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
+import com.afqa123.intergalactic.model.State;
+import com.afqa123.intergalactic.util.BuildTree;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -15,20 +18,34 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
 public class IntergalacticGame extends ApplicationAdapter {
 	
+    public static final String PLAYER_FACTION = "player";
+    
     // The current screen
     private Screen screen;
     // Screen stack
     private final Stack<Screen> screens = new Stack<>();
     // The simulation engine
     private Simulation simulation;
-    private Galaxy galaxy;
-    private Faction player;
+    // State of the game
+    private State state;
+    
+    //private Galaxy galaxy;
+    //private Map<String,Faction> factions;
+    //private Faction player;    
     private FPSLogger fps;
     private Properties labels;
     
@@ -48,16 +65,20 @@ public class IntergalacticGame extends ApplicationAdapter {
             //fps = new FPSLogger();
 
             loadAssets();
-
-            galaxy = new Galaxy(15);
-            player = new Faction("Player", new Color(1.0f, 1.0f, 0.0f, 1.0f), true, galaxy);       
-            simulation = new Simulation(galaxy, player);
-            // TODO: load from file, etc.
-            simulation.init();
+            
+            if (!loadAuto()) {
+                GalaxyGenerator gen = new GalaxyGenerator();
+                Galaxy galaxy = gen.generateSpiralGalaxy(15);
+                Map<String,Faction> factions = new HashMap<>();
+                factions.put(PLAYER_FACTION, new Faction(PLAYER_FACTION, new Color(1.0f, 1.0f, 0.0f, 1.0f), true, galaxy));
+                state = new State(galaxy, factions);
+                simulation = new Simulation(state);
+                simulation.init();
+            }
 
             //screen = new BloomTestScreen();
             //screen = new TestScreen(this);
-            screen = new GalaxyScreen(this, galaxy);
+            screen = new GalaxyScreen(this);
             screen.activate();
         } catch (Throwable t) {
             Gdx.app.error(IntergalacticGame.class.getName(), "Error during init.", t);
@@ -161,11 +182,45 @@ public class IntergalacticGame extends ApplicationAdapter {
         return labels;
     }
     
-    public Faction getPlayer() {
-        return player;
+    public State getState() {
+        return state;
     }
     
     public Simulation getSimulation() {
         return simulation;
+    }
+    
+    public void save(String filename) {
+        try (JsonWriter writer = new JsonWriter(new FileWriter(filename))) {
+            Json json = new Json();
+            json.toJson(state, writer);            
+        } catch (IOException ex) {
+            Gdx.app.error(IntergalacticGame.class.getName(), "Error saving file.", ex);
+        }        
+    }
+    
+    public void load(String filename) {
+        try (FileReader reader = new FileReader(filename)) {
+            Json json = new Json();
+            state = json.fromJson(State.class, reader);
+            simulation = new Simulation(state);
+        } catch (IOException ex) {
+            Gdx.app.error(IntergalacticGame.class.getName(), "Error loading file.", ex);            
+        }
+    }
+    
+    public void saveAuto() {
+        // TODO: find proper location
+        save("C:\\autosave.json");
+    }
+    
+    public boolean loadAuto() {
+        File f = new File("C:\\autosave.json");
+        if (f.exists()) {
+            load("C:\\autosave.json");
+            return true;
+        } else {
+            return false;
+        }
     }
 }

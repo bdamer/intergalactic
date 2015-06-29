@@ -1,7 +1,7 @@
 package com.afqa123.intergalactic.util;
 
-import com.afqa123.intergalactic.data.FactionMap;
-import com.afqa123.intergalactic.data.entities.Range;
+import com.afqa123.intergalactic.model.FactionMap;
+import com.afqa123.intergalactic.model.Range;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.util.Path.PathStep;
 import java.util.Comparator;

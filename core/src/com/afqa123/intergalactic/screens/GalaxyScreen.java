@@ -1,14 +1,14 @@
 package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
-import com.afqa123.intergalactic.data.entities.Faction;
-import com.afqa123.intergalactic.data.FactionMap;
-import com.afqa123.intergalactic.data.Galaxy;
+import com.afqa123.intergalactic.model.Faction;
+import com.afqa123.intergalactic.model.FactionMap;
+import com.afqa123.intergalactic.model.Galaxy;
 import com.afqa123.intergalactic.util.Path;
-import com.afqa123.intergalactic.data.entities.Sector;
-import com.afqa123.intergalactic.data.entities.SectorStatus;
-import com.afqa123.intergalactic.data.Simulation.StepListener;
-import com.afqa123.intergalactic.data.entities.Unit;
+import com.afqa123.intergalactic.model.Sector;
+import com.afqa123.intergalactic.model.SectorStatus;
+import com.afqa123.intergalactic.logic.Simulation.StepListener;
+import com.afqa123.intergalactic.model.Unit;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.Indicator;
@@ -64,13 +64,16 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 case Input.Keys.B:
                     if (selectedUnit != null && selectedUnit.canPerformAction(Unit.Action.COLONIZE)) {
                         Sector s = galaxy.getSector(selectedUnit.getCoordinates());
-                        if (s.getCategory() != null && s.getOwner() == null) {
-                            getGame().getPlayer().addColony(s);
-                            getGame().getPlayer().removeUnit(selectedUnit);
+                        if (s.getType() != null && s.getOwner() == null) {
+                            getState().getPlayer().addColony(s);
+                            getState().removeUnit(selectedUnit);
                             selectedUnit = null;
                         }
                     }
-                    return true;                    
+                    return true;
+                case Input.Keys.S:
+                    getGame().saveAuto();
+                    return true;
                 default:
                     return false;
             }
@@ -129,7 +132,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             if (button == Input.Buttons.LEFT) {
                 leftDown = false;
                 HexCoordinate c = pickSector(x, y);
-                Unit u = getGame().getPlayer().findUnitInSector(c);
+                // TODO: needs to find unit in sector for faction
+                Unit u = getState().findUnitInSector(c);
                 if (u != null) {
                     selectUnit(u);
                 }
@@ -208,9 +212,9 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final List<Label> sectorLabels;
     private final TextButton turnButton;
     
-    public GalaxyScreen(IntergalacticGame game, Galaxy galaxy) {
+    public GalaxyScreen(IntergalacticGame game) {
         super(game);
-        this.galaxy = galaxy;
+        this.galaxy = getState().getGalaxy();
 
         visibleSectors = new ArrayList<>();
         sectorLabels = new ArrayList<>();
@@ -228,8 +232,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         
         cam = new PerspectiveCamera(42.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         // Center on player home
-        Faction player = game.getPlayer();
-        Sector home = player.getSectors().get(0);
+        Faction player = game.getState().getPlayer();
+        Sector home = galaxy.getFactionSystems(player).get(0);
         Vector3 target = home.getCoordinates().toWorld();
         cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
         cam.lookAt(target);
@@ -250,7 +254,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     @Override
     public void activate() {
         super.activate();
-        getGame().getPlayer().getMap().addChangeListener(this);
+        getState().getPlayer().getMap().addChangeListener(this);
         getGame().getSimulation().addStepListener(this);
 
         // Update viewport in case it changed
@@ -268,7 +272,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
 
     @Override
     public void deactivate() {
-        getGame().getPlayer().getMap().removeChangeListener(this);
+        getState().getPlayer().getMap().removeChangeListener(this);
         getGame().getSimulation().removeStepListener(this);
     }
     
@@ -288,7 +292,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         }
         sectorLabels.clear();
         
-        final Faction player = getGame().getPlayer();
+        final Faction player = getState().getPlayer();
         final FactionMap playerMap = player.getMap();
         List<Sector> sectors = galaxy.getStarSystems();
         for (final Sector sector : sectors) {
@@ -297,14 +301,14 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 continue;
             }
 
-            Faction owner = sector.getOwner();
+            Faction owner = getState().getFactions().get(sector.getOwner());
             Label sectorLabel = new Label(sector.getName(), getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
             sectorLabel.setColor(owner != null ? owner.getColor() : DEFAULT_SECTOR_COLOR);
             sectorLabel.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     // Move to sector screen if this is a player colony
-                    if (sector.getCategory() != null && player.equals(sector.getOwner())) {
+                    if (sector.getType() != null && IntergalacticGame.PLAYER_FACTION.equals(sector.getOwner())) {
                         getGame().pushScreen(new SectorScreen(getGame(), sector));
                     }
                 }
@@ -320,7 +324,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     
     @Override
     public boolean prepareStep() {
-        List<Unit> units = getGame().getPlayer().getUnits();
+        List<Unit> units = getState().getUnits();
         int i = 0;
         while (i < units.size()) {
             Unit u = units.get(i);
@@ -371,7 +375,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         indicator.render(cam);
 
         starRenderer.render(cam, visibleSectors);
-        shipRenderer.render(cam, getGame().getPlayer().getUnits());
+        shipRenderer.render(cam, getState().getUnits());
         
         if (selectedUnit != null) {
             Path path = selectedUnit.getPath();

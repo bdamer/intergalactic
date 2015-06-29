@@ -1,4 +1,7 @@
-package com.afqa123.intergalactic.data.model;
+package com.afqa123.intergalactic.model;
+
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 
 public class Structure implements BuildOption {
 
@@ -7,6 +10,18 @@ public class Structure implements BuildOption {
     private final String detail;
     private final int cost;
     private final String[] dependencies;
+
+    public Structure(JsonValue json) {
+        this.id = json.getString("id");
+        this.label = json.getString("label");
+        this.detail = json.getString("detail");
+        this.cost = json.getInt("cost");
+        JsonValue depends = json.get("depends");
+        this.dependencies = new String[depends.size];
+        for (int i = 0; i < depends.size; i++) {
+            dependencies[i] = depends.getString(i);
+        }
+    }
     
     public Structure(String id, String label, String detail, int cost, String[] dependencies) {
         this.id = id;
@@ -49,5 +64,13 @@ public class Structure implements BuildOption {
     @Override
     public String toString() {
         return id;
+    }
+    
+    public void writeJson(Json json) {
+        json.writeValue("id", id);
+        json.writeValue("label", label);
+        json.writeValue("detail", detail);
+        json.writeValue("cost", cost);
+        json.writeValue("dependencies", dependencies);
     }
 }

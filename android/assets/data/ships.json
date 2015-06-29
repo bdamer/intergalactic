@@ -5,7 +5,7 @@
         "detail": "Allows the colonization of other systems.",
         "cost": 15,
         "depends": ["shipyard"],
-        "range": "SHORT",
+        "range": "MEDIUM",
         "movementRange": 1,
         "scanRange": 1,
         "actions": ["COLONIZE"]

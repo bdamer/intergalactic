@@ -1,7 +1,7 @@
 package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.asset.Assets;
-import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.model.Sector;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;

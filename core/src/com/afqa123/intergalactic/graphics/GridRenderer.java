@@ -1,11 +1,11 @@
 package com.afqa123.intergalactic.graphics;
 
-import com.afqa123.intergalactic.data.FactionMap;
-import com.afqa123.intergalactic.data.FactionMap.SectorEntry;
-import com.afqa123.intergalactic.data.Galaxy;
-import com.afqa123.intergalactic.data.entities.Range;
-import com.afqa123.intergalactic.data.entities.Sector;
+import com.afqa123.intergalactic.model.FactionMap;
+import com.afqa123.intergalactic.model.Galaxy;
+import com.afqa123.intergalactic.model.Range;
+import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.math.Hex;
+import com.afqa123.intergalactic.model.FactionMapSector;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
@@ -63,12 +63,12 @@ public class GridRenderer implements Disposable {
         
         int counter = 0;
         Sector[][] sectors = galaxy.getSectors();
-        SectorEntry[][] entries = map.getSectors();
+        FactionMapSector[][] entries = map.getSectors();
         for (int row = 0; row < sectors.length; row++) {
             for (int col = 0; col < sectors[row].length; col++) {
                 // TODO: use player faction map to determine any additional properties
                 Sector sector = sectors[row][col];
-                SectorEntry status = entries[row][col];
+                FactionMapSector status = entries[row][col];
                 Color color = GRID_COLOR;
                 if (status.getRange() != null) {
                     color = RANGE_COLORS.get(status.getRange());

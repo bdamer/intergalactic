@@ -1,4 +1,4 @@
-package com.afqa123.intergalactic.data.entities;
+package com.afqa123.intergalactic.model;
 
 /**
  * Range defines movement of ships within the galaxy.

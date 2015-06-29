@@ -1,7 +1,5 @@
-package com.afqa123.intergalactic.data.model;
+package com.afqa123.intergalactic.model;
 
-import com.afqa123.intergalactic.data.entities.Range;
-import com.afqa123.intergalactic.data.entities.Unit;
 import java.util.Set;
 
 public class ShipType implements BuildOption {

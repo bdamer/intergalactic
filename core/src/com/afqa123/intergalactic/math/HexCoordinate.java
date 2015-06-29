@@ -22,13 +22,17 @@ public class HexCoordinate {
             this.y = y;
         }
     };
-    
+
     public static final HexCoordinate ORIGIN = new HexCoordinate(0, 0);
     
     // Scale of the hex grid.
     private float scale = 1.0f;
-    public final int x;
-    public final int y;
+    public int x;
+    public int y;
+
+    HexCoordinate() {
+        // required for serialization
+    }
     
     /**
      * Creates a new hex coordinate.
