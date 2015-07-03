@@ -330,4 +330,12 @@ public final class Sector {
             }
         }
     }    
+    
+    public boolean canColonize() {
+        return (type != null && owner == null);
+    }
+    
+    public boolean canBuildOutpost() {
+        return (type == null && owner == null);
+    }
 }

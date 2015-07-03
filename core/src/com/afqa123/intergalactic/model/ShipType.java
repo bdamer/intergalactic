@@ -1,21 +1,23 @@
 package com.afqa123.intergalactic.model;
 
-import java.util.Set;
-
 public class ShipType implements BuildOption {
     
-    private final String id;
-    private final String label;
-    private final String detail;
-    private final int cost;
-    private final String[] dependencies;
-    private final Range range;
-    private final int scanRange;
-    private final int movementRange;
-    private final Set<Unit.Action> actions;
+    private String id;
+    private String label;
+    private String detail;
+    private int cost;
+    private String[] dependencies;
+    private Range range;
+    private int scanRange;
+    private int movementRange;
+    private Unit.Action[] actions;
 
+    ShipType() {
+        
+    }
+    
     public ShipType(String id, String label, String detail, int cost, String[] dependencies, 
-        Range range, int movementRange, int scanRange, Set<Unit.Action> actions) {
+        Range range, int movementRange, int scanRange, Unit.Action[] actions) {
         this.id = id;
         this.label = label;
         this.detail = detail;
@@ -69,7 +71,7 @@ public class ShipType implements BuildOption {
         return scanRange;
     }
     
-    public Set<Unit.Action> getActions() {
+    public Unit.Action[] getActions() {
         return actions;
     }    
 }

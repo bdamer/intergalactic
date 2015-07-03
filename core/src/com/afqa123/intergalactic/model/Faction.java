@@ -49,6 +49,11 @@ public class Faction implements Json.Serializable {
         map.addColony(sector.getCoordinates());
     }
     
+    public void addOutpost(Sector sector) {
+        sector.setOwner(name);
+        map.addOutpost(sector.getCoordinates());
+    }
+    
     @Override
     public void write(Json json) {
         json.writeValue("name", name);

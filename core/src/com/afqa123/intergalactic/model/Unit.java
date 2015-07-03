@@ -6,7 +6,7 @@ import com.afqa123.intergalactic.util.Path;
 public interface Unit {
 
     enum Action {
-        COLONIZE, INTERCEPT
+        BUILD_OUTPOST, COLONIZE, INTERCEPT
     };
     
     String getId();

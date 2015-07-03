@@ -59,17 +59,29 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                     return true;
                 case Input.Keys.ENTER:
                     getGame().getSimulation().turn();
-                    return true;                    
-                case Input.Keys.B:
+                    return true;
+                // Colonizes a planet
+                case Input.Keys.C:
                     if (selectedUnit != null && selectedUnit.canPerformAction(Unit.Action.COLONIZE)) {
                         Sector s = galaxy.getSector(selectedUnit.getCoordinates());
-                        if (s.getType() != null && s.getOwner() == null) {
+                        if (s.canColonize()) {
                             getState().getPlayer().addColony(s);
                             getState().removeUnit(selectedUnit);
                             selectedUnit = null;
                         }
                     }
-                    return true;
+                    return true;                    
+                // Builds an outpost
+                case Input.Keys.O:
+                    if (selectedUnit != null && selectedUnit.canPerformAction(Unit.Action.BUILD_OUTPOST)) {
+                        Sector s = galaxy.getSector(selectedUnit.getCoordinates());
+                        if (s.canBuildOutpost()) {
+                            // TODO: this step should take a few turns
+                            getState().getPlayer().addOutpost(s);
+                            getState().removeUnit(selectedUnit);
+                            selectedUnit = null;
+                        }
+                    }
                 case Input.Keys.S:
                     getGame().saveAuto();
                     return true;
@@ -140,7 +152,6 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             } else if (button == Input.Buttons.RIGHT) {
                 rightDown = false;
                 if (selectedUnit != null && selectedUnit.getPath() != null) {
-                    selectedUnit.getPath().dropInvalidSteps();
                     selectedUnit.move();
                     Vector3 target = selectedUnit.getCoordinates().toWorld();
                     indicator.setPosition(target);

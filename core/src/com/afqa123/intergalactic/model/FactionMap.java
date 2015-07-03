@@ -107,6 +107,21 @@ public class FactionMap implements Json.Serializable {
         updateSector(c);
     }
     
+    public void addOutpost(HexCoordinate c) {
+        FactionMapSector s = getSector(c);
+        if (s != null) {
+            s.setStatus(SectorStatus.EXPLORED);
+        }
+        HexCoordinate[] shortRange = c.getRing(1);
+        for (HexCoordinate cs : shortRange) {
+            s = getSector(cs);
+            if (s != null) {
+                s.setStatus(SectorStatus.KNOWN);
+            }
+        }
+        updateSector(c);
+    }
+    
     public void explore(HexCoordinate c, int radius) {
         // Mark this sector as explored
         FactionMapSector s = getSector(c);

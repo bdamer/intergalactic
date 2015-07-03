@@ -39,9 +39,6 @@ public class PathRenderer implements Disposable {
         
         sp.begin();
         for (PathStep step : path) {
-            if (step.invalid) {
-                break;
-            }
             Vector3 world = step.coordinate.toWorld();
             model.setToTranslationAndScaling(world.x, OFFSET, world.z, SCALE, SCALE, SCALE);
             mvp.set(camera.combined);
@@ -49,6 +46,7 @@ public class PathRenderer implements Disposable {
             sp.setUniformMatrix("u_mvp", mvp);
             sp.setUniformf("u_color", (points >= step.cost ? validColor : invalidColor));
             mesh.render(sp, GL20.GL_TRIANGLES);
+            points -= step.cost;
         }
         sp.end();
     }

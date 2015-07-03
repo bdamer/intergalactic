@@ -1,4 +1,4 @@
-package com.afqa1232.intergalactic.model;
+package com.afqa123.intergalactic.model;
 
 import com.afqa123.intergalactic.TestApplication;
 import com.afqa123.intergalactic.asset.Assets;

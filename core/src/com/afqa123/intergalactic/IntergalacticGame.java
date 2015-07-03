@@ -96,8 +96,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("textures/ui.png", Texture.class);        
         Assets.load("textures/explosion.png", Texture.class);
         Assets.load("data/sectors.json", JsonValue.class);
-        Assets.load("data/ships.json", JsonValue.class);
-        Assets.load("data/structures.json", JsonValue.class);
+        Assets.load("data/ships.json", String.class);
+        Assets.load("data/structures.json", String.class);
         
         // TODO: load based on system locale
         Assets.load("localization/default.properties", Properties.class);

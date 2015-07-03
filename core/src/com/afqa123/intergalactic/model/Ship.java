@@ -102,16 +102,14 @@ public class Ship implements Unit, Json.Serializable {
         }        
         while (!path.isEmpty()) {
             PathStep step = path.peek();
-            // TODO: determine cost of step
-            float cost = 1.0f;
-            if (movementPoints < cost) {
+            if (movementPoints < step.cost) {
                 break;
             }
             // TODO: check if target is valid
             // TODO: animate
             coordinates = step.coordinate;
             owner.getMap().explore(step.coordinate, type.getScanRange());
-            movementPoints -= cost;
+            movementPoints -= step.cost;
             path.pop();
         }
         
@@ -133,7 +131,12 @@ public class Ship implements Unit, Json.Serializable {
 
     @Override
     public boolean canPerformAction(Action action) {
-        return type.getActions().contains(action);
+        for (Action a : type.getActions()) {
+            if (a == action) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

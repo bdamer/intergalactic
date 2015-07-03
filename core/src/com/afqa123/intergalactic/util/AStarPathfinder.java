@@ -23,22 +23,23 @@ public class AStarPathfinder implements Pathfinder {
         
         final HexCoordinate coord;
         final PathNode parent;
-        // cost to get to this node from start of path
+        // cost to move to this node from previous node
         final float cost;
+        // cost to get to this node from start of path
+        final float cumulativeCost;
         // estimated cost from here to target
         final float estimatedCost;
-        final boolean invalid;
 
         public PathNode(HexCoordinate coord, PathNode parent) {
             this.coord = coord;
             this.parent = parent;
-            Range range = map.getSector(coord).getRange();
-            invalid  = (range == null || range.ordinal() > validRange.ordinal());
-            // TODO: cost needs to include sector information from map
             if (parent != null) {
-                this.cost = BASE_COST + parent.cost + (invalid ? INVALID_COST : 0.0f);
+                // TODO: cost needs to include sector information from map
+                this.cost = BASE_COST;
+                this.cumulativeCost = parent.cost + this.cost;
             } else {
                 this.cost = 0.0f;
+                this.cumulativeCost = 0.0f;
             }            
             this.estimatedCost = coord.getDistance(to);
         }
@@ -130,8 +131,8 @@ public class AStarPathfinder implements Pathfinder {
             if (cur.coord.equals(to)) {
                 // build up path
                 res = new Path();
-                while (cur.parent != null) {             
-                    res.push(new PathStep(cur.coord, cur.cost, cur.invalid));
+                while (cur.parent != null) {
+                    res.push(new PathStep(cur.coord, cur.cost));
                     cur = cur.parent;
                 }
                 break;
@@ -146,6 +147,10 @@ public class AStarPathfinder implements Pathfinder {
     private void addNeighbors(PathNode parent) {
         HexCoordinate[] neighbors = parent.coord.getRing(1);
         for (HexCoordinate c : neighbors) {
+            Range range = map.getSector(c).getRange();
+            if (range == null || range.ordinal() > validRange.ordinal()) {
+                continue; // skip invalid coordinates
+            }
             PathNode node = new PathNode(c, parent);
             if (visited.contains(node)) {
                 continue; // skip nodes already on the path
@@ -154,7 +159,7 @@ public class AStarPathfinder implements Pathfinder {
             int idx = candidates.indexOf(node);
             if (idx > -1) {
                 PathNode prior = candidates.remove(idx);
-                node = node.cost < prior.cost ? node : prior;
+                node = node.cumulativeCost < prior.cumulativeCost ? node : prior;
             }
             candidates.add(node);
         }
