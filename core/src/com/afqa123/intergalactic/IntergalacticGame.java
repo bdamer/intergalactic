@@ -10,7 +10,6 @@ import com.afqa123.intergalactic.logic.generators.GalaxyGenerator;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
 import com.afqa123.intergalactic.model.State;
-import com.afqa123.intergalactic.logic.BuildTree;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -71,6 +70,7 @@ public class IntergalacticGame extends ApplicationAdapter {
                 Galaxy galaxy = gen.generateSpiralGalaxy(15);
                 Map<String,Faction> factions = new HashMap<>();
                 factions.put(PLAYER_FACTION, new Faction(PLAYER_FACTION, new Color(1.0f, 1.0f, 0.0f, 1.0f), true, galaxy));
+                factions.put("ai", new Faction("ai", new Color(0.0f, 1.0f, 0.0f, 1.0f), false, galaxy));
                 state = new State(galaxy, factions);
                 simulation = new Simulation(state);
                 simulation.init();

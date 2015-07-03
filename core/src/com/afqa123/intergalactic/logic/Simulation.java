@@ -4,11 +4,8 @@ import com.afqa123.intergalactic.model.Galaxy;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.Unit;
-import com.afqa123.intergalactic.math.HexCoordinate;
-import com.afqa123.intergalactic.model.StarType;
 import com.afqa123.intergalactic.model.State;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Vector2;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,22 +42,15 @@ public class Simulation {
     }
     
     public void init() {        
-        // Determine player start planets
-
-        // Select random home sector
-        // List<Sector> sectors = galaxy.getStarSystems();
-        // Sector home = sectors.get((int)(Math.random() * sectors.size()));
-        
-        // Select sector at origin
-        HexCoordinate c = new HexCoordinate(0, 0);
-        Sector home = galaxy.getSector(HexCoordinate.ORIGIN);
-        if (home.getType() == null) {
-            home = new Sector("Sol", c, StarType.YELLOW);
-            galaxy.getStarSystems().add(home);
+        // Determine faction start planets
+        List<Sector> sectors = galaxy.getStarSystems();
+        for (Faction faction : state.getFactions().values()) {
+            Sector home;
+            do {
+                home = sectors.get((int)(Math.random() * sectors.size()));
+            } while (home.getOwner() != null);            
+            faction.addColony(home);
         }
-        Vector2 offset = galaxy.axialToOffset(c.x, c.y);
-        galaxy.getSectors()[(int)offset.x][(int)offset.y] = home;
-        player.addColony(home);
     }
     
     /**

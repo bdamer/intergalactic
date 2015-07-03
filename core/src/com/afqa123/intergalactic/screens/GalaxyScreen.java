@@ -91,6 +91,14 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                         }
                     }
                     return true;
+                // Kill current unit
+                case Input.Keys.K:
+                    if (selectedUnit != null) {
+                        // TODO: needs to update faction map 
+                        getState().removeUnit(selectedUnit);
+                        selectedUnit = null;
+                    }
+                    return true;
                 case Input.Keys.S:
                     getGame().saveAuto();
                     return true;
