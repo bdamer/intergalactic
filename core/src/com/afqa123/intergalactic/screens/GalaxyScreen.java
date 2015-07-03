@@ -4,7 +4,6 @@ import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.FactionMap;
 import com.afqa123.intergalactic.model.Galaxy;
-import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.SectorStatus;
 import com.afqa123.intergalactic.logic.Simulation.StepListener;
@@ -378,10 +377,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         shipRenderer.render(cam, getState().getUnits());
         
         if (selectedUnit != null) {
-            Path path = selectedUnit.getPath();
-            if (path != null) {
-                pathRenderer.render(cam, path);
-            }            
+            pathRenderer.render(cam, selectedUnit);
         }
         
         // UI pass

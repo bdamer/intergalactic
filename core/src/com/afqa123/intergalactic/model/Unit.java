@@ -17,6 +17,8 @@ public interface Unit {
 
     int getScanRange();
     
+    float getMovementPoints();
+    
     Path getPath();
     
     HexCoordinate getTarget();

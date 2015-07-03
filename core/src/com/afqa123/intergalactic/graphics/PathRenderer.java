@@ -1,5 +1,6 @@
 package com.afqa123.intergalactic.graphics;
 
+import com.afqa123.intergalactic.model.Unit;
 import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.util.Path.PathStep;
 import com.badlogic.gdx.graphics.Camera;
@@ -25,18 +26,28 @@ public class PathRenderer implements Disposable {
         mesh = new MeshBuilder().buildSquare();
     }
     
-    public void render(Camera camera, Path path) {
+    public void render(Camera camera, Unit unit) {
+        Path path = unit.getPath();
+        if (path == null) {
+            return;
+        }
+        
+        float points = unit.getMovementPoints();
+        
         Matrix4 model = new Matrix4();
         Matrix4 mvp = new Matrix4();
         
         sp.begin();
         for (PathStep step : path) {
+            if (step.invalid) {
+                break;
+            }
             Vector3 world = step.coordinate.toWorld();
             model.setToTranslationAndScaling(world.x, OFFSET, world.z, SCALE, SCALE, SCALE);
             mvp.set(camera.combined);
             mvp.mul(model);
             sp.setUniformMatrix("u_mvp", mvp);
-            sp.setUniformf("u_color", (step.invalid ? invalidColor : validColor));
+            sp.setUniformf("u_color", (points >= step.cost ? validColor : invalidColor));
             mesh.render(sp, GL20.GL_TRIANGLES);
         }
         sp.end();

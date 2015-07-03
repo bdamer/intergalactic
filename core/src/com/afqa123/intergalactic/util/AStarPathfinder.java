@@ -35,7 +35,11 @@ public class AStarPathfinder implements Pathfinder {
             Range range = map.getSector(coord).getRange();
             invalid  = (range == null || range.ordinal() > validRange.ordinal());
             // TODO: cost needs to include sector information from map
-            this.cost = BASE_COST + (parent != null ? parent.cost : 0.0f) + (invalid ? INVALID_COST : 0.0f);
+            if (parent != null) {
+                this.cost = BASE_COST + parent.cost + (invalid ? INVALID_COST : 0.0f);
+            } else {
+                this.cost = 0.0f;
+            }            
             this.estimatedCost = coord.getDistance(to);
         }
         
@@ -126,8 +130,8 @@ public class AStarPathfinder implements Pathfinder {
             if (cur.coord.equals(to)) {
                 // build up path
                 res = new Path();
-                while (cur.parent != null) {                    
-                    res.push(new PathStep(cur.coord, cur.invalid));
+                while (cur.parent != null) {             
+                    res.push(new PathStep(cur.coord, cur.cost, cur.invalid));
                     cur = cur.parent;
                 }
                 break;

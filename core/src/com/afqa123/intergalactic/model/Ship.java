@@ -60,6 +60,11 @@ public class Ship implements Unit, Json.Serializable {
     }
     
     @Override
+    public float getMovementPoints() {
+        return movementPoints;
+    }
+    
+    @Override
     public HexCoordinate getCoordinates() {
         return coordinates;
     }
