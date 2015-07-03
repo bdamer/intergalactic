@@ -1,6 +1,7 @@
 package com.afqa123.intergalactic.model;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.model.UnitType.Action;
 import com.afqa123.intergalactic.util.AStarPathfinder;
 import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.util.Path.PathStep;
@@ -143,7 +144,7 @@ public class Ship implements Unit, Json.Serializable {
     public void refresh(State state) {
         // needed to re-initialize after deserialization
         if (type == null) {
-            type = state.getBuildTree().getShip(typeName);
+            type = state.getDatabase().getShip(typeName);
         }
         if (owner == null) {
             owner = state.getFactions().get(ownerName);

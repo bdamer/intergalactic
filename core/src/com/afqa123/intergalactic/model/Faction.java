@@ -46,12 +46,14 @@ public class Faction implements Json.Serializable {
         // TODO: compute automatically based on number of terraformed planets
         sector.setMaxPopulation(10);
         sector.updateModifiers();
-        map.addColony(sector.getCoordinates());
+        map.addRange(sector.getCoordinates());
     }
     
-    public void addOutpost(Sector sector) {
-        sector.setOwner(name);
-        map.addOutpost(sector.getCoordinates());
+    public Station addStation(Sector sector, StationType type) {
+        Station station = new Station(type, this);        
+        station.setCoordinates(sector.getCoordinates());
+        map.addRange(sector.getCoordinates());
+        return station;
     }
     
     @Override

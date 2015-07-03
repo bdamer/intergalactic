@@ -1,8 +1,9 @@
 package com.afqa123.intergalactic.model;
 
 import com.afqa123.intergalactic.IntergalacticGame;
+import com.afqa123.intergalactic.logic.EntityDatabase;
 import com.afqa123.intergalactic.math.HexCoordinate;
-import com.afqa123.intergalactic.util.BuildTree;
+import com.afqa123.intergalactic.logic.BuildTree;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
@@ -14,23 +15,26 @@ public class State implements Json.Serializable {
     
     private int turn;
     private Galaxy galaxy;
-    private List<Unit> units;
+    private final EntityDatabase db;
+    private final List<Unit> units;
     private final Map<String,Faction> factions;
     private final BuildTree buildTree;
     
     // TODO: add properties for difficulty, AI state, etc.
     
     State() {
-        buildTree = new BuildTree();
+        db = new EntityDatabase();
+        buildTree = new BuildTree(db);
         factions = new HashMap<>();
         units = new ArrayList<>();
     }
     
     public State(Galaxy galaxy, Map<String,Faction> factions) {
+        db = new EntityDatabase();
+        buildTree = new BuildTree(db);
         this.galaxy = galaxy;
         this.factions = factions;
         this.units = new ArrayList<>();
-        buildTree = new BuildTree();
     }
     
     public int getTurn() {
@@ -73,7 +77,11 @@ public class State implements Json.Serializable {
             }
         }
         return null;
-    }    
+    }
+
+    public EntityDatabase getDatabase() {
+        return db;
+    }
     
     public BuildTree getBuildTree() {
         return buildTree;

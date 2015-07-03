@@ -1,13 +1,10 @@
 package com.afqa123.intergalactic.model;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.model.UnitType.Action;
 import com.afqa123.intergalactic.util.Path;
 
 public interface Unit {
-
-    enum Action {
-        BUILD_OUTPOST, COLONIZE, INTERCEPT
-    };
     
     String getId();
     
@@ -25,6 +22,7 @@ public interface Unit {
     
     void selectTarget(HexCoordinate target);
     
+    // TODO: this seems specific to ships - revisit and see if we can clean up
     void move();
     
     boolean isReadyForStep();

@@ -1,12 +1,10 @@
-package com.afqa123.intergalactic.util;
+package com.afqa123.intergalactic.logic;
 
-import com.afqa123.intergalactic.asset.Assets;
+import com.afqa123.intergalactic.logic.EntityDatabase;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.BuildOption;
 import com.afqa123.intergalactic.model.ShipType;
-import com.afqa123.intergalactic.model.Structure;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.Json;
+import com.afqa123.intergalactic.model.StructureType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,23 +15,15 @@ public class BuildTree {
 
     private final Map<String,BuildOption> db = new HashMap<>();
 
-    public BuildTree() {
-        Json json = new Json();
-        
-        String raw = Assets.get("data/structures.json");
-        Structure[] structures = json.fromJson(Structure[].class, raw);
-        Gdx.app.debug(BuildTree.class.toString(), String.format("Loaded %d structures.", structures.length));
-        for (Structure s : structures) {
-            db.put(s.getId(), s);
+    public BuildTree(EntityDatabase edb) {
+        // Populate internal database
+        for (ShipType ship : edb.getShips()) {
+            db.put(ship.getId(), ship);
         }
-        
-        raw = Assets.get("data/ships.json");        
-        ShipType[] ships = json.fromJson(ShipType[].class, raw);
-        Gdx.app.debug(BuildTree.class.toString(), String.format("Loaded %d ships.", ships.length));
-        for (ShipType s : ships) {
-            db.put(s.getId(), s);
-        }
-    }    
+        for (StructureType struct : edb.getStructures()) {
+            db.put(struct.getId(), struct);
+        }        
+    }
     
     /**
      * Returns a list of structures and ships that are available to be build
@@ -62,7 +52,7 @@ public class BuildTree {
     public boolean canBuild(final Sector sector, final BuildOption option) {
         // Do not allow duplicate structures
         Set<String> built = sector.getStructures();
-        if ((option instanceof Structure) && built.contains(option.getId())) {
+        if ((option instanceof StructureType) && built.contains(option.getId())) {
             return false;
         }   
         // Check if dependencies have been met
@@ -73,21 +63,7 @@ public class BuildTree {
         } 
         return true;
     }
-    
-    /**
-     * Finds a {@code Structure} by id.
-     * 
-     * @param id The id.
-     * @return The {@code Structure}.
-     */
-    public Structure getStructure(final String id) {
-        return (Structure)db.get(id);
-    }
-    
-    public ShipType getShip(final String id) {
-        return (ShipType)db.get(id);
-    }
-    
+        
     public BuildOption getBuildOption(final String id) {
         return db.get(id);
     }

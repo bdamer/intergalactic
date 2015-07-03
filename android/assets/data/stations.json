@@ -1,0 +1,8 @@
+[
+    {
+        "id": "outpost",
+        "label": "Outpost",
+        "scanRange": 3,
+        "actions": [ ]
+    }
+]

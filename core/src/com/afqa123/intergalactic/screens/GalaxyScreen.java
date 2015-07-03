@@ -14,8 +14,12 @@ import com.afqa123.intergalactic.graphics.Indicator;
 import com.afqa123.intergalactic.graphics.PathRenderer;
 import com.afqa123.intergalactic.graphics.ShipRenderer;
 import com.afqa123.intergalactic.graphics.StarRenderer;
+import com.afqa123.intergalactic.graphics.StationRenderer;
 import com.afqa123.intergalactic.input.SmartInputAdapter;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.model.Station;
+import com.afqa123.intergalactic.model.StationType;
+import com.afqa123.intergalactic.model.UnitType.Action;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -62,7 +66,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                     return true;
                 // Colonizes a planet
                 case Input.Keys.C:
-                    if (selectedUnit != null && selectedUnit.canPerformAction(Unit.Action.COLONIZE)) {
+                    if (selectedUnit != null && selectedUnit.canPerformAction(Action.COLONIZE)) {
                         Sector s = galaxy.getSector(selectedUnit.getCoordinates());
                         if (s.canColonize()) {
                             getState().getPlayer().addColony(s);
@@ -73,15 +77,20 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                     return true;                    
                 // Builds an outpost
                 case Input.Keys.O:
-                    if (selectedUnit != null && selectedUnit.canPerformAction(Unit.Action.BUILD_OUTPOST)) {
+                    if (selectedUnit != null && selectedUnit.canPerformAction(Action.BUILD_OUTPOST)) {
                         Sector s = galaxy.getSector(selectedUnit.getCoordinates());
+                        // TODO: this step should take a few turns
                         if (s.canBuildOutpost()) {
-                            // TODO: this step should take a few turns
-                            getState().getPlayer().addOutpost(s);
+                            // For now, station type must match ship type
+                            StationType type = getState().getDatabase().getStation(selectedUnit.getId());
+                            Station station = getState().getPlayer().addStation(s, type);                            
+                            // Station replace builder unit
                             getState().removeUnit(selectedUnit);
-                            selectedUnit = null;
+                            getState().addUnit(station);                            
+                            selectUnit(station);
                         }
                     }
+                    return true;
                 case Input.Keys.S:
                     getGame().saveAuto();
                     return true;
@@ -143,10 +152,15 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             if (button == Input.Buttons.LEFT) {
                 leftDown = false;
                 HexCoordinate c = pickSector(x, y);
-                // TODO: needs to find unit in sector for faction
-                Unit u = getState().findUnitInSector(c);
-                if (u != null) {
-                    selectUnit(u);
+                List<Unit> units = getState().getUnits();
+                for (Unit u : units) {
+                    // unit needs to be in sector and be owned by player
+                    if (u.getCoordinates().equals(c) && 
+                        getState().getPlayer().equals(u.getOwner()) && 
+                        u != selectedUnit) {
+                        selectUnit(u);
+                        break;
+                    }
                 }
                 return true;
             } else if (button == Input.Buttons.RIGHT) {
@@ -216,6 +230,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final List<Sector> visibleSectors;
     private final PathRenderer pathRenderer;
     private final ShipRenderer shipRenderer;
+    private final StationRenderer stationRenderer;
     private Unit selectedUnit;
     
     // UI
@@ -259,6 +274,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         pathRenderer = new PathRenderer();
         
         shipRenderer = new ShipRenderer();        
+        stationRenderer = new StationRenderer();
     }
     
     @Override
@@ -385,7 +401,11 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         indicator.render(cam);
 
         starRenderer.render(cam, visibleSectors);
+        
+        // TODO: revisit - we need to come up with a better way to handle
+        // the render stack
         shipRenderer.render(cam, getState().getUnits());
+        stationRenderer.render(cam, getState().getUnits());
         
         if (selectedUnit != null) {
             pathRenderer.render(cam, selectedUnit);
@@ -401,6 +421,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         gridRenderer.dispose();
         bgRenderer.dispose();
         starRenderer.dispose();
+        shipRenderer.dispose();
+        stationRenderer.dispose();
         indicator.dispose();
     }
     

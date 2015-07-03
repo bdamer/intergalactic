@@ -5,11 +5,9 @@ import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.model.BuildQueueEntry;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.BuildOption;
-import com.afqa123.intergalactic.model.Structure;
 import com.afqa123.intergalactic.graphics.SectorRenderer;
 import com.afqa123.intergalactic.ui.ChangeListener;
 import com.afqa123.intergalactic.ui.ProductionGroup;
-import com.afqa123.intergalactic.util.BuildTree;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -248,13 +246,11 @@ public class SectorScreen extends AbstractScreen {
         String prod = String.format("\nFood %.2f\nInd %.2f\nSci %.2f",
                 sector.getNetFoodOutput(), sector.getIndustrialOutput(), sector.getScientificOutput());
         productionLabel.setText(prod);
-
-        BuildTree tree = getState().getBuildTree();
         
         // Populate list of existing structure
         sb.setLength(0);
         for (String id : sector.getStructures()) {
-            sb.append(tree.getStructure(id).getLabel());
+            sb.append(getState().getDatabase().getStructure(id).getLabel());
             sb.append("\n");
         }
         structuresLabel.setText(sb.toString());
@@ -281,7 +277,7 @@ public class SectorScreen extends AbstractScreen {
             buildQueueSelect.getY() - buildQueueSelect.getHeight() - height);
         
         // Populate build option dropdown
-        List<BuildOption> availableStructures = tree.getBuildOptions(sector);
+        List<BuildOption> availableStructures = getState().getBuildTree().getBuildOptions(sector);
         List<BuildQueueEntry> buildOptionLabels = new ArrayList<>();
         for (BuildOption option : availableStructures) {
             if (option.isUnique() && inQueue.contains(option.getId())) {

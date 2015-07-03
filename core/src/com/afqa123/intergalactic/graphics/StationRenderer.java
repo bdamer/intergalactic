@@ -1,6 +1,6 @@
 package com.afqa123.intergalactic.graphics;
 
-import com.afqa123.intergalactic.model.Ship;
+import com.afqa123.intergalactic.model.Station;
 import com.afqa123.intergalactic.model.Unit;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -12,14 +12,14 @@ import com.badlogic.gdx.utils.Disposable;
 import java.util.List;
 
 // TODO: clean up naming -> unit renderer?
-public class ShipRenderer implements Disposable {
+public class StationRenderer implements Disposable {
 
-    private static final float SIZE = 0.25f;
-    private static final Vector3 OFFSET = new Vector3(0.0f, 0.2f, 0.0f);
+    private static final float SIZE = 0.5f;
+    private static final Vector3 OFFSET = new Vector3(0.0f, -0.5f, 0.0f);
     private final ShaderProgram sp;
     private final Mesh mesh;        
     
-    public ShipRenderer() {
+    public StationRenderer() {
         sp = ShaderFactory.buildShader("shaders/sc_default.vsh", "shaders/sc_default.fsh");
         mesh = new MeshBuilder().buildCube();
     }
@@ -31,9 +31,10 @@ public class ShipRenderer implements Disposable {
         sp.begin();
 
         for (Unit ship : ships) {
-            if (!(ship instanceof Ship)) {
+            if (!(ship instanceof Station)) {
                 continue;
             }
+            
             Vector3 pos = ship.getCoordinates().toWorld();
             pos.add(OFFSET);
             if (!cam.frustum.sphereInFrustum(pos, SIZE)) {

@@ -1,6 +1,6 @@
 package com.afqa123.intergalactic.model;
 
-public class Structure implements BuildOption {
+public class StructureType implements BuildOption {
 
     private String id;
     private String label;
@@ -10,11 +10,11 @@ public class Structure implements BuildOption {
     private int cost;
     private String[] dependencies;
     
-    Structure() {
+    StructureType() {
         
     }
     
-    public Structure(String id, String label, String detail, int cost, String[] dependencies) {
+    public StructureType(String id, String label, String detail, int cost, String[] dependencies) {
         this.id = id;
         this.label = label;
         this.detail = detail;

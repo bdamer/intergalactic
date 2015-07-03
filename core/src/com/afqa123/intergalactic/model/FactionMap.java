@@ -44,11 +44,30 @@ public class FactionMap implements Json.Serializable {
             }
         }
     }
+    
+    public FactionMapSector getSector(HexCoordinate c) {
+        int row = c.y + radius - 1;
+        int col = (c.y < 0 ? c.x + row : c.x + radius - 1);
+        if (row < 0 || col < 0 || row > map.length - 1 || col > map[row].length - 1) {
+            return null;
+        } else {
+            return map[row][col];        
+        }
+    }
 
-    private void updateSector(HexCoordinate coord) {
+    public FactionMapSector[][] getSectors() {
+        return map;
+    }
+    
+    /**
+     * Increases the range of player movement on the faction map.
+     * 
+     * @param c The coordinate to use as a new range center (ex: colony or outpost)
+     */
+    public void addRange(HexCoordinate coord) {        
         getSector(coord).setRange(Range.SHORT);
 
-        // TODO: use custom range based on colony tech
+        // TODO: use custom range based on colony / outpost tech
         HexCoordinate[] shortRange = coord.getRing(1);
         for (HexCoordinate c : shortRange) {
             FactionMapSector s = getSector(c);
@@ -72,56 +91,11 @@ public class FactionMap implements Json.Serializable {
                 s.addRange(Range.LONG);
             }
         }
-
-        for (FactionMap.ChangeListener l : listeners) {
-            l.mapChanged();
-        }
+        
+        // Explore and notify map listeners
+        explore(coord, 1);
     }
-    
-    public FactionMapSector getSector(HexCoordinate c) {
-        int row = c.y + radius - 1;
-        int col = (c.y < 0 ? c.x + row : c.x + radius - 1);
-        if (row < 0 || col < 0 || row > map.length - 1 || col > map[row].length - 1) {
-            return null;
-        } else {
-            return map[row][col];        
-        }
-    }
-
-    public FactionMapSector[][] getSectors() {
-        return map;
-    }
-    
-    public void addColony(HexCoordinate c) {
-        FactionMapSector s = getSector(c);
-        if (s != null) {
-            s.setStatus(SectorStatus.EXPLORED);
-        }
-        HexCoordinate[] shortRange = c.getRing(1);
-        for (HexCoordinate cs : shortRange) {
-            s = getSector(cs);
-            if (s != null) {
-                s.setStatus(SectorStatus.KNOWN);
-            }
-        }
-        updateSector(c);
-    }
-    
-    public void addOutpost(HexCoordinate c) {
-        FactionMapSector s = getSector(c);
-        if (s != null) {
-            s.setStatus(SectorStatus.EXPLORED);
-        }
-        HexCoordinate[] shortRange = c.getRing(1);
-        for (HexCoordinate cs : shortRange) {
-            s = getSector(cs);
-            if (s != null) {
-                s.setStatus(SectorStatus.KNOWN);
-            }
-        }
-        updateSector(c);
-    }
-    
+        
     public void explore(HexCoordinate c, int radius) {
         // Mark this sector as explored
         FactionMapSector s = getSector(c);

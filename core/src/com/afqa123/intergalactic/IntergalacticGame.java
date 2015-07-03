@@ -10,7 +10,7 @@ import com.afqa123.intergalactic.logic.generators.GalaxyGenerator;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
 import com.afqa123.intergalactic.model.State;
-import com.afqa123.intergalactic.util.BuildTree;
+import com.afqa123.intergalactic.logic.BuildTree;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -97,6 +97,7 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("textures/explosion.png", Texture.class);
         Assets.load("data/sectors.json", JsonValue.class);
         Assets.load("data/ships.json", String.class);
+        Assets.load("data/stations.json", String.class);
         Assets.load("data/structures.json", String.class);
         
         // TODO: load based on system locale

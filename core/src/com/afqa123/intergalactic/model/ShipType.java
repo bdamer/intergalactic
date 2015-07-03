@@ -1,6 +1,6 @@
 package com.afqa123.intergalactic.model;
 
-public class ShipType implements BuildOption {
+public class ShipType implements UnitType, BuildOption {
     
     private String id;
     private String label;
@@ -10,14 +10,14 @@ public class ShipType implements BuildOption {
     private Range range;
     private int scanRange;
     private int movementRange;
-    private Unit.Action[] actions;
+    private Action[] actions;
 
     ShipType() {
         
     }
     
     public ShipType(String id, String label, String detail, int cost, String[] dependencies, 
-        Range range, int movementRange, int scanRange, Unit.Action[] actions) {
+        Range range, int movementRange, int scanRange, Action[] actions) {
         this.id = id;
         this.label = label;
         this.detail = detail;
@@ -71,7 +71,8 @@ public class ShipType implements BuildOption {
         return scanRange;
     }
     
-    public Unit.Action[] getActions() {
+    @Override
+    public Action[] getActions() {
         return actions;
     }    
 }
