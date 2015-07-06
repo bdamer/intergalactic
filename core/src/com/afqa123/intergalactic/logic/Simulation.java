@@ -3,8 +3,10 @@ package com.afqa123.intergalactic.logic;
 import com.afqa123.intergalactic.model.Galaxy;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.Faction;
+import com.afqa123.intergalactic.model.Ship;
+import com.afqa123.intergalactic.model.ShipType;
 import com.afqa123.intergalactic.model.Unit;
-import com.afqa123.intergalactic.model.State;
+import com.afqa123.intergalactic.model.Session;
 import com.badlogic.gdx.Gdx;
 import java.util.HashSet;
 import java.util.List;
@@ -30,18 +32,17 @@ public class Simulation {
         void afterStep();
     };
     
-    private final State state;
+    private final Session state;
     private final Galaxy galaxy;
-    private final Faction player;
     private final Set<StepListener> listeners = new HashSet<>();
 
-    public Simulation(State state) {
+    public Simulation(Session state) {
         this.state = state;
         this.galaxy = state.getGalaxy();
-        this.player = state.getFactions().get("player");
     }
     
-    public void init() {        
+    public void init() {
+        ShipType scoutType = state.getDatabase().getShip("scout");
         // Determine faction start planets
         List<Sector> sectors = galaxy.getStarSystems();
         for (Faction faction : state.getFactions().values()) {
@@ -50,12 +51,14 @@ public class Simulation {
                 home = sectors.get((int)(Math.random() * sectors.size()));
             } while (home.getOwner() != null);            
             faction.addColony(home);
+            Ship scout = new Ship(scoutType, faction);
+            scout.setCoordinates(home.getCoordinates());
+            state.addUnit(scout);
         }
     }
     
     /**
      * Computes the next turn of the simulation.
-     * // TODO: this will have to be done for each player
      */
     public void turn() {
         for (StepListener listener : listeners) {
@@ -64,6 +67,14 @@ public class Simulation {
             }
         }
 
+        // AI turns
+        Gdx.app.log(Simulation.class.getName(), "Simulating other factions.");        
+        for (Faction faction : state.getFactions().values()) {
+            if (!faction.isPlayer()) {
+                faction.getStrategy().nextTurn(state);
+            }
+        }
+        
         state.increaseTurns();
         Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", state.getTurn()));
         

@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 public class Station implements Unit, Json.Serializable {
 
+    private String id;
     private StationType type;
     private Faction owner;
     private HexCoordinate coordinates;
@@ -27,6 +28,16 @@ public class Station implements Unit, Json.Serializable {
     
     @Override
     public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
+    
+    @Override
+    public String getType() {
         return type.getId();
     }
     
@@ -93,9 +104,19 @@ public class Station implements Unit, Json.Serializable {
         }
         return false;
     }
+
+    @Override
+    public boolean colonizeSector(Session session) {
+        return false;
+    }
+
+    @Override
+    public boolean buildStation(Session session) {
+        return false;
+    }    
     
     @Override
-    public void refresh(State state) {
+    public void refresh(Session state) {
         // needed to re-initialize after deserialization
         if (type == null) {
             type = state.getDatabase().getStation(typeName);
@@ -117,5 +138,5 @@ public class Station implements Unit, Json.Serializable {
         typeName = json.readValue("type", String.class, jv);
         ownerName = json.readValue("owner", String.class, jv);
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
-    }    
+    }
 }

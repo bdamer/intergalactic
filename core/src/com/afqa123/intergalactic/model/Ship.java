@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 public class Ship implements Unit, Json.Serializable {
     
+    private String id;
     private ShipType type;
     private Faction owner;
     private HexCoordinate coordinates;
@@ -36,25 +37,31 @@ public class Ship implements Unit, Json.Serializable {
      */
     public Ship(ShipType type, Faction owner) {
         this.type = type;
+        this.movementPoints = type.getMovementRange();
         this.owner = owner;
         this.ownerName = owner.getName();
-        this.movementPoints = type.getMovementRange();
     }
 
     @Override
     public String getId() {
-        return type.getId();
+        return id;
+    }
+    
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
+    @Override
+    public String getType() {
+        return type.getId();
+    }
+    
     @Override
     public Faction getOwner() {
         return owner;
     }
-        
-    public void setOwner(Faction owner) {
-        this.owner = owner;
-    }
-
+    
     @Override
     public int getScanRange() {
         return type.getScanRange();
@@ -63,6 +70,10 @@ public class Ship implements Unit, Json.Serializable {
     @Override
     public float getMovementPoints() {
         return movementPoints;
+    }
+    
+    public Range getRange() {
+        return type.getRange();
     }
     
     @Override
@@ -116,6 +127,7 @@ public class Ship implements Unit, Json.Serializable {
         
         if (path.isEmpty()) {
             path = null;
+            target = null;
         }
     }
     
@@ -141,7 +153,41 @@ public class Ship implements Unit, Json.Serializable {
     }
 
     @Override
-    public void refresh(State state) {
+    public boolean colonizeSector(Session session) {
+        if (!canPerformAction(Action.COLONIZE))
+            return false;
+
+        Sector s = session.getGalaxy().getSector(coordinates);
+        if (!s.canColonize())
+            return false;
+
+        owner.addColony(s);
+        session.removeUnit(this);
+        return true;
+    }
+        
+    // TODO: this step should take a few turns (maybe just flag outpost unit as
+    // "under construction"?)
+    public boolean buildStation(Session session) {
+        if (!canPerformAction(Action.BUILD_STATION)) {
+            return false;
+        }
+        
+        Sector s = session.getGalaxy().getSector(coordinates);
+        if (!s.canBuildOutpost())
+            return false;
+        
+        // For now, station type must match ship type
+        StationType stationType = session.getDatabase().getStation(type.getId());
+        Station station = owner.addStation(s, stationType);                            
+        // Station replace builder unit
+        session.removeUnit(this);
+        session.addUnit(station);                            
+        return true;
+    }
+
+    @Override
+    public void refresh(Session state) {
         // needed to re-initialize after deserialization
         if (type == null) {
             type = state.getDatabase().getShip(typeName);
@@ -158,6 +204,7 @@ public class Ship implements Unit, Json.Serializable {
     
     @Override
     public void write(Json json) {
+        json.writeValue("id", id);
         json.writeValue("type", type.getId());
         json.writeValue("owner", owner.getName());
         json.writeValue("coordinates", coordinates);
@@ -167,6 +214,7 @@ public class Ship implements Unit, Json.Serializable {
 
     @Override
     public void read(Json json, JsonValue jv) {
+        id = json.readValue("id", String.class, jv);
         typeName = json.readValue("type", String.class, jv);
         ownerName = json.readValue("owner", String.class, jv);
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);

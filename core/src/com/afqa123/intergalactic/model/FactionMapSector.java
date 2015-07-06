@@ -1,24 +1,23 @@
 package com.afqa123.intergalactic.model;
 
-import com.badlogic.gdx.utils.JsonValue;
+import com.afqa123.intergalactic.math.HexCoordinate;
 
 public class FactionMapSector { 
     
+    private HexCoordinate coordinate;
     private Range range;
     private SectorStatus status;
 
-    public FactionMapSector() {
+    FactionMapSector() {
+        // required for serialization
+    }
+    
+    public FactionMapSector(HexCoordinate coordinate) {
+        this.coordinate = coordinate;
         range = null;
         status = SectorStatus.UNKNOWN;
     }
     
-    public FactionMapSector(JsonValue json) {
-        if (json.has("range")) {
-            range = Range.valueOf(json.getString("range"));
-        }
-        status = SectorStatus.valueOf(json.getString("status"));
-    }
-
     public Range getRange() {
         return range;
     }
@@ -26,7 +25,7 @@ public class FactionMapSector {
     public void setRange(Range range) {
         this.range = range;
     }
-
+    
     /**
      * Sets range only if the new value is "better" than the previous value.
      * 
@@ -55,5 +54,9 @@ public class FactionMapSector {
         if (status == null || status.ordinal() < s.ordinal()) {
             status = s;
         }
+    }
+    
+    public HexCoordinate getCoordinate() {
+        return coordinate;
     }    
 }

@@ -227,6 +227,18 @@ public final class Sector {
         this.scienceProducers = scienceProducers;
     }
     
+    public void changeFoodProducers(int change) {
+        this.foodProducers += change;
+    }
+
+    public void changeIndustrialProducers(int change) {
+        this.industrialProducers += change;
+    }
+
+    public void changeScienceProducers(int change) {
+        this.scienceProducers += change;
+    }
+
     public float getNetFoodOutput() {
         return (float)(BASE_FOOD_PRODUCTION + foodProducers) * foodMultiplier - (foodConsumptionRate * (int)population);
     }
@@ -270,7 +282,7 @@ public final class Sector {
         }
     }
     
-    public void update(State state) {
+    public void update(Session state) {
         produce(state);
         growPopulation();
         updateModifiers();        
@@ -308,7 +320,7 @@ public final class Sector {
     /**
      * Updates top of production queue.
      */
-    private void produce(State state) {
+    private void produce(Session state) {
         BuildQueueEntry entry = buildQueue.peek();
         if (entry == null) {
             return;
@@ -337,5 +349,15 @@ public final class Sector {
     
     public boolean canBuildOutpost() {
         return (type == null && owner == null);
+    }
+    
+    /**
+     * Returns true if this sector contains a colony of a given faction.
+     * 
+     * @param faction The faction.
+     * @return True if this sector contains a colony of the faction.
+     */
+    public boolean isColony(Faction faction) {
+        return (type != null && faction.getName().equals(owner));
     }
 }

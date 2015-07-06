@@ -250,7 +250,7 @@ public class SectorScreen extends AbstractScreen {
         // Populate list of existing structure
         sb.setLength(0);
         for (String id : sector.getStructures()) {
-            sb.append(getState().getDatabase().getStructure(id).getLabel());
+            sb.append(getSession().getDatabase().getStructure(id).getLabel());
             sb.append("\n");
         }
         structuresLabel.setText(sb.toString());
@@ -277,7 +277,7 @@ public class SectorScreen extends AbstractScreen {
             buildQueueSelect.getY() - buildQueueSelect.getHeight() - height);
         
         // Populate build option dropdown
-        List<BuildOption> availableStructures = getState().getBuildTree().getBuildOptions(sector);
+        List<BuildOption> availableStructures = getSession().getBuildTree().getBuildOptions(sector);
         List<BuildQueueEntry> buildOptionLabels = new ArrayList<>();
         for (BuildOption option : availableStructures) {
             if (option.isUnique() && inQueue.contains(option.getId())) {

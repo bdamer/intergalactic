@@ -3,7 +3,9 @@ package com.afqa123.intergalactic.model;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FactionMap implements Json.Serializable {
@@ -25,8 +27,8 @@ public class FactionMap implements Json.Serializable {
         // required for serialization
     }
     
-    public FactionMap(int radius) {
-        this.radius = radius;
+    public FactionMap(Galaxy galaxy) {
+        this.radius = galaxy.getRadius();
         // build up array of variable size for each row
         int rows = radius * 2 - 1;
         int median = radius - 1;
@@ -35,11 +37,11 @@ public class FactionMap implements Json.Serializable {
         for (int i = 0; i < rows; i++) {
             map[i] = new FactionMapSector[cols];
             for (int j = 0; j < map[i].length; j++) {
-                map[i][j] = new FactionMapSector();
+                map[i][j] = new FactionMapSector(new HexCoordinate(galaxy.offsetToAxial(j, i)));
             }
             if (i < median) {
                 cols++;
-            } else if (i > median) {
+            } else if (i >= median) {
                 cols--;
             }
         }
@@ -59,6 +61,19 @@ public class FactionMap implements Json.Serializable {
         return map;
     }
     
+    public List<FactionMapSector> findSectors(SectorStatus status, Range range) {
+        List<FactionMapSector> res = new ArrayList<>();
+        for (FactionMapSector[] row : map) {
+            for (FactionMapSector s : row) {
+                if (s.getStatus().ordinal() >= status.ordinal() &&
+                    (s.getRange() != null && s.getRange().ordinal() <= range.ordinal())) {
+                    res.add(s);
+                }
+            }
+        }
+        return res;
+    }
+    
     /**
      * Increases the range of player movement on the faction map.
      * 
@@ -68,7 +83,7 @@ public class FactionMap implements Json.Serializable {
         getSector(coord).setRange(Range.SHORT);
 
         // TODO: use custom range based on colony / outpost tech
-        HexCoordinate[] shortRange = coord.getRing(1);
+        HexCoordinate[] shortRange = coord.getRing(Range.SHORT.getDistance());
         for (HexCoordinate c : shortRange) {
             FactionMapSector s = getSector(c);
             if (s != null) {
@@ -76,7 +91,7 @@ public class FactionMap implements Json.Serializable {
             }
         }
 
-        HexCoordinate[] mediumRange = coord.getRing(2);
+        HexCoordinate[] mediumRange = coord.getRing(Range.MEDIUM.getDistance());
         for (HexCoordinate c : mediumRange) {
             FactionMapSector s = getSector(c);
             if (s != null) {
@@ -84,7 +99,7 @@ public class FactionMap implements Json.Serializable {
             }
         }
 
-        HexCoordinate[] longRange = coord.getRing(3);
+        HexCoordinate[] longRange = coord.getRing(Range.LONG.getDistance());
         for (HexCoordinate c : longRange) {
             FactionMapSector s = getSector(c);
             if (s != null) {

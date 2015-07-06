@@ -24,18 +24,14 @@ public class StationRenderer implements Disposable {
         mesh = new MeshBuilder().buildCube();
     }
     
-    public void render(Camera cam, List<Unit> ships) {
+    public void render(Camera cam, List<Station> stations) {
         Matrix4 mvp = new Matrix4();
         Matrix4 model = new Matrix4();
         
         sp.begin();
 
-        for (Unit ship : ships) {
-            if (!(ship instanceof Station)) {
-                continue;
-            }
-            
-            Vector3 pos = ship.getCoordinates().toWorld();
+        for (Station station : stations) {
+            Vector3 pos = station.getCoordinates().toWorld();
             pos.add(OFFSET);
             if (!cam.frustum.sphereInFrustum(pos, SIZE)) {
                 continue;
@@ -46,7 +42,7 @@ public class StationRenderer implements Disposable {
             mvp.mul(model);
 
             sp.setUniformMatrix("u_mvp", mvp);
-            sp.setUniformf("u_color", ship.getOwner().getColor());
+            sp.setUniformf("u_color", station.getOwner().getColor());
             mesh.render(sp, GL20.GL_TRIANGLES);
         }
         

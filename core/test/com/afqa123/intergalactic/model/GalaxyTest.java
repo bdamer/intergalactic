@@ -4,8 +4,6 @@ import com.afqa123.intergalactic.TestApplication;
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.asset.TestAssetManager;
 import com.afqa123.intergalactic.math.HexCoordinate;
-import com.afqa123.intergalactic.model.Galaxy;
-import com.afqa123.intergalactic.model.Sector;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;

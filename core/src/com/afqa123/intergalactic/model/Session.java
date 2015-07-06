@@ -11,9 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class State implements Json.Serializable {
+/**
+ * Session containing the state of the game.
+ */
+public class Session implements Json.Serializable {
     
     private int turn;
+    private int lastId;
     private Galaxy galaxy;
     private final EntityDatabase db;
     private final List<Unit> units;
@@ -22,14 +26,14 @@ public class State implements Json.Serializable {
     
     // TODO: add properties for difficulty, AI state, etc.
     
-    State() {
+    Session() {
         db = new EntityDatabase();
         buildTree = new BuildTree(db);
         factions = new HashMap<>();
         units = new ArrayList<>();
     }
     
-    public State(Galaxy galaxy, Map<String,Faction> factions) {
+    public Session(Galaxy galaxy, Map<String,Faction> factions) {
         db = new EntityDatabase();
         buildTree = new BuildTree(db);
         this.galaxy = galaxy;
@@ -61,18 +65,38 @@ public class State implements Json.Serializable {
         return units;
     }
  
+    /**
+     * Adds a new unit to the session. This will automatically assign an id
+     * to the unit and add it to the faction's unit list.
+     * 
+     * @param unit The unit.
+     */
     public void addUnit(Unit unit) {
+        if (unit.getId() == null) {
+            unit.setId(unit.getType() + (lastId++));
+        }        
         units.add(unit);
+        unit.getOwner().getUnits().add(unit);
         unit.getOwner().getMap().explore(unit.getCoordinates(), unit.getScanRange());
     }
     
     public void removeUnit(Unit unit) {
+        unit.getOwner().getUnits().remove(unit);
         units.remove(unit);
     }
     
     public Unit findUnitInSector(HexCoordinate c) {
         for (Unit u : units) {
             if (u.getCoordinates().equals(c)) {
+                return u;
+            }
+        }
+        return null;
+    }
+    
+    public Unit findUnit(String id) {
+        for (Unit u : units) {
+            if (id.equals(u.getId())) {
                 return u;
             }
         }
@@ -90,6 +114,7 @@ public class State implements Json.Serializable {
     @Override
     public void write(Json json) {
         json.writeValue("turn", turn);
+        json.writeValue("lastId", lastId);        
         json.writeValue("galaxy", galaxy);
         json.writeValue("factions", factions.values());
         json.writeValue("units", units.toArray(new Unit[] { }));
@@ -106,7 +131,7 @@ public class State implements Json.Serializable {
         Unit[] ulist = json.readValue("units", Unit[].class, jv);
         for (Unit u : ulist) {
             u.refresh(this);
-            units.add(u);
+            addUnit(u);
         }
     }
 }

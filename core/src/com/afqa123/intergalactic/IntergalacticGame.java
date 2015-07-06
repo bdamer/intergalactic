@@ -9,7 +9,7 @@ import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.logic.generators.GalaxyGenerator;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
-import com.afqa123.intergalactic.model.State;
+import com.afqa123.intergalactic.model.Session;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -40,7 +40,7 @@ public class IntergalacticGame extends ApplicationAdapter {
     // The simulation engine
     private Simulation simulation;
     // State of the game
-    private State state;
+    private Session session;
     
     //private Galaxy galaxy;
     //private Map<String,Faction> factions;
@@ -71,8 +71,8 @@ public class IntergalacticGame extends ApplicationAdapter {
                 Map<String,Faction> factions = new HashMap<>();
                 factions.put(PLAYER_FACTION, new Faction(PLAYER_FACTION, new Color(1.0f, 1.0f, 0.0f, 1.0f), true, galaxy));
                 factions.put("ai", new Faction("ai", new Color(0.0f, 1.0f, 0.0f, 1.0f), false, galaxy));
-                state = new State(galaxy, factions);
-                simulation = new Simulation(state);
+                session = new Session(galaxy, factions);
+                simulation = new Simulation(session);
                 simulation.init();
             }
 
@@ -95,6 +95,7 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("textures/detail.png", Texture.class);
         Assets.load("textures/ui.png", Texture.class);        
         Assets.load("textures/explosion.png", Texture.class);
+        Assets.load("data/plans/plan01.json", String.class);
         Assets.load("data/sectors.json", JsonValue.class);
         Assets.load("data/ships.json", String.class);
         Assets.load("data/stations.json", String.class);
@@ -183,8 +184,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         return labels;
     }
     
-    public State getState() {
-        return state;
+    public Session getSession() {
+        return session;
     }
     
     public Simulation getSimulation() {
@@ -194,7 +195,7 @@ public class IntergalacticGame extends ApplicationAdapter {
     public void save(String filename) {
         try (JsonWriter writer = new JsonWriter(new FileWriter(filename))) {
             Json json = new Json();
-            json.toJson(state, writer);            
+            json.toJson(session, writer);            
         } catch (IOException ex) {
             Gdx.app.error(IntergalacticGame.class.getName(), "Error saving file.", ex);
         }        
@@ -203,8 +204,8 @@ public class IntergalacticGame extends ApplicationAdapter {
     public void load(String filename) {
         try (FileReader reader = new FileReader(filename)) {
             Json json = new Json();
-            state = json.fromJson(State.class, reader);
-            simulation = new Simulation(state);
+            session = json.fromJson(Session.class, reader);
+            simulation = new Simulation(session);
         } catch (IOException ex) {
             Gdx.app.error(IntergalacticGame.class.getName(), "Error loading file.", ex);            
         }

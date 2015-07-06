@@ -2,7 +2,7 @@ package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.asset.FontProvider;
-import com.afqa123.intergalactic.model.State;
+import com.afqa123.intergalactic.model.Session;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -21,12 +21,12 @@ public abstract class AbstractScreen implements Screen {
     private final Stage stage;
     private final Skin skin;    
     private final IntergalacticGame game;
-    private final State state;
+    private final Session session;
     private boolean done;
     
     public AbstractScreen(IntergalacticGame game) {
         this.game = game;
-        this.state = game.getState();
+        this.session = game.getSession();
         // TODO: look into viewports for different ratios
         stage = new Stage(new FitViewport(STAGE_WIDTH, STAGE_HEIGHT));
         skin = new Skin(Gdx.files.internal("skins/uiskin.json"));
@@ -45,8 +45,8 @@ public abstract class AbstractScreen implements Screen {
         return game;
     }
     
-    protected State getState() {
-        return state;
+    protected Session getSession() {
+        return session;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.model.Ship;
-import com.afqa123.intergalactic.model.Unit;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -24,16 +23,13 @@ public class ShipRenderer implements Disposable {
         mesh = new MeshBuilder().buildCube();
     }
     
-    public void render(Camera cam, List<Unit> ships) {
+    public void render(Camera cam, List<Ship> ships) {
         Matrix4 mvp = new Matrix4();
         Matrix4 model = new Matrix4();
         
         sp.begin();
 
-        for (Unit ship : ships) {
-            if (!(ship instanceof Ship)) {
-                continue;
-            }
+        for (Ship ship : ships) {
             Vector3 pos = ship.getCoordinates().toWorld();
             pos.add(OFFSET);
             if (!cam.frustum.sphereInFrustum(pos, SIZE)) {

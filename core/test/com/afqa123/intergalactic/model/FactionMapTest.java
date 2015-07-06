@@ -8,7 +8,8 @@ public class FactionMapTest {
 
     @Test
     public void testSerialization() {
-        FactionMap expected = new FactionMap(10);
+        Galaxy galaxy = new Galaxy(10);
+        FactionMap expected = new FactionMap(galaxy);
         Json json = new Json();
         String raw = json.toJson(expected);
         FactionMap actual = json.fromJson(FactionMap.class, raw);

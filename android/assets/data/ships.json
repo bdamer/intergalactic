@@ -19,7 +19,7 @@
         "range": "MEDIUM",
         "movementRange": 1,
         "scanRange": 1,
-        "actions": ["BUILD_OUTPOST"]
+        "actions": ["BUILD_STATION"]
     },
     {
         "id": "raider",
@@ -40,7 +40,7 @@
         "dependencies": ["research_lab","shipyard"],
         "range": "LONG",
         "movementRange": 2,
-        "scanRange": 3,
+        "scanRange": 2,
         "actions": [ ]
     }
 ]

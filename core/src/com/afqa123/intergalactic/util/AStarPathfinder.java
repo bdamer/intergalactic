@@ -3,11 +3,10 @@ package com.afqa123.intergalactic.util;
 import com.afqa123.intergalactic.model.FactionMap;
 import com.afqa123.intergalactic.model.Range;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.model.FactionMapSector;
 import com.afqa123.intergalactic.util.Path.PathStep;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.ListIterator;
 import java.util.Set;
 
 /**
@@ -17,7 +16,6 @@ public class AStarPathfinder implements Pathfinder {
 
     // Base cost to move from one tile to another
     private final static float BASE_COST = 1.0f;
-    private final static float INVALID_COST = 10.0f;
     
     private class PathNode {
         
@@ -58,36 +56,6 @@ public class AStarPathfinder implements Pathfinder {
         }
     };
 
-    /**
-     * Ordered list implementation.
-     * 
-     * @param <E> The element type.
-     */
-    private class PriorityList<E> extends LinkedList<E> {
-
-        private final Comparator<E> comparator;
-        
-        public PriorityList(Comparator<E> comparator) {
-            this.comparator = comparator;
-        }
-        
-        @Override
-        public boolean add(E e) {
-            ListIterator<E> it = listIterator();
-            while (it.hasNext()) {
-                E el = it.next();
-                if (comparator.compare(e, el) < 0) {
-                    // at this point, we've gone too far - the new element's value
-                    // is less than the current element's value, so move back
-                    it.previous();
-                    break;
-                }
-            }
-            it.add(e);
-            return true;
-        }
-    };
-    
     private final Set<PathNode> visited;
     private final PriorityList<PathNode> candidates;
     private final Range validRange;
@@ -147,7 +115,11 @@ public class AStarPathfinder implements Pathfinder {
     private void addNeighbors(PathNode parent) {
         HexCoordinate[] neighbors = parent.coord.getRing(1);
         for (HexCoordinate c : neighbors) {
-            Range range = map.getSector(c).getRange();
+            FactionMapSector sector = map.getSector(c);
+            if (sector == null) {
+                continue; // skip invalid coordinates
+            }
+            Range range = sector.getRange();
             if (range == null || range.ordinal() > validRange.ordinal()) {
                 continue; // skip invalid coordinates
             }

@@ -83,8 +83,8 @@ public class GridRenderer implements Disposable {
         mesh.setVertices(vertices, 0, counter * NUM_VERTICES * VERTEX_SIZE);
         mesh.setIndices(indices, 0, counter * NUM_INDICES);
         
-        Gdx.app.debug(GridRenderer.class.getName(), String.format("Mesh vertices: %d", mesh.getNumVertices()));
-        Gdx.app.debug(GridRenderer.class.getName(), String.format("Mesh indices: %d", mesh.getNumIndices()));
+        //Gdx.app.debug(GridRenderer.class.getName(), String.format("Mesh vertices: %d", mesh.getNumVertices()));
+        //Gdx.app.debug(GridRenderer.class.getName(), String.format("Mesh indices: %d", mesh.getNumIndices()));
     }
     
     private void addHex(Vector3 pos, Color color, float[] vertices, short[] indices, int vCount) {
