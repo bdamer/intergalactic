@@ -4,6 +4,7 @@ import com.afqa123.intergalactic.logic.strategy.Goal.Type;
 import com.afqa123.intergalactic.logic.strategy.Plan.Status;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.Faction;
+import com.afqa123.intergalactic.model.FactionMap;
 import com.afqa123.intergalactic.model.FactionMapSector;
 import com.afqa123.intergalactic.model.Galaxy;
 import com.afqa123.intergalactic.model.Range;
@@ -99,9 +100,9 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
         } 
     }
 
-    private FactionState updateFactionState(Session state) {
-        final Faction faction = state.getFactions().get(factionName);
-        final Galaxy galaxy = state.getGalaxy();
+    private FactionState updateFactionState(Session session) {
+        final Faction faction = session.getFactions().get(factionName);
+        final Galaxy galaxy = session.getGalaxy();
         FactionState fs = new FactionState(faction, galaxy);
 
         // Find idle ships
@@ -112,7 +113,7 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
         }
 
         HexCoordinate exploreTarget = null;
-        HexCoordinate outpostCandidate = null;
+        List<HexCoordinate> stationCandidates = new ArrayList<>();
         int colonyCandidates = 0;
         
         // Add goals for sectors within faction range
@@ -133,12 +134,11 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
             HexCoordinate c = s.getCoordinate();
             Sector sector = galaxy.getSector(c);
             // Check if this sector would be a good candidate for an outpost
-            // TODO: improve - the distribution feels fairly random
-            if (outpostCandidate == null && s.getRange() == Range.MEDIUM && sector.canBuildOutpost()) {
+            if (s.getRange() == Range.MEDIUM && sector.canBuildOutpost()) {
                 // Don't build outposts towards the outer rim
                 int d = c.getDistance(HexCoordinate.ORIGIN);
                 if (d < (galaxy.getRadius() - Range.LONG.getDistance())) {
-                    outpostCandidate = sector.getCoordinates(); // mark outpost candidate for later use
+                    stationCandidates.add(sector.getCoordinates()); // mark outpost candidate for later use
                 }
             }
             
@@ -163,7 +163,7 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
         if (colonyCandidates == 0) {
             // check that no other plans to build station are active
             if (getGoalsByType(Type.BUILD_STATION).isEmpty()) {
-                addGoal(new Goal(Type.BUILD_STATION, outpostCandidate));
+                addGoal(new Goal(Type.BUILD_STATION, evaluteStationCandidates(session, stationCandidates)));
             }
         }
         
@@ -215,6 +215,82 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
                 sector.changeIndustrialProducers(free);
             }
         }        
+    }
+
+    /**
+     * Evaluates a set of candidate coordinates to find the best location for
+     * a station. For the purpose of the evaluation, best is defined as 
+     * providing the largest gain in territory.
+     * 
+     * @param session The session.
+     * @param candidates The list of candidates to evaluate.
+     * @return The best location.
+     */
+    private HexCoordinate evaluteStationCandidates(Session session, List<HexCoordinate> candidates) {
+        FactionMap map = session.getFactions().get(factionName).getMap();
+        Galaxy galaxy = session.getGalaxy();
+
+        int bestScore = 0;
+        HexCoordinate bestCoord = null;
+        for (HexCoordinate c : candidates) {
+            int score = 0;
+            
+            // 3 point for new SHORT RANGE
+            HexCoordinate[] ring = c.getRing(Range.SHORT.getDistance());
+            for (HexCoordinate cn : ring) {
+                FactionMapSector ms = map.getSector(cn);
+                if (ms == null) {
+                    continue;
+                }
+                Range range = ms.getRange();
+                if (range == null || range.getDistance() > Range.SHORT.getDistance()) {
+                    score += 3;
+                }
+                if (galaxy.getSector(cn).getType() != null) {
+                    score++;
+                }
+            }
+            
+            // 2 point for new MEDIUM RANGE
+            ring = c.getRing(Range.MEDIUM.getDistance());
+            for (HexCoordinate cn : ring) {
+                FactionMapSector ms = map.getSector(cn);
+                if (ms == null) {
+                    continue;
+                }
+                Range range = ms.getRange();
+                if (range == null || range.getDistance() > Range.MEDIUM.getDistance()) {
+                    score += 2;
+                }
+                if (galaxy.getSector(cn).getType() != null) {
+                    score++;
+                }
+            }
+            
+            // 1 point for new LONG RANGE
+            ring = c.getRing(Range.LONG.getDistance());
+            for (HexCoordinate cn : ring) {
+                FactionMapSector ms = map.getSector(cn);
+                if (ms == null) {
+                    continue;
+                }
+                Range range = ms.getRange();
+                if (range == null) {
+                    score += 1;
+                }
+                if (galaxy.getSector(cn).getType() != null) {
+                    score++;
+                }
+            }
+            
+            // TODO: Any additional factors
+            
+            if (score > bestScore) {
+                bestScore = score;
+                bestCoord = c;
+            }
+        }
+        return bestCoord;
     }
     
     private void onGoalCompleted(Goal goal) {

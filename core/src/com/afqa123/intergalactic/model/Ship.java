@@ -20,6 +20,7 @@ public class Ship implements Unit, Json.Serializable {
     private Path path; 
     // Movement points remaining this turn
     private float movementPoints;
+    private boolean fortified;
 
     // TODO: fixme - only needed during deserialization
     private String typeName;
@@ -106,6 +107,12 @@ public class Ship implements Unit, Json.Serializable {
     public Path getPath() {
         return path;
     }
+
+    public void fortify() {
+        this.fortified = true;
+        this.path = null;
+        this.target = null;
+    }
     
     @Override
     public void move() {
@@ -138,8 +145,7 @@ public class Ship implements Unit, Json.Serializable {
 
     @Override
     public boolean isReadyForStep() {
-        // TODO: include other conditions (fortified, sleep, etc)
-        return movementPoints < 1.0f;
+        return (fortified || movementPoints < 1.0f);
     }
 
     @Override
@@ -168,6 +174,7 @@ public class Ship implements Unit, Json.Serializable {
         
     // TODO: this step should take a few turns (maybe just flag outpost unit as
     // "under construction"?)
+    @Override
     public boolean buildStation(Session session) {
         if (!canPerformAction(Action.BUILD_STATION)) {
             return false;
@@ -184,6 +191,11 @@ public class Ship implements Unit, Json.Serializable {
         session.removeUnit(this);
         session.addUnit(station);                            
         return true;
+    }
+
+    @Override
+    public void wake() {
+        fortified = false;
     }
 
     @Override
@@ -210,6 +222,7 @@ public class Ship implements Unit, Json.Serializable {
         json.writeValue("coordinates", coordinates);
         json.writeValue("target", target);
         json.writeValue("movementPoints", movementPoints);
+        json.writeValue("fortified", fortified);
     }
 
     @Override
@@ -220,5 +233,6 @@ public class Ship implements Unit, Json.Serializable {
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
         target = json.readValue("target", HexCoordinate.class, jv);
         movementPoints = json.readValue("movementPoints", Float.class, jv);        
+        fortified = json.readValue("fortified", Boolean.class, jv);
     }
 }

@@ -4,6 +4,8 @@ import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.UnitType.Action;
 import com.afqa123.intergalactic.util.Path;
 
+// TODO: revisit this - the unit interface contains too many methods only 
+// available in some of the subclasses
 public interface Unit {
     
     String getId();
@@ -26,7 +28,6 @@ public interface Unit {
     
     void selectTarget(HexCoordinate target);
     
-    // TODO: this seems specific to ships - revisit and see if we can clean up
     void move();
     
     boolean isReadyForStep();
@@ -54,4 +55,6 @@ public interface Unit {
      * @return True if stations was build, otherwise false.
      */
     boolean buildStation(Session session);
+    
+    void wake();
 }

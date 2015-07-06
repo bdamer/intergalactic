@@ -83,6 +83,13 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                         selectedUnit = null;
                     }
                     return true;
+                case Input.Keys.F:
+                    if (selectedUnit instanceof Ship) {
+                        Ship selected = (Ship)selectedUnit;
+                        selected.fortify();
+                        selectedUnit = null;
+                    }
+                    return true;
                 case Input.Keys.S:
                     getGame().saveAuto();
                     return true;
@@ -473,5 +480,6 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
         cam.lookAt(target);
         cam.update();
+        selectedUnit.wake();
     }
 }

@@ -12,11 +12,16 @@ import java.util.Set;
  */
 public final class Sector {
 
-    // TODO: review
-    private static final int BASE_FOOD_PRODUCTION = 0;
-    private static final int BASE_IND_PRODUCTION = 0;
-    private static final int BASE_SCI_PRODUCTION = 0;    
-    private static final float TURBULENCE = 1.0f / 50000.0f;
+    // TODO: externalize these settings so we can change them more easily
+    private static final double BASE_FOOD_PRODUCTION = 0.0;
+    private static final double BASE_IND_PRODUCTION = 1.0;
+    private static final double BASE_SCI_PRODUCTION = 0.0;    
+    private static final double DEFAULT_FOOD_MULTIPLIER = 1.0;
+    private static final double DEFAULT_IND_MULTIPLIER = 0.25;
+    private static final double DEFAULT_SCI_MULTIPLIER = 0.5;
+    private static final double DEFAULT_FOOD_CONSUMPTION = 0.3;
+    
+    private static final float TURBULENCE = 1.0f / 100000.0f;
     private String name;
     private String owner;
     
@@ -29,16 +34,16 @@ public final class Sector {
     private int maxPopulation;
     private double growthRate;
 
-    private float morale;
-    private float foodConsumptionRate;
+    private double morale;
+    private double foodConsumptionRate;
     // Members of population allocated to production
     private int foodProducers;
     private int industrialProducers;
     private int scienceProducers;
     // Production multipliers
-    private float foodMultiplier;
-    private float industrialMultiplier;
-    private float scienceMultiplier;
+    private double foodMultiplier;
+    private double industrialMultiplier;
+    private double scienceMultiplier;
     // Buildings and production queue
     private Set<String> structures;
     private Queue<BuildQueueEntry> buildQueue;
@@ -174,13 +179,13 @@ public final class Sector {
     }    
     
     public Morale getMorale() {
-        if (morale < 0.2f) {
+        if (morale < 0.2) {
             return Morale.REBELLIOUS;
-        } else if (morale < 0.4f) {
+        } else if (morale < 0.4) {
             return Morale.DISGRUNTLED;
-        } else if (morale < 0.6f) {
+        } else if (morale < 0.6) {
             return Morale.CONTENT;
-        } else if (morale < 0.8f) {
+        } else if (morale < 0.8) {
             return Morale.PLEASED;
         } else {
             return Morale.ECSTATIC;
@@ -189,10 +194,6 @@ public final class Sector {
 
     public double getGrowthRate() {
         return growthRate;
-    }
-
-    public void setGrowthRate(double growthRate) {
-        this.growthRate = growthRate;
     }
 
     public int getTurnsUntilGrowth() {
@@ -239,16 +240,16 @@ public final class Sector {
         this.scienceProducers += change;
     }
 
-    public float getNetFoodOutput() {
-        return (float)(BASE_FOOD_PRODUCTION + foodProducers) * foodMultiplier - (foodConsumptionRate * (int)population);
+    public double getNetFoodOutput() {
+        return BASE_FOOD_PRODUCTION + (double)foodProducers * foodMultiplier - (foodConsumptionRate * (int)population);
     }
 
-    public float getScientificOutput() {
-        return (float)(BASE_SCI_PRODUCTION + scienceProducers) * scienceMultiplier;
+    public double getScientificOutput() {
+        return BASE_SCI_PRODUCTION + (double)scienceProducers * scienceMultiplier;
     }
     
-    public float getIndustrialOutput() {
-        return (float)(BASE_IND_PRODUCTION + industrialProducers) * industrialMultiplier;
+    public double getIndustrialOutput() {
+        return BASE_IND_PRODUCTION + (double)industrialProducers * industrialMultiplier;
     }
 
     public Queue<BuildQueueEntry> getBuildQueue() {
@@ -261,11 +262,17 @@ public final class Sector {
     
     public void updateModifiers() {
         // Default everything...
-        scienceMultiplier = 1.0f;
-        foodMultiplier = 1.0f;
-        industrialMultiplier = 1.0f;
-        foodConsumptionRate = 0.3f;
-        growthRate = 0.1;
+        // TODO: externalize these settings so we can change them more easily
+        foodMultiplier = DEFAULT_FOOD_MULTIPLIER;
+        industrialMultiplier = DEFAULT_IND_MULTIPLIER;
+        scienceMultiplier = DEFAULT_SCI_MULTIPLIER;
+        foodConsumptionRate = DEFAULT_FOOD_CONSUMPTION;
+        // Growth rate slows down as population increases [0.09-0.01]
+        if (population < 9.0) {
+            growthRate = (10.0 - population) / 100.0;
+        } else {
+            growthRate = 0.01;
+        }
         // TODO: or is morale different from other values in that it changes
         // more slowly, over time?
         morale = 0.5f;
@@ -325,7 +332,7 @@ public final class Sector {
         if (entry == null) {
             return;
         }
-        float remaining = entry.getCost() - getIndustrialOutput();
+        double remaining = entry.getCost() - getIndustrialOutput();
         if (remaining > 0) {
             entry.setCost(remaining);
         } else {

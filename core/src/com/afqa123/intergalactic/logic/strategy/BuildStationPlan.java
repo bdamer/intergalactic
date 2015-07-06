@@ -24,6 +24,10 @@ public class BuildStationPlan implements Plan {
     private HexCoordinate productionSector;
     private String shipId;
     
+    BuildStationPlan() {
+        // required for serialization
+    }
+    
     public BuildStationPlan(Goal goal) {
         this.goal = goal;
         this.step = Step.START;

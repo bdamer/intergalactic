@@ -116,6 +116,11 @@ public class Station implements Unit, Json.Serializable {
     }    
     
     @Override
+    public void wake() {
+        
+    }
+
+    @Override
     public void refresh(Session state) {
         // needed to re-initialize after deserialization
         if (type == null) {

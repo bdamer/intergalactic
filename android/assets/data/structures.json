@@ -11,7 +11,7 @@
         "label": "Climate Control",
         "detail": "Controls planetary climate to increase food production.",
         "provides": "+10% FOOD",
-        "cost": 10,
+        "cost": 15,
         "dependencies": []
     },
     {
@@ -19,7 +19,7 @@
         "label": "Fabricators",
         "detail": "Increases industrial production.",
         "provides": "+25% IND",
-        "cost": 10,
+        "cost": 15,
         "dependencies": []
     },
     {
@@ -27,7 +27,7 @@
         "label": "Mass Replication",
         "detail": "Increases industrial production.",
         "provides": "+20% IND",
-        "cost": 10,
+        "cost": 20,
         "dependencies": [ "fabricators", "research_lab" ]
     },
     {
@@ -35,7 +35,7 @@
         "label": "Nano Fabrication",
         "detail": "Increases industrial production.",
         "provides": "+15% IND",
-        "cost": 10,
+        "cost": 40,
         "dependencies": [ "mass_replication", "research_lab" ]
     },
     {
@@ -43,21 +43,21 @@
         "label": "Off-world Farming",
         "detail": "Increases food production.",
         "provides": "+100 FOOD",
-        "cost": 10,
+        "cost": 30,
         "dependencies": [ "climate_control", "shipyard" ]
     },
     {
         "id": "orbital_laser",
         "label": "Orbital Laser",
         "detail": "Provides orbital defense against enemy ships.",
-        "cost": 10,
+        "cost": 20,
         "dependencies": [ "shipyard", "science_academy" ]
     },
     {
         "id": "scanner",
         "label": "Scanner",
         "detail": "Increases this colonies scan and supply range.",
-        "cost": 10,
+        "cost": 30,
         "dependencies": [ "shipyard", "research_lab" ]
     },
     {
@@ -65,21 +65,21 @@
         "label": "Science Academy",
         "detail": "Increases scientific research.",
         "provides": "+15% SCI",
-        "cost": 10,
+        "cost": 20,
         "dependencies": [ "research_lab" ]
     },
     {
         "id": "shield_generator",
         "label": "Shield Generator",
         "detail": "Provides orbital defense against enemy ships.",
-        "cost": 10,
+        "cost": 25,
         "dependencies": [ "science_academy" ]
     },
     {
         "id": "shipyard",
         "label": "Shipyard",
         "detail": "Enables construction of ships.",
-        "cost": 10,
+        "cost": 15,
         "dependencies": [ ]
     },
     {

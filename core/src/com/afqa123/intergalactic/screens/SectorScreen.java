@@ -265,7 +265,7 @@ public class SectorScreen extends AbstractScreen {
             sb.append(e.getLabel());
             sb.append(" (");
             if (sector.getIndustrialOutput() > 0.0f) {
-                sb.append(Math.round(e.getCost() / sector.getIndustrialOutput()));
+                sb.append((int)Math.ceil(e.getCost() / sector.getIndustrialOutput()));
             } else {
                 sb.append(-1);
             }            
