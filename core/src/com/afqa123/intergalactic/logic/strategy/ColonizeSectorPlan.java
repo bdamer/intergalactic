@@ -36,7 +36,7 @@ public class ColonizeSectorPlan implements Plan {
     }
     
     @Override
-    public Status update(Session state, FactionState fs) {
+    public Status update(Session session, FactionState fs) {
         Status res = null;
         Sector producer = null;
         Ship colonizer = null;
@@ -64,7 +64,7 @@ public class ColonizeSectorPlan implements Plan {
                 break;
                 
             case FIND_IDLE_COLONY:
-                BuildTree tree = state.getBuildTree();
+                BuildTree tree = session.getBuildTree();
                 // TODO: remove hardcoded reference - can we search for any build options that can perform Action.COLONIZE?
                 BuildOption option = tree.getBuildOption("colony_ship");
                 for (Sector s : fs.idleSectors) {
@@ -96,21 +96,21 @@ public class ColonizeSectorPlan implements Plan {
                 break;
 
             case MOVE_SHIP:
-                colonizer = (Ship)state.findUnit(shipId);
+                colonizer = (Ship)session.findUnit(shipId);
                 if (colonizer == null) {
                     // unit destroyed?
                     res = Status.INVALID; // again, we could move back into the initial state 
                                           // but it's probably cleaner to re-evaluate the goal
                 } else if (colonizer.getCoordinates().equals(goal.getTargetSector())) {
                     // attempt to colonize
-                    if (colonizer.colonizeSector(state)) {
+                    if (colonizer.colonizeSector(session)) {
                         res = Status.COMPLETE;
                     } else {
                         res = Status.INVALID;
                     }
                 } else {
                     // unit still moving to target
-                    colonizer.move();
+                    colonizer.move(session);
                     res = Status.BLOCKED;
                 }
                 break;

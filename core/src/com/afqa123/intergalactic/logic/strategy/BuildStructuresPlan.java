@@ -41,9 +41,9 @@ public class BuildStructuresPlan implements Plan {
     }
 
     @Override
-    public Status update(Session state, SimpleStrategy.FactionState fs) {
+    public Status update(Session session, SimpleStrategy.FactionState fs) {
         Status res = null;
-        Sector sector = state.getGalaxy().getSector(goal.getTargetSector());
+        Sector sector = session.getGalaxy().getSector(goal.getTargetSector());
         switch (step) {
             case START:
                 // check that sector is in fact idle
@@ -60,7 +60,7 @@ public class BuildStructuresPlan implements Plan {
                     res = Status.INVALID;
                 } else {
                     // add id to build queue
-                    StructureType struct = state.getDatabase().getStructure(id);
+                    StructureType struct = session.getDatabase().getStructure(id);
                     sector.getBuildQueue().add(new BuildQueueEntry(id, struct.getLabel(), struct.getCost()));
                     res = Status.ACTIVE;
                     step = Step.BUILD;

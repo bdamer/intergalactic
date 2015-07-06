@@ -30,7 +30,7 @@
         "range": "MEDIUM",
         "movementRange": 2,
         "scanRange": 2,
-        "actions": ["INTERCEPT"]
+        "actions": ["ATTACK","INTERCEPT"]
     },
     {
         "id": "scout",
@@ -41,6 +41,6 @@
         "range": "LONG",
         "movementRange": 2,
         "scanRange": 2,
-        "actions": [ ]
+        "actions": ["ATTACK"]
     }
 ]

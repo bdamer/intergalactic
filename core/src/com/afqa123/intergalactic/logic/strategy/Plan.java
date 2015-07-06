@@ -11,7 +11,7 @@ public interface Plan {
         INVALID
     };
 
-    Status update(Session state, SimpleStrategy.FactionState fs);
+    Status update(Session session, SimpleStrategy.FactionState fs);
     
     Goal getGoal();
 }

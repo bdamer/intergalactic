@@ -34,7 +34,7 @@ public class BuildStationPlan implements Plan {
     }
     
     @Override
-    public Status update(Session state, SimpleStrategy.FactionState fs) {
+    public Status update(Session session, SimpleStrategy.FactionState fs) {
         Status res = null;
         Sector producer = null;
         Ship ship = null;
@@ -62,7 +62,7 @@ public class BuildStationPlan implements Plan {
                 break;
                 
             case FIND_IDLE_COLONY:
-                BuildTree tree = state.getBuildTree();
+                BuildTree tree = session.getBuildTree();
                 // TODO: remove hardcoded reference - can we search for any build options that can perform Action.BUILD_STATION?
                 BuildOption option = tree.getBuildOption("outpost");
                 for (Sector s : fs.idleSectors) {
@@ -94,20 +94,20 @@ public class BuildStationPlan implements Plan {
                 break;
 
             case MOVE_SHIP:
-                ship = (Ship)state.findUnit(shipId);
+                ship = (Ship)session.findUnit(shipId);
                 if (ship == null) {
                     // unit destroyed?
                     res = Status.INVALID; // again, we could move back into the initial state 
                                           // but it's probably cleaner to re-evaluate the goal
                 } else if (ship.getCoordinates().equals(goal.getTargetSector())) {
-                    if (ship.buildStation(state)) {
+                    if (ship.buildStation(session)) {
                         res = Status.COMPLETE;
                     } else {
                         res = Status.INVALID;
                     }
                 } else {
                     // unit still moving to target
-                    ship.move();
+                    ship.move(session);
                     res = Status.BLOCKED;
                 }
                 break;

@@ -115,7 +115,7 @@ public class Ship implements Unit, Json.Serializable {
     }
     
     @Override
-    public void move() {
+    public void move(Session session) {
         if (path == null) {
             return;
         }        
@@ -124,12 +124,30 @@ public class Ship implements Unit, Json.Serializable {
             if (movementPoints < step.cost) {
                 break;
             }
-            // TODO: check if target is valid
-            // TODO: animate
+            path.pop();
+            
+            // Check if next sector is occupied by another unit
+            Unit u = session.findUnitInSector(step.coordinate);
+            if (u != null) {
+                // allow unit to pass through a sector with units as long
+                // as it ends its turn somewhere else
+                boolean canPass = false;
+                if (path.size() > 0) {
+                    PathStep nextStep = path.peek();
+                    Unit nextu = session.findUnitInSector(nextStep.coordinate);
+                    if (nextu == null && movementPoints >= (step.cost + nextStep.cost)) {
+                        canPass = true;
+                    }
+                }
+                if (!canPass) {
+                    // abandon current path
+                    path.clear();
+                    break;
+                }
+            }
             coordinates = step.coordinate;
             owner.getMap().explore(step.coordinate, type.getScanRange());
             movementPoints -= step.cost;
-            path.pop();
         }
         
         if (path.isEmpty()) {

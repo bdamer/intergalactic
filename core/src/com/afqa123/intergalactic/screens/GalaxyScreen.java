@@ -17,6 +17,7 @@ import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.afqa123.intergalactic.graphics.StationRenderer;
 import com.afqa123.intergalactic.input.SmartInputAdapter;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.model.Station;
 import com.badlogic.gdx.Gdx;
@@ -167,7 +168,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             } else if (button == Input.Buttons.RIGHT) {
                 rightDown = false;
                 if (selectedUnit != null && selectedUnit.getPath() != null) {
-                    selectedUnit.move();
+                    selectedUnit.move(getSession());
                     Vector3 target = selectedUnit.getCoordinates().toWorld();
                     indicator.setPosition(target);
                 }
@@ -353,7 +354,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     
     @Override
     public boolean prepareStep() {
-        List<Unit> units = getSession().getPlayer().getUnits();
+        Session session = getSession();
+        List<Unit> units = session.getPlayer().getUnits();
         int i = 0;
         while (i < units.size()) {
             Unit u = units.get(i);
@@ -366,7 +368,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 if (u.getPath() == null) {
                     return false;
                 }
-                u.move();
+                u.move(session);
             } else {
                 // only increment if unit was ready, otherwise we'll check again 
                 // during the next iteration

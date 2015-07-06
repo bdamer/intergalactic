@@ -36,7 +36,7 @@ public class ExploreSectorPlan implements Plan {
     }
     
     @Override
-    public Status update(Session state, SimpleStrategy.FactionState fs) {
+    public Status update(Session session, SimpleStrategy.FactionState fs) {
         Status res = null;
         Sector producer = null;
         Ship explorer = null;
@@ -75,7 +75,7 @@ public class ExploreSectorPlan implements Plan {
                 break;
                 
             case FIND_IDLE_COLONY:
-                BuildTree tree = state.getBuildTree();
+                BuildTree tree = session.getBuildTree();
                 // TODO: remove hardcoded reference
                 BuildOption option = tree.getBuildOption("scout");
                 for (Sector s : fs.idleSectors) {
@@ -107,14 +107,14 @@ public class ExploreSectorPlan implements Plan {
                 break;
 
             case MOVE_SHIP:
-                explorer = (Ship)state.findUnit(shipId);
+                explorer = (Ship)session.findUnit(shipId);
                 if (explorer == null) {
                     // unit destroyed?
                     res = Status.INVALID; // again, we could move back into the initial state 
                                           // but it's probably cleaner to re-evaluate the goal
                 } else {
                     // Move unit and check if we have reached the target
-                    explorer.move();
+                    explorer.move(session);
                     if (explorer.getCoordinates().equals(goal.getTargetSector())) {
                         res = Status.COMPLETE;
                     } else {

@@ -28,7 +28,7 @@ public interface Unit {
     
     void selectTarget(HexCoordinate target);
     
-    void move();
+    void move(Session session);
     
     boolean isReadyForStep();
     

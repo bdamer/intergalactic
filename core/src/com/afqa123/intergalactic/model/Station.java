@@ -81,7 +81,7 @@ public class Station implements Unit, Json.Serializable {
     }
 
     @Override
-    public void move() {
+    public void move(Session session) {
         
     }
 
