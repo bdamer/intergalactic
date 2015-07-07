@@ -4,12 +4,11 @@ import com.afqa123.intergalactic.logic.BuildTree;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.BuildOption;
 import com.afqa123.intergalactic.model.BuildQueueEntry;
+import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.Range;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.model.Session;
-import com.afqa123.intergalactic.model.Unit;
-import com.badlogic.gdx.Gdx;
 
 public class ExploreSectorPlan implements Plan {
 
@@ -36,7 +35,7 @@ public class ExploreSectorPlan implements Plan {
     }
     
     @Override
-    public Status update(Session session, SimpleStrategy.FactionState fs) {
+    public Status update(Session session, Faction faction) {
         Status res = null;
         Sector producer = null;
         Ship ship = null;
@@ -45,11 +44,7 @@ public class ExploreSectorPlan implements Plan {
             case START:
             case FIND_EXPLORER:
                 boolean explorerExists = false;
-                for (Unit u : fs.faction.getUnits()) {
-                    if (!(u instanceof Ship)) {
-                        continue;
-                    }
-                    Ship s = (Ship)u;
+                for (Ship s : faction.getShips()) {
                     // for now the only criteria for scouts is that they are long range
                     if (s.getRange() == Range.LONG) {
                         explorerExists = true;
@@ -78,8 +73,8 @@ public class ExploreSectorPlan implements Plan {
                 BuildTree tree = session.getBuildTree();
                 // TODO: remove hardcoded reference
                 BuildOption option = tree.getBuildOption("scout");
-                for (Sector s : fs.idleSectors) {
-                    if (tree.canBuild(s, option)) {
+                for (Sector s : session.getGalaxy().getStarSystems()) {
+                    if (s.isColony(faction) && s.isIdle() && tree.canBuild(s, option)) {
                         producer = s;
                         break;
                     }
@@ -96,7 +91,7 @@ public class ExploreSectorPlan implements Plan {
                 break;
                 
             case BUILD_EXPLORER:
-                producer = fs.galaxy.getSector(productionSector);
+                producer = session.getGalaxy().getSector(productionSector);
                 if (producer.getBuildQueue().isEmpty()) {
                     productionSector = null;
                     step = Step.FIND_EXPLORER;

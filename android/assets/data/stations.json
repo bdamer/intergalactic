@@ -2,7 +2,6 @@
     {
         "id": "outpost",
         "label": "Outpost",
-        "scanRange": 3,
-        "actions": [ ]
+        "scanRange": 3
     }
 ]

@@ -3,8 +3,10 @@ package com.afqa123.intergalactic.util;
 import com.afqa123.intergalactic.model.FactionMap;
 import com.afqa123.intergalactic.model.Range;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.FactionMapSector;
 import com.afqa123.intergalactic.model.Session;
+import com.afqa123.intergalactic.model.Unit;
 import com.afqa123.intergalactic.util.Path.PathStep;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -17,8 +19,8 @@ public class AStarPathfinder implements Pathfinder {
 
     // Base cost to move from one tile to another
     private final static float BASE_COST = 1.0f;
-    // Cost for moving through a sector with unit in it
-    private final static float OCCUPIED_COST = 15.0f;
+    // Cost for moving through a sector with enemny unit in it
+    private final static float ENEMY_COST = 15.0f;
     
     private class PathNode {
         
@@ -33,14 +35,18 @@ public class AStarPathfinder implements Pathfinder {
             this.coord = coord;
             this.parent = parent;
             // estimated cost from here to target
-            float estimatedCost = coord.getDistance(to);
+            float estCost = coord.getDistance(to);
             if (parent != null) {
                 // TODO: cost needs to include sector information from map
-                cost = BASE_COST + (session.findUnitInSector(coord) != null ? OCCUPIED_COST : 0.0f);
-                cumulativeCost = parent.cost + cost + estimatedCost;
+                Unit u = session.findUnitInSector(coord);
+                if (u != null && !faction.equals(u.getOwner())) {
+                    estCost += ENEMY_COST;
+                }
+                cost = BASE_COST;
+                cumulativeCost = parent.cost + cost + estCost;
             } else {
                 cost = 0.0f;
-                cumulativeCost = estimatedCost;
+                cumulativeCost = estCost;
             }            
         }
         
@@ -62,13 +68,15 @@ public class AStarPathfinder implements Pathfinder {
     private final PriorityList<PathNode> candidates;
     private final Range validRange;
     private final Session session;
+    private final Faction faction;
     private final FactionMap map;
     private HexCoordinate to;
     
-    public AStarPathfinder(Range validRange, Session session, FactionMap map) {
+    public AStarPathfinder(Range validRange, Session session, Faction faction) {
         this.validRange = validRange;
         this.session = session;
-        this.map = map;
+        this.faction = faction;
+        this.map = faction.getMap();
         candidates = new PriorityList<>(new Comparator<PathNode>() {
             @Override
             public int compare(PathNode o1, PathNode o2) {

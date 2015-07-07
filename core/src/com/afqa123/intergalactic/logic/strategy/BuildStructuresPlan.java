@@ -3,6 +3,7 @@ package com.afqa123.intergalactic.logic.strategy;
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.logic.BuildPlan;
 import com.afqa123.intergalactic.model.BuildQueueEntry;
+import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.StructureType;
@@ -41,7 +42,7 @@ public class BuildStructuresPlan implements Plan {
     }
 
     @Override
-    public Status update(Session session, SimpleStrategy.FactionState fs) {
+    public Status update(Session session, Faction faction) {
         Status res = null;
         Sector sector = session.getGalaxy().getSector(goal.getTargetSector());
         switch (step) {

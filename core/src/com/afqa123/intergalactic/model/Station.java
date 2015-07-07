@@ -1,8 +1,6 @@
 package com.afqa123.intergalactic.model;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
-import com.afqa123.intergalactic.model.UnitType.Action;
-import com.afqa123.intergalactic.util.Path;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 
@@ -18,22 +16,29 @@ public class Station implements Unit, Json.Serializable {
     private String ownerName;    
 
     Station() {
-        
+        // required for serialization
     }
     
-    public Station(StationType type, Faction owner) {
+    /**
+     * Creates a new station of a given type. Unit should only be created using 
+     * the factory methods provided by {@code Session}.
+     * 
+     * @param id The station's id
+     * @param type The station type.
+     * @param coordinates The initial coordinates.
+     * @param owner The owner faction.
+     */    
+    Station(String id, StationType type, HexCoordinate coordinates, Faction owner) {
+        this.id = id;
         this.type = type;
+        this.coordinates = coordinates;
         this.owner = owner;
+        this.ownerName = owner.getName();
     }
     
     @Override
     public String getId() {
         return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
     }
     
     @Override
@@ -61,31 +66,6 @@ public class Station implements Unit, Json.Serializable {
     }
 
     @Override
-    public float getMovementPoints() {
-        return 0.0f;
-    }
-
-    @Override
-    public Path getPath() {
-        return null;
-    }
-
-    @Override
-    public HexCoordinate getTarget() {
-        return null;
-    }
-
-    @Override
-    public void selectTarget(Session session, HexCoordinate target) {
-        
-    }
-
-    @Override
-    public boolean move(Session session) {
-        return false;
-    }
-
-    @Override
     public boolean isReadyForStep() {
         return true;
     }
@@ -95,36 +75,6 @@ public class Station implements Unit, Json.Serializable {
         // nothing to do?
     }
     
-    @Override
-    public boolean canAttack(Unit unit) {
-        return false;
-    }
-
-    @Override
-    public boolean canPerformAction(Action action) {
-        for (Action a : type.getActions()) {
-            if (a == action) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean colonizeSector(Session session) {
-        return false;
-    }
-
-    @Override
-    public boolean buildStation(Session session) {
-        return false;
-    }    
-    
-    @Override
-    public void wake() {
-        
-    }
-
     @Override
     public void refresh(Session state) {
         // needed to re-initialize after deserialization

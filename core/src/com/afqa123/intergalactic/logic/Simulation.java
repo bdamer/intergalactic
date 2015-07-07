@@ -1,5 +1,6 @@
 package com.afqa123.intergalactic.logic;
 
+import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.Galaxy;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.Faction;
@@ -32,28 +33,26 @@ public class Simulation {
         void afterStep();
     };
     
-    private final Session state;
+    private final Session session;
     private final Galaxy galaxy;
     private final Set<StepListener> listeners = new HashSet<>();
 
-    public Simulation(Session state) {
-        this.state = state;
-        this.galaxy = state.getGalaxy();
+    public Simulation(Session session) {
+        this.session = session;
+        this.galaxy = session.getGalaxy();
     }
     
     public void init() {
-        ShipType scoutType = state.getDatabase().getShip("scout");
+        ShipType scoutType = session.getDatabase().getShip("scout");
         // Determine faction start planets
         List<Sector> sectors = galaxy.getStarSystems();
-        for (Faction faction : state.getFactions().values()) {
+        for (Faction faction : session.getFactions().values()) {
             Sector home;
             do {
                 home = sectors.get((int)(Math.random() * sectors.size()));
             } while (home.getOwner() != null);            
             faction.addColony(home);
-            Ship scout = new Ship(scoutType, faction);
-            scout.setCoordinates(home.getCoordinates());
-            state.addUnit(scout);
+            session.createShip(scoutType, home.getCoordinates(), faction);
         }
     }
     
@@ -69,26 +68,26 @@ public class Simulation {
 
         // AI turns
         Gdx.app.log(Simulation.class.getName(), "Simulating other factions.");        
-        for (Faction faction : state.getFactions().values()) {
+        for (Faction faction : session.getFactions().values()) {
             if (!faction.isPlayer()) {
-                faction.getStrategy().nextTurn(state);
+                faction.getStrategy().nextTurn(session);
             }
         }
         
-        state.increaseTurns();
-        Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", state.getTurn()));
+        session.increaseTurns();
+        Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", session.getTurn()));
         
         List<Sector> sectors = galaxy.getStarSystems();
         float science = 0.0f;
         for (Sector s : sectors) {
             science += s.getScientificOutput();
-            s.update(state);
+            s.update(session);
         }
         
         // TODO: apply science output to current research project
         Gdx.app.debug(Simulation.class.getName(), String.format("Science output: %f", science));
 
-        for (Unit u : state.getUnits()) {
+        for (Unit u : session.getUnits()) {
             u.step();
         }
         

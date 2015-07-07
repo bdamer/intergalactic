@@ -5,7 +5,6 @@ public class StationType implements UnitType {
     private String id;
     private String label;
     private int scanRange;
-    private Action[] actions;
 
     @Override
     public String getId() {
@@ -19,10 +18,5 @@ public class StationType implements UnitType {
 
     public int getScanRange() {
         return scanRange;
-    }
-
-    @Override
-    public Action[] getActions() {
-        return actions;
     }
 }

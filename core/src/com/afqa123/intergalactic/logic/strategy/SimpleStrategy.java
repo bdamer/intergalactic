@@ -28,24 +28,6 @@ import java.util.Set;
 
 public class SimpleStrategy implements Strategy, Json.Serializable {
 
-    // Helper class containing precomputed data for plan execution
-    public class FactionState {
-        
-        public final Faction faction;
-        public final Galaxy galaxy;
-        public final List<Ship> idleShips;
-        public final List<Station> idleStations;
-        public final List<Sector> idleSectors;
-
-        public FactionState(Faction faction, Galaxy galaxy) {
-            this.faction = faction;
-            this.galaxy = galaxy;
-            this.idleShips = new ArrayList<>();
-            this.idleStations = new ArrayList<>();
-            this.idleSectors = new ArrayList<>();
-        }
-    }
-    
     private String factionName;
     // Active plans
     private final List<Plan> plans = new LinkedList<>();
@@ -68,9 +50,10 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
     }
     
     @Override
-    public void nextTurn(Session state) {        
+    public void nextTurn(Session session) {        
         Gdx.app.debug(SimpleStrategy.class.getName(), "Computing turn for: " + factionName);
-        FactionState fs = updateFactionState(state);
+        Faction faction = session.getFactions().get(factionName);
+        updateGoals(session);
         
         // Create new plans for goals on queue 
         for (Goal goal : goals) {
@@ -86,7 +69,7 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
             Plan plan = plans.get(i);
             // Update plan as long as status is active
             Status status;
-            while (Status.ACTIVE == (status = plan.update(state, fs))) ;
+            while (Status.ACTIVE == (status = plan.update(session, faction))) ;
             if (status == Status.COMPLETE) {
                 onGoalCompleted(plan.getGoal());
                 plans.remove(i);
@@ -100,17 +83,9 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
         } 
     }
 
-    private FactionState updateFactionState(Session session) {
+    private void updateGoals(Session session) {
         final Faction faction = session.getFactions().get(factionName);
         final Galaxy galaxy = session.getGalaxy();
-        FactionState fs = new FactionState(faction, galaxy);
-
-        // Find idle ships
-        for (Unit u : faction.getUnits()) {
-            if (u instanceof Ship && u.getTarget() == null) {
-                fs.idleShips.add((Ship)u);
-            }
-        }
 
         HexCoordinate exploreTarget = null;
         List<HexCoordinate> stationCandidates = new ArrayList<>();
@@ -134,7 +109,7 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
             HexCoordinate c = s.getCoordinate();
             Sector sector = galaxy.getSector(c);
             // Check if this sector would be a good candidate for an outpost
-            if (s.getRange() == Range.MEDIUM && sector.canBuildOutpost()) {
+            if (s.getRange() == Range.SHORT && sector.canBuildOutpost()) {
                 // Don't build outposts towards the outer rim
                 int d = c.getDistance(HexCoordinate.ORIGIN);
                 if (d < (galaxy.getRadius() - Range.LONG.getDistance())) {
@@ -148,7 +123,6 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
             } else if (sector.isColony(faction)) {
                 checkColonyProduction(sector);
                 if (sector.getBuildQueue().isEmpty()) {
-                    fs.idleSectors.add(sector);
                     addGoal(new Goal(Type.BUILD_STRUCTURES, s.getCoordinate()));
                 }                
             }
@@ -168,8 +142,6 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
         }
         
         // TODO: Add DESTROY goals for enemy units within visible range        
-
-        return fs;
     }
 
     private void addGoal(Goal goal) {
@@ -235,7 +207,7 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
         for (HexCoordinate c : candidates) {
             int score = 0;
             
-            // 3 point for new SHORT RANGE
+            // 2 point for new SHORT RANGE
             HexCoordinate[] ring = c.getRing(Range.SHORT.getDistance());
             for (HexCoordinate cn : ring) {
                 FactionMapSector ms = map.getSector(cn);
@@ -244,22 +216,6 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
                 }
                 Range range = ms.getRange();
                 if (range == null || range.getDistance() > Range.SHORT.getDistance()) {
-                    score += 3;
-                }
-                if (galaxy.getSector(cn).getType() != null) {
-                    score++;
-                }
-            }
-            
-            // 2 point for new MEDIUM RANGE
-            ring = c.getRing(Range.MEDIUM.getDistance());
-            for (HexCoordinate cn : ring) {
-                FactionMapSector ms = map.getSector(cn);
-                if (ms == null) {
-                    continue;
-                }
-                Range range = ms.getRange();
-                if (range == null || range.getDistance() > Range.MEDIUM.getDistance()) {
                     score += 2;
                 }
                 if (galaxy.getSector(cn).getType() != null) {

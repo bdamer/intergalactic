@@ -1,6 +1,6 @@
 package com.afqa123.intergalactic.graphics;
 
-import com.afqa123.intergalactic.model.Unit;
+import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.util.Path.PathStep;
 import com.badlogic.gdx.graphics.Camera;
@@ -26,13 +26,13 @@ public class PathRenderer implements Disposable {
         mesh = new MeshBuilder().buildSquare();
     }
     
-    public void render(Camera camera, Unit unit) {
-        Path path = unit.getPath();
+    public void render(Camera camera, Ship ship) {
+        Path path = ship.getPath();
         if (path == null) {
             return;
         }
         
-        float points = unit.getMovementPoints();
+        float points = ship.getMovementPoints();
         
         Matrix4 model = new Matrix4();
         Matrix4 mvp = new Matrix4();

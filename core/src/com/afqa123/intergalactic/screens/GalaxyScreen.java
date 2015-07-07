@@ -16,13 +16,10 @@ import com.afqa123.intergalactic.graphics.ShipRenderer;
 import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.afqa123.intergalactic.graphics.StationRenderer;
 import com.afqa123.intergalactic.input.SmartInputAdapter;
-import com.afqa123.intergalactic.logic.CombatSimulator;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.model.Station;
-import com.afqa123.intergalactic.util.Path;
-import com.afqa123.intergalactic.util.Path.PathStep;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -69,29 +66,29 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                     return true;
                 // Colonizes a planet
                 case Input.Keys.C:
-                    if (selectedUnit != null && selectedUnit.colonizeSector(getSession())) {
-                        selectedUnit = null;
+                    if (activeShip != null && activeShip.colonizeSector(getSession())) {
+                        activeShip = null;
                     }
                     return true;                    
                 // Builds an outpost
                 case Input.Keys.O:
-                    if (selectedUnit != null && selectedUnit.buildStation(getSession())) {
-                        selectedUnit = null;
+                    if (activeShip != null && activeShip.buildStation(getSession())) {
+                        activeShip = null;
                     }
                     return true;
                 // Kill current unit
                 case Input.Keys.K:
-                    if (selectedUnit != null) {
+                    if (activeShip != null) {
                         // TODO: needs to update faction map 
-                        getSession().removeUnit(selectedUnit);
-                        selectedUnit = null;
+                        getSession().destroyUnit(activeShip);
+                        activeShip = null;
                     }
                     return true;
                 case Input.Keys.F:
-                    if (selectedUnit instanceof Ship) {
-                        Ship selected = (Ship)selectedUnit;
+                    if (activeShip instanceof Ship) {
+                        Ship selected = (Ship)activeShip;
                         selected.fortify();
-                        selectedUnit = null;
+                        activeShip = null;
                     }
                     return true;
                 case Input.Keys.S:
@@ -152,20 +149,19 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             if (button == Input.Buttons.LEFT) {
                 leftDown = false;
                 HexCoordinate c = pickSector(x, y);
-                List<Unit> units = getSession().getPlayer().getUnits();
-                for (Unit u : units) {
+                for (Ship s : getSession().getPlayer().getShips()) {
                     // unit needs to be in sector and be owned by player
-                    if (u.getCoordinates().equals(c) && u != selectedUnit) {
-                        selectUnit(u);
+                    if (s.getCoordinates().equals(c) && s != activeShip) {
+                        activateShip(s);
                         break;
                     }
                 }
                 return true;
             } else if (button == Input.Buttons.RIGHT) {
                 rightDown = false;
-                if (selectedUnit != null && selectedUnit.getPath() != null) {
-                    selectedUnit.move(getSession());
-                    Vector3 target = selectedUnit.getCoordinates().toWorld();
+                if (activeShip != null && activeShip.getPath() != null) {
+                    activeShip.move(getSession());
+                    Vector3 target = activeShip.getCoordinates().toWorld();
                     indicator.setPosition(target);
                 }
                 return true;
@@ -208,8 +204,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         public void onLongClick(int x, int y, int button) {
             HexCoordinate c = pickSector(x, y);
             // Testing for now...
-            if (selectedUnit != null) {
-                selectedUnit.selectTarget(getSession(), c);            
+            if (activeShip != null) {
+                activeShip.selectTarget(getSession(), c);            
             }
         }
 
@@ -229,7 +225,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final PathRenderer pathRenderer;
     private final ShipRenderer shipRenderer;
     private final StationRenderer stationRenderer;
-    private Unit selectedUnit;
+    private Ship activeShip;
     private boolean debugDeityMode;
     
     // UI
@@ -351,20 +347,20 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     @Override
     public boolean prepareStep() {
         Session session = getSession();
-        List<Unit> units = session.getPlayer().getUnits();
+        List<Ship> ships = session.getPlayer().getShips();
         int i = 0;
-        while (i < units.size()) {
-            Unit u = units.get(i);
+        while (i < ships.size()) {
+            Ship s = ships.get(i);
             // check if unit is done for this turn
-            if (!u.isReadyForStep()) {
+            if (!s.isReadyForStep()) {
                 // if not, select it and see if it has a path. if it doesn't 
                 // have a path, force player interaction, otherwise continue
                 // moving along path.
-                selectUnit(u);                
-                if (u.getPath() == null) {
+                activateShip(s);                
+                if (s.getPath() == null) {
                     return false;
                 }
-                u.move(session);
+                s.move(session);
             } else {
                 // only increment if unit was ready, otherwise we'll check again 
                 // during the next iteration
@@ -376,8 +372,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     
     @Override
     public void afterStep() {
-        if (selectedUnit != null) {
-            indicator.setPosition(selectedUnit.getCoordinates().toWorld());
+        if (activeShip != null) {
+            indicator.setPosition(activeShip.getCoordinates().toWorld());
         }
     }
     
@@ -433,8 +429,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         shipRenderer.render(cam, ships);
         stationRenderer.render(cam, stations);
         
-        if (selectedUnit != null) {
-            pathRenderer.render(cam, selectedUnit);
+        if (activeShip != null) {
+            pathRenderer.render(cam, activeShip);
         }
         
         // UI pass
@@ -471,25 +467,25 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     }
     
     private void selectTarget(int x, int y) {
-        if (selectedUnit == null) {
+        if (activeShip == null) {
             return;
         }                
         // check if we're looking at new sector and need to recompute path
         HexCoordinate c = pickSector(x, y);
-        if (c.equals(selectedUnit.getTarget())) {
+        if (c.equals(activeShip.getTarget())) {
             return;
         }
-        selectedUnit.selectTarget(getSession(), c);
+        activeShip.selectTarget(getSession(), c);
     }
     
-    private void selectUnit(Unit unit) {
-        selectedUnit = unit;
-        Vector3 target = selectedUnit.getCoordinates().toWorld();
+    private void activateShip(Ship ship) {
+        activeShip = ship;
+        Vector3 target = activeShip.getCoordinates().toWorld();
         indicator.setPosition(target);
         // Focus camera on target
         cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
         cam.lookAt(target);
         cam.update();
-        selectedUnit.wake();
+        activeShip.wake();
     }
 }

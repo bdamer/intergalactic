@@ -64,24 +64,52 @@ public class Session implements Json.Serializable {
     public List<Unit> getUnits() {
         return units;
     }
- 
+        
     /**
-     * Adds a new unit to the session. This will automatically assign an id
-     * to the unit and add it to the faction's unit list.
+     * Factory method for creating new ships.
      * 
-     * @param unit The unit.
+     * @param type The ship type.
+     * @param coordinates The initial coordinates.
+     * @param faction The owner faction.
+     * @return A new {@code Ship} instance.
      */
-    public void addUnit(Unit unit) {
-        if (unit.getId() == null) {
-            unit.setId(unit.getType() + (lastId++));
-        }        
-        units.add(unit);
-        unit.getOwner().getUnits().add(unit);
-        unit.getOwner().getMap().explore(unit.getCoordinates(), unit.getScanRange());
+    public Ship createShip(ShipType type, HexCoordinate coordinates, Faction faction) {
+        Ship ship = new Ship(type.getId() + lastId++, type, coordinates, faction);
+        units.add(ship);        
+        faction.getShips().add(ship);
+        faction.getMap().explore(coordinates, type.getScanRange());
+        return ship;
     }
     
-    public void removeUnit(Unit unit) {
-        unit.getOwner().getUnits().remove(unit);
+    public void destroyShip(Ship ship) {
+        destroyUnit(ship);
+    }
+
+    /**
+     * Factory method for creating new stations.
+     * 
+     * @param type The station type.
+     * @param coordinates The initial coordinates.
+     * @param faction The owner faction.
+     * @return A new {@code Station} instance.
+     */
+    public Station createStation(StationType type, HexCoordinate coordinates, Faction faction) {
+        Station station = new Station(type.getId() + lastId++, type, coordinates, faction);
+        units.add(station);        
+        // increase faction range
+        faction.getMap().explore(coordinates, type.getScanRange());
+        faction.getMap().addRange(station.getCoordinates());        
+        return station;        
+    }
+        
+    public void destroyStation(Station station) {
+        destroyUnit(station);
+    }
+
+    public void destroyUnit(Unit unit) {
+        if (unit instanceof Ship) {
+            unit.getOwner().getShips().remove((Ship)unit);
+        }
         units.remove(unit);
     }
     
@@ -131,7 +159,10 @@ public class Session implements Json.Serializable {
         Unit[] ulist = json.readValue("units", Unit[].class, jv);
         for (Unit u : ulist) {
             u.refresh(this);
-            addUnit(u);
+            if (u instanceof Ship) {
+                u.getOwner().getShips().add((Ship)u);
+            }
+            units.add(u);        
         }
     }
 }

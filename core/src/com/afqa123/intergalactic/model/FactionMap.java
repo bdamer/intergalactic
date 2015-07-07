@@ -83,28 +83,24 @@ public class FactionMap implements Json.Serializable {
         getSector(coord).setRange(Range.SHORT);
 
         // TODO: use custom range based on colony / outpost tech
-        HexCoordinate[] shortRange = coord.getRing(Range.SHORT.getDistance());
-        for (HexCoordinate c : shortRange) {
-            FactionMapSector s = getSector(c);
-            if (s != null) {
-                s.addRange(Range.SHORT);
-            }
+        for (int i = 0; i < Range.SHORT.getDistance(); i++) {
+            HexCoordinate[] shortRange = coord.getRing(i + 1);
+            for (HexCoordinate c : shortRange) {
+                FactionMapSector s = getSector(c);
+                if (s != null) {
+                    s.addRange(Range.SHORT);
+                }
+            }            
         }
 
-        HexCoordinate[] mediumRange = coord.getRing(Range.MEDIUM.getDistance());
-        for (HexCoordinate c : mediumRange) {
-            FactionMapSector s = getSector(c);
-            if (s != null) {
-                s.addRange(Range.MEDIUM);
-            }
-        }
-
-        HexCoordinate[] longRange = coord.getRing(Range.LONG.getDistance());
-        for (HexCoordinate c : longRange) {
-            FactionMapSector s = getSector(c);
-            if (s != null) {
-                s.addRange(Range.LONG);
-            }
+        for (int i = Range.SHORT.getDistance(); i < Range.LONG.getDistance(); i++) {
+            HexCoordinate[] shortRange = coord.getRing(i + 1);
+            for (HexCoordinate c : shortRange) {
+                FactionMapSector s = getSector(c);
+                if (s != null) {
+                    s.addRange(Range.LONG);
+                }
+            }            
         }
         
         // Explore and notify map listeners

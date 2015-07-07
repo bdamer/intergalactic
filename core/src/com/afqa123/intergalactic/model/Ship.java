@@ -2,7 +2,7 @@ package com.afqa123.intergalactic.model;
 
 import com.afqa123.intergalactic.logic.CombatSimulator;
 import com.afqa123.intergalactic.math.HexCoordinate;
-import com.afqa123.intergalactic.model.UnitType.Action;
+import com.afqa123.intergalactic.model.ShipType.Action;
 import com.afqa123.intergalactic.util.AStarPathfinder;
 import com.afqa123.intergalactic.util.Path;
 import com.afqa123.intergalactic.util.Path.PathStep;
@@ -32,26 +32,26 @@ public class Ship implements Unit, Json.Serializable {
     }
     
     /**
-     * Creates a new ship of a given type.
+     * Creates a new ship of a given type. Unit should only be created using 
+     * the factory methods provided by {@code Session}.
      * 
+     * @param id The ship's id
      * @param type The ship type.
+     * @param coordinates The initial coordinates.
      * @param owner The owner faction.
      */
-    public Ship(ShipType type, Faction owner) {
+    Ship(String id, ShipType type, HexCoordinate coordinates, Faction owner) {
+        this.id = id;
         this.type = type;
         this.movementPoints = type.getMovementRange();
+        this.coordinates = coordinates;
         this.owner = owner;
         this.ownerName = owner.getName();
     }
-
+    
     @Override
     public String getId() {
         return id;
-    }
-    
-    @Override
-    public void setId(String id) {
-        this.id = id;
     }
 
     @Override
@@ -69,7 +69,6 @@ public class Ship implements Unit, Json.Serializable {
         return type.getScanRange();
     }
     
-    @Override
     public float getMovementPoints() {
         return movementPoints;
     }
@@ -87,12 +86,10 @@ public class Ship implements Unit, Json.Serializable {
         this.coordinates = coordinates;
     }
 
-    @Override
     public HexCoordinate getTarget() {
         return target;
     }
 
-    @Override
     public void selectTarget(Session session, HexCoordinate target) {
         if (target == null || target.equals(coordinates)) {
             path = null;
@@ -105,25 +102,23 @@ public class Ship implements Unit, Json.Serializable {
                 path = new Path();
                 path.add(new PathStep(target, 1.0f, true));
             } else {
-                Pathfinder finder = new AStarPathfinder(type.getRange(), 
-                        session, owner.getMap());
+                Pathfinder finder = new AStarPathfinder(type.getRange(), session, owner);
                 path = finder.findPath(coordinates, target);
             }
         }
     }
 
-    @Override
     public Path getPath() {
         return path;
     }
 
-    public void fortify() {
-        this.fortified = true;
-        this.path = null;
-        this.target = null;
-    }
-    
-    @Override
+    /**
+     * Moves this ship towards its target.
+     * 
+     * @param session The game session.
+     * @return True if the ship was moved, false if it could not moved or was 
+     * blocked.
+     */
     public boolean move(Session session) {
         if (path == null) {
             return false;
@@ -147,10 +142,10 @@ public class Ship implements Unit, Json.Serializable {
                     CombatSimulator sim = new CombatSimulator();
                     switch (sim.simulate(this, u)) {
                         case VICTORY:
-                            session.removeUnit(u);
+                            session.destroyUnit(u);
                             break;
                         case DEFEAT:
-                            session.removeUnit(this);
+                            session.destroyUnit(this);
                             return true;
                         case DRAW:
                             return false;
@@ -196,7 +191,12 @@ public class Ship implements Unit, Json.Serializable {
         return (fortified || movementPoints < 1.0f);
     }
 
-    @Override
+    /**
+     * Checks if this unit can attack another unit.
+     * 
+     * @param unit The unit to attack.
+     * @return True if unit can attack, otherwise false.
+     */
     public boolean canAttack(Unit unit) {
         // Cannot attack your own units
         if (unit.getOwner().equals(owner)) {
@@ -210,7 +210,6 @@ public class Ship implements Unit, Json.Serializable {
         }
     }
 
-    @Override
     public boolean canPerformAction(Action action) {
         for (Action a : type.getActions()) {
             if (a == action) {
@@ -220,7 +219,13 @@ public class Ship implements Unit, Json.Serializable {
         return false;
     }
 
-    @Override
+    /**
+     * If possible will colonize the current sector. If successful, this action
+     * will remove this unit from the session.
+     * 
+     * @param session The game session.
+     * @return True if sector was colonized, otherwise false.
+     */
     public boolean colonizeSector(Session session) {
         if (!canPerformAction(Action.COLONIZE))
             return false;
@@ -230,13 +235,17 @@ public class Ship implements Unit, Json.Serializable {
             return false;
 
         owner.addColony(s);
-        session.removeUnit(this);
+        session.destroyUnit(this);
         return true;
     }
         
-    // TODO: this step should take a few turns (maybe just flag outpost unit as
-    // "under construction"?)
-    @Override
+    /**
+     * If possible will build a station in the current sector. If successful,
+     * this action will remove this unit from the session.
+     * 
+     * @param session The game session.
+     * @return True if stations was build, otherwise false.
+     */
     public boolean buildStation(Session session) {
         if (!canPerformAction(Action.BUILD_STATION)) {
             return false;
@@ -248,14 +257,18 @@ public class Ship implements Unit, Json.Serializable {
         
         // For now, station type must match ship type
         StationType stationType = session.getDatabase().getStation(type.getId());
-        Station station = owner.addStation(s, stationType);                            
-        // Station replace builder unit
-        session.removeUnit(this);
-        session.addUnit(station);                            
+        session.createStation(stationType, coordinates, owner);
+        // Station replaces builder unit
+        session.destroyUnit(this);
         return true;
     }
+    
+    public void fortify() {
+        this.fortified = true;
+        this.path = null;
+        this.target = null;
+    }    
 
-    @Override
     public void wake() {
         fortified = false;
     }

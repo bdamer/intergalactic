@@ -1,5 +1,6 @@
 package com.afqa123.intergalactic.logic.strategy;
 
+import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.Session;
 
 public interface Plan {
@@ -11,7 +12,7 @@ public interface Plan {
         INVALID
     };
 
-    Status update(Session session, SimpleStrategy.FactionState fs);
+    Status update(Session session, Faction faction);
     
     Goal getGoal();
 }

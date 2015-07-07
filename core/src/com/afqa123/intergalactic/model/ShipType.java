@@ -2,6 +2,10 @@ package com.afqa123.intergalactic.model;
 
 public class ShipType implements UnitType, BuildOption {
     
+    public enum Action {
+        ATTACK, BUILD_STATION, COLONIZE, INTERCEPT
+    };
+    
     private String id;
     private String label;
     private String detail;
@@ -71,7 +75,6 @@ public class ShipType implements UnitType, BuildOption {
         return scanRange;
     }
     
-    @Override
     public Action[] getActions() {
         return actions;
     }    

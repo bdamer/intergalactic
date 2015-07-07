@@ -4,10 +4,11 @@ import com.afqa123.intergalactic.logic.BuildTree;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.BuildOption;
 import com.afqa123.intergalactic.model.BuildQueueEntry;
+import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Ship;
-import com.afqa123.intergalactic.model.UnitType;
+import com.afqa123.intergalactic.model.ShipType.Action;
 
 public class BuildStationPlan implements Plan {
 
@@ -34,16 +35,16 @@ public class BuildStationPlan implements Plan {
     }
     
     @Override
-    public Status update(Session session, SimpleStrategy.FactionState fs) {
+    public Status update(Session session, Faction faction) {
         Status res = null;
         Sector producer = null;
         Ship ship = null;
         switch (step) {
             case START:
             case FIND_STATION_SHIP:
-                for (Ship s : fs.idleShips) {
+                for (Ship s : faction.getShips()) {
                     // verify that ship is idle and can create new station
-                    if (s.getTarget() == null && s.canPerformAction(UnitType.Action.BUILD_STATION)) {
+                    if (s.getTarget() == null && s.canPerformAction(Action.BUILD_STATION)) {
                         ship = s;
                         break;
                     }
@@ -65,8 +66,8 @@ public class BuildStationPlan implements Plan {
                 BuildTree tree = session.getBuildTree();
                 // TODO: remove hardcoded reference - can we search for any build options that can perform Action.BUILD_STATION?
                 BuildOption option = tree.getBuildOption("outpost");
-                for (Sector s : fs.idleSectors) {
-                    if (tree.canBuild(s, option)) {
+                for (Sector s : session.getGalaxy().getStarSystems()) {
+                    if (s.isColony(faction) && s.isIdle() && tree.canBuild(s, option)) {
                         producer = s;
                         break;
                     }
@@ -83,7 +84,7 @@ public class BuildStationPlan implements Plan {
                 break;
                 
             case BUILD_STATION_SHIP:
-                producer = fs.galaxy.getSector(productionSector);
+                producer = session.getGalaxy().getSector(productionSector);
                 if (producer.getBuildQueue().isEmpty()) {
                     productionSector = null;
                     step = Step.FIND_STATION_SHIP;

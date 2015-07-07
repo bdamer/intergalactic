@@ -5,9 +5,8 @@ package com.afqa123.intergalactic.model;
  */
 public enum Range {
 
-    SHORT(1),
-    MEDIUM(2),
-    LONG(3);
+    SHORT(2),
+    LONG(4);
     
     private final int distance;
     

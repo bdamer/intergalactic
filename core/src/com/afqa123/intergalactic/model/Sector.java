@@ -326,8 +326,10 @@ public final class Sector {
 
     /**
      * Updates top of production queue.
+     * 
+     * @param session The game session.
      */
-    private void produce(Session state) {
+    private void produce(Session session) {
         BuildQueueEntry entry = buildQueue.peek();
         if (entry == null) {
             return;
@@ -338,12 +340,10 @@ public final class Sector {
         } else {
             buildQueue.remove();
             // add entry to list of structures or create new ship entity
-            BuildOption option = state.getBuildTree().getBuildOption(entry.getId());
+            BuildOption option = session.getBuildTree().getBuildOption(entry.getId());
             if (option instanceof ShipType) {
-                Faction ownerFaction = state.getFactions().get(owner);
-                Ship ship = new Ship((ShipType)option, ownerFaction);
-                ship.setCoordinates(coordinates);        
-                state.addUnit(ship);
+                Faction ownerFaction = session.getFactions().get(owner);
+                session.createShip((ShipType)option, coordinates, ownerFaction);
             } else {
                 structures.add(entry.getId());
             }
@@ -366,5 +366,9 @@ public final class Sector {
      */
     public boolean isColony(Faction faction) {
         return (type != null && faction.getName().equals(owner));
+    }
+    
+    public boolean isIdle() {
+        return buildQueue.size() == 0;
     }
 }

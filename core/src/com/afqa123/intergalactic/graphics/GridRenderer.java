@@ -35,8 +35,7 @@ public class GridRenderer implements Disposable {
     static {
         RANGE_COLORS = new HashMap<>();
         RANGE_COLORS.put(Range.SHORT, new Color(0.0f, 1.0f, 0.0f, 0.5f));
-        RANGE_COLORS.put(Range.MEDIUM, new Color(1.0f, 1.0f, 0.0f, 0.5f));
-        RANGE_COLORS.put(Range.LONG, new Color(1.0f, 0.0f, 0.0f, 0.6f));
+        RANGE_COLORS.put(Range.LONG, new Color(1.0f, 1.55f, 0.0f, 0.6f));
     }
     
     private final ShaderProgram sp;

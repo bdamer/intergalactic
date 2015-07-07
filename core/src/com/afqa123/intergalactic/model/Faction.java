@@ -15,9 +15,7 @@ public class Faction implements Json.Serializable {
     private FactionMap map;
     private Color color;
     private Strategy strategy;
-    // List of current units - this list is populated during each step and not
-    // part of the serialized data.
-    private final List<Unit> units = new ArrayList<>();
+    private final List<Ship> ships = new ArrayList<>();
 
     Faction() {
         // required for serialization
@@ -51,8 +49,8 @@ public class Faction implements Json.Serializable {
         return strategy;
     }
     
-    public List<Unit> getUnits() {
-        return units;
+    public List<Ship> getShips() {
+        return ships;
     }
     
     public void addColony(Sector sector) {
@@ -64,13 +62,6 @@ public class Faction implements Json.Serializable {
         sector.setMaxPopulation(10);
         sector.updateModifiers();
         map.addRange(sector.getCoordinates());
-    }
-    
-    public Station addStation(Sector sector, StationType type) {
-        Station station = new Station(type, this);        
-        station.setCoordinates(sector.getCoordinates());
-        map.addRange(sector.getCoordinates());
-        return station;
     }
     
     @Override

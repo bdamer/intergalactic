@@ -5,8 +5,8 @@
         "detail": "Allows the colonization of other systems.",
         "cost": 20,
         "dependencies": ["shipyard"],
-        "range": "MEDIUM",
-        "movementRange": 1,
+        "range": "SHORT",
+        "movementRange": 2,
         "scanRange": 1,
         "actions": ["COLONIZE"]
     },
@@ -16,8 +16,8 @@
         "detail": "Expands the movement range of your fleet.",
         "cost": 30,
         "dependencies": ["fabricators","shipyard"],
-        "range": "MEDIUM",
-        "movementRange": 1,
+        "range": "SHORT",
+        "movementRange": 2,
         "scanRange": 1,
         "actions": ["BUILD_STATION"]
     },
@@ -27,7 +27,7 @@
         "detail": "Lightly armored fighter craft.",
         "cost": 25,
         "dependencies": ["barracks","shipyard"],
-        "range": "MEDIUM",
+        "range": "SHORT",
         "movementRange": 2,
         "scanRange": 2,
         "actions": ["ATTACK","INTERCEPT"]
