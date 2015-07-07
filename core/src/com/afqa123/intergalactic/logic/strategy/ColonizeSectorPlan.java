@@ -39,21 +39,21 @@ public class ColonizeSectorPlan implements Plan {
     public Status update(Session session, FactionState fs) {
         Status res = null;
         Sector producer = null;
-        Ship colonizer = null;
+        Ship ship = null;
         switch (step) {
             case START:
             case FIND_COLONY_SHIP:
                 for (Ship s : fs.idleShips) {
                     // verify that ship is idle and can create new colony
                     if (s.getTarget() == null && s.canPerformAction(Action.COLONIZE)) {
-                        colonizer = s;
+                        ship = s;
                         break;
                     }
                 }
-                if (colonizer != null) {
+                if (ship != null) {
                     // use found colony ship
-                    shipId = colonizer.getId();
-                    colonizer.selectTarget(goal.getTargetSector());
+                    shipId = ship.getId();
+                    ship.selectTarget(session, goal.getTargetSector());
                     step = Step.MOVE_SHIP;
                     res = Status.ACTIVE;
                 } else {
@@ -96,22 +96,27 @@ public class ColonizeSectorPlan implements Plan {
                 break;
 
             case MOVE_SHIP:
-                colonizer = (Ship)session.findUnit(shipId);
-                if (colonizer == null) {
+                ship = (Ship)session.findUnit(shipId);
+                if (ship == null) {
                     // unit destroyed?
                     res = Status.INVALID; // again, we could move back into the initial state 
                                           // but it's probably cleaner to re-evaluate the goal
-                } else if (colonizer.getCoordinates().equals(goal.getTargetSector())) {
+                } else if (ship.getCoordinates().equals(goal.getTargetSector())) {
                     // attempt to colonize
-                    if (colonizer.colonizeSector(session)) {
+                    if (ship.colonizeSector(session)) {
                         res = Status.COMPLETE;
                     } else {
                         res = Status.INVALID;
                     }
                 } else {
                     // unit still moving to target
-                    colonizer.move(session);
-                    res = Status.BLOCKED;
+                    if (ship.move(session)) {
+                        res = Status.BLOCKED;
+                    } else {
+                        // unit was not able to move. attempt to compute new path
+                        ship.selectTarget(session, goal.getTargetSector());
+                        res = Status.ACTIVE;
+                    }
                 }
                 break;
         }

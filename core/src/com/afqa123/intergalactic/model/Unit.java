@@ -8,6 +8,12 @@ import com.afqa123.intergalactic.util.Path;
 // available in some of the subclasses
 public interface Unit {
     
+    public enum MovementResult {
+        MOVED,
+        AT_GOAL,
+        BLOCKED
+    }
+    
     String getId();
 
     void setId(String id);
@@ -26,13 +32,28 @@ public interface Unit {
     
     HexCoordinate getTarget();
     
-    void selectTarget(HexCoordinate target);
+    void selectTarget(Session session, HexCoordinate target);
     
-    void move(Session session);
+    /**
+     * Moves this unit towards its target.
+     * 
+     * @param session The game session.
+     * @return True if the unit was moved, false if it could not move or was 
+     * blocked.
+     */
+    boolean move(Session session);
     
     boolean isReadyForStep();
     
     void step();
+
+    /**
+     * Checks if this unit can attack another unit.
+     * 
+     * @param unit The unit to attack.
+     * @return True if unit can attack, otherwise false.
+     */
+    boolean canAttack(Unit unit);
     
     boolean canPerformAction(Action action);
 

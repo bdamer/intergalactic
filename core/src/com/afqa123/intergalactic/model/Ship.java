@@ -1,5 +1,6 @@
 package com.afqa123.intergalactic.model;
 
+import com.afqa123.intergalactic.logic.CombatSimulator;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.UnitType.Action;
 import com.afqa123.intergalactic.util.AStarPathfinder;
@@ -92,14 +93,22 @@ public class Ship implements Unit, Json.Serializable {
     }
 
     @Override
-    public void selectTarget(HexCoordinate target) {
-        if (target == null) {
+    public void selectTarget(Session session, HexCoordinate target) {
+        if (target == null || target.equals(coordinates)) {
             path = null;
             this.target = null;
         } else if (!target.equals(this.target)) {
             this.target = target;
-            Pathfinder finder = new AStarPathfinder(type.getRange(), owner.getMap());
-            path = finder.findPath(coordinates, target);
+            Unit anotherUnit = session.findUnitInSector(target);
+            if (anotherUnit != null && canAttack(anotherUnit)) {
+                // Create attack path
+                path = new Path();
+                path.add(new PathStep(target, 1.0f, true));
+            } else {
+                Pathfinder finder = new AStarPathfinder(type.getRange(), 
+                        session, owner.getMap());
+                path = finder.findPath(coordinates, target);
+            }
         }
     }
 
@@ -115,10 +124,11 @@ public class Ship implements Unit, Json.Serializable {
     }
     
     @Override
-    public void move(Session session) {
+    public boolean move(Session session) {
         if (path == null) {
-            return;
-        }        
+            return false;
+        }
+        boolean res = true;
         while (!path.isEmpty()) {
             PathStep step = path.peek();
             if (movementPoints < step.cost) {
@@ -129,20 +139,39 @@ public class Ship implements Unit, Json.Serializable {
             // Check if next sector is occupied by another unit
             Unit u = session.findUnitInSector(step.coordinate);
             if (u != null) {
-                // allow unit to pass through a sector with units as long
-                // as it ends its turn somewhere else
-                boolean canPass = false;
-                if (path.size() > 0) {
-                    PathStep nextStep = path.peek();
-                    Unit nextu = session.findUnitInSector(nextStep.coordinate);
-                    if (nextu == null && movementPoints >= (step.cost + nextStep.cost)) {
-                        canPass = true;
+                // TODO: combat should probably be handled somewhere else...
+                if (step.attack) {
+                    // once we attack, now more movement is possible
+                    movementPoints = 0.0f;
+                    // Attack logic
+                    CombatSimulator sim = new CombatSimulator();
+                    switch (sim.simulate(this, u)) {
+                        case VICTORY:
+                            session.removeUnit(u);
+                            break;
+                        case DEFEAT:
+                            session.removeUnit(this);
+                            return true;
+                        case DRAW:
+                            return false;
                     }
-                }
-                if (!canPass) {
-                    // abandon current path
-                    path.clear();
-                    break;
+                } else {
+                    // allow unit to pass through a sector with units as long
+                    // as it ends its turn somewhere else
+                    boolean canPass = false;
+                    if (path.size() > 0) {
+                        PathStep nextStep = path.peek();
+                        Unit nextu = session.findUnitInSector(nextStep.coordinate);
+                        if (nextu == null && movementPoints >= (step.cost + nextStep.cost)) {
+                            canPass = true;
+                        }
+                    }
+                    if (!canPass) {
+                        // abandon current path
+                        path.clear();
+                        res = false;
+                        break;
+                    }
                 }
             }
             coordinates = step.coordinate;
@@ -154,6 +183,7 @@ public class Ship implements Unit, Json.Serializable {
             path = null;
             target = null;
         }
+        return res;
     }
     
     @Override
@@ -164,6 +194,20 @@ public class Ship implements Unit, Json.Serializable {
     @Override
     public boolean isReadyForStep() {
         return (fortified || movementPoints < 1.0f);
+    }
+
+    @Override
+    public boolean canAttack(Unit unit) {
+        // Cannot attack your own units
+        if (unit.getOwner().equals(owner)) {
+            return false;
+        // For now, combat is only possible between adjacent units
+        } else if (coordinates.getDistance(unit.getCoordinates()) > 1 || movementPoints < 1.0f) {
+            return false;
+        } else {
+            // TODO: include other criteria
+            return true;
+        }
     }
 
     @Override
@@ -217,18 +261,18 @@ public class Ship implements Unit, Json.Serializable {
     }
 
     @Override
-    public void refresh(Session state) {
+    public void refresh(Session session) {
         // needed to re-initialize after deserialization
         if (type == null) {
-            type = state.getDatabase().getShip(typeName);
+            type = session.getDatabase().getShip(typeName);
         }
         if (owner == null) {
-            owner = state.getFactions().get(ownerName);
+            owner = session.getFactions().get(ownerName);
         }
         if (target != null) {
             HexCoordinate newTarget = target;
             target = null;
-            selectTarget(newTarget);
+            selectTarget(session, newTarget);
         }
     }
     

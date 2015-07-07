@@ -76,13 +76,13 @@ public class Station implements Unit, Json.Serializable {
     }
 
     @Override
-    public void selectTarget(HexCoordinate target) {
+    public void selectTarget(Session session, HexCoordinate target) {
         
     }
 
     @Override
-    public void move(Session session) {
-        
+    public boolean move(Session session) {
+        return false;
     }
 
     @Override
@@ -93,6 +93,11 @@ public class Station implements Unit, Json.Serializable {
     @Override
     public void step() {
         // nothing to do?
+    }
+    
+    @Override
+    public boolean canAttack(Unit unit) {
+        return false;
     }
 
     @Override

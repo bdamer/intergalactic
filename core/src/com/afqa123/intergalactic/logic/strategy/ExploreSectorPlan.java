@@ -39,7 +39,7 @@ public class ExploreSectorPlan implements Plan {
     public Status update(Session session, SimpleStrategy.FactionState fs) {
         Status res = null;
         Sector producer = null;
-        Ship explorer = null;
+        Ship ship = null;
         //Gdx.app.debug("ExploreSectorPlan", "State = " + step.name());
         switch (step) {
             case START:
@@ -55,7 +55,7 @@ public class ExploreSectorPlan implements Plan {
                         explorerExists = true;
                         // verify that ship is idle
                         if (s.getTarget() == null) {
-                            explorer = s;
+                            ship = s;
                             break;
                         }
                     }
@@ -64,9 +64,9 @@ public class ExploreSectorPlan implements Plan {
                     // need to construct explorer ship
                     step = Step.FIND_IDLE_COLONY;
                     res = Status.ACTIVE;                    
-                } else if (explorer != null) {
-                    shipId = explorer.getId();
-                    explorer.selectTarget(goal.getTargetSector());
+                } else if (ship != null) {
+                    shipId = ship.getId();
+                    ship.selectTarget(session, goal.getTargetSector());
                     step = Step.MOVE_SHIP;
                     res = Status.ACTIVE;
                 } else {
@@ -107,19 +107,24 @@ public class ExploreSectorPlan implements Plan {
                 break;
 
             case MOVE_SHIP:
-                explorer = (Ship)session.findUnit(shipId);
-                if (explorer == null) {
+                ship = (Ship)session.findUnit(shipId);
+                if (ship == null) {
                     // unit destroyed?
                     res = Status.INVALID; // again, we could move back into the initial state 
                                           // but it's probably cleaner to re-evaluate the goal
                 } else {
                     // Move unit and check if we have reached the target
-                    explorer.move(session);
-                    if (explorer.getCoordinates().equals(goal.getTargetSector())) {
-                        res = Status.COMPLETE;
+                    if (ship.move(session)) {
+                        if (ship.getCoordinates().equals(goal.getTargetSector())) {
+                            res = Status.COMPLETE;
+                        } else {
+                            res = Status.BLOCKED;
+                        }
                     } else {
-                        res = Status.BLOCKED;
-                    }
+                        // unit was not able to move. attempt to compute new path
+                        ship.selectTarget(session, goal.getTargetSector());
+                        res = Status.ACTIVE;
+                    }                    
                 }
                 break;
         }

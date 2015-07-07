@@ -16,10 +16,13 @@ import com.afqa123.intergalactic.graphics.ShipRenderer;
 import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.afqa123.intergalactic.graphics.StationRenderer;
 import com.afqa123.intergalactic.input.SmartInputAdapter;
+import com.afqa123.intergalactic.logic.CombatSimulator;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.model.Station;
+import com.afqa123.intergalactic.util.Path;
+import com.afqa123.intergalactic.util.Path.PathStep;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -113,10 +116,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 return true;
             } else if (button == Input.Buttons.RIGHT) {
                 rightDown = true;
-                if (selectedUnit != null) {
-                    HexCoordinate c = pickSector(x, y);
-                    selectedUnit.selectTarget(c);
-                }
+                selectTarget(x, y);
                 return true;
             } else {
                 return false;
@@ -140,11 +140,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 }
                 return true;
             } else if (rightDown) {
-                // check if we're looking at new sector and need to recompute path
-                if (selectedUnit != null) {
-                    HexCoordinate c = pickSector(x, y);
-                    selectedUnit.selectTarget(c);
-                }
+                selectTarget(x, y);
                 return true;
             } else {
                 return false;
@@ -213,7 +209,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             HexCoordinate c = pickSector(x, y);
             // Testing for now...
             if (selectedUnit != null) {
-                selectedUnit.selectTarget(c);            
+                selectedUnit.selectTarget(getSession(), c);            
             }
         }
 
@@ -472,6 +468,18 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             }
         }
         return null;
+    }
+    
+    private void selectTarget(int x, int y) {
+        if (selectedUnit == null) {
+            return;
+        }                
+        // check if we're looking at new sector and need to recompute path
+        HexCoordinate c = pickSector(x, y);
+        if (c.equals(selectedUnit.getTarget())) {
+            return;
+        }
+        selectedUnit.selectTarget(getSession(), c);
     }
     
     private void selectUnit(Unit unit) {

@@ -11,11 +11,13 @@ public class Path extends LinkedList<PathStep> {
         
         private static final long serialVersionUID = 1l;
         public final HexCoordinate coordinate;
-        public final float cost;        
+        public final float cost;
+        public final boolean attack;
         
-        public PathStep(HexCoordinate coordinate, float cost) {
+        public PathStep(HexCoordinate coordinate, float cost, boolean attack) {
             this.coordinate = coordinate;
             this.cost = cost;
+            this.attack = attack;
         }        
     };
 }

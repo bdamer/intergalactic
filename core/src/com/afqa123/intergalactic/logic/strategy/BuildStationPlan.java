@@ -51,7 +51,7 @@ public class BuildStationPlan implements Plan {
                 if (ship != null) {
                     // use found ship
                     shipId = ship.getId();
-                    ship.selectTarget(goal.getTargetSector());
+                    ship.selectTarget(session, goal.getTargetSector());
                     step = Step.MOVE_SHIP;
                     res = Status.ACTIVE;
                 } else {
@@ -107,8 +107,13 @@ public class BuildStationPlan implements Plan {
                     }
                 } else {
                     // unit still moving to target
-                    ship.move(session);
-                    res = Status.BLOCKED;
+                    if (ship.move(session)) {
+                        res = Status.BLOCKED;
+                    } else {
+                        // unit was not able to move. attempt to compute new path
+                        ship.selectTarget(session, goal.getTargetSector());
+                        res = Status.ACTIVE;
+                    }
                 }
                 break;
         }
