@@ -352,7 +352,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         while (i < ships.size()) {
             Ship s = ships.get(i);
             // check if unit is done for this turn
-            if (!s.isReadyForStep()) {
+            if (!s.isReadyForUpdate()) {
                 // if not, select it and see if it has a path. if it doesn't 
                 // have a path, force player interaction, otherwise continue
                 // moving along path.

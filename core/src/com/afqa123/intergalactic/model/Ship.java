@@ -181,14 +181,13 @@ public class Ship implements Unit, Json.Serializable {
         return res;
     }
     
-    @Override
-    public void step() {
-        movementPoints = type.getMovementRange();
+    public boolean isReadyForUpdate() {
+        return (fortified || movementPoints < 1.0f);
     }
 
     @Override
-    public boolean isReadyForStep() {
-        return (fortified || movementPoints < 1.0f);
+    public void update(Session session) {
+        movementPoints = type.getMovementRange();
     }
 
     /**

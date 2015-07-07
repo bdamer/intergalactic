@@ -14,9 +14,7 @@ public interface Unit {
 
     int getScanRange();
 
-    boolean isReadyForStep();
-    
-    void step();
+    void update(Session session);
 
-    void refresh(Session state);
+    void refresh(Session session);
 }

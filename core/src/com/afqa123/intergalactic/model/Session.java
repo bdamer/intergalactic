@@ -96,10 +96,7 @@ public class Session implements Json.Serializable {
     public Station createStation(StationType type, HexCoordinate coordinates, Faction faction) {
         Station station = new Station(type.getId() + lastId++, type, coordinates, faction);
         units.add(station);        
-        // increase faction range
-        faction.getMap().explore(coordinates, type.getScanRange());
-        faction.getMap().addRange(station.getCoordinates());        
-        return station;        
+        return station;
     }
         
     public void destroyStation(Station station) {

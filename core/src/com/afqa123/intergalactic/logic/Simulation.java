@@ -88,7 +88,7 @@ public class Simulation {
         Gdx.app.debug(Simulation.class.getName(), String.format("Science output: %f", science));
 
         for (Unit u : session.getUnits()) {
-            u.step();
+            u.update(session);
         }
         
         for (StepListener listener : listeners) {

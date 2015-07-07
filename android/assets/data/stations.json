@@ -2,6 +2,7 @@
     {
         "id": "outpost",
         "label": "Outpost",
-        "scanRange": 3
+        "scanRange": 3,
+        "cost": 4
     }
 ]

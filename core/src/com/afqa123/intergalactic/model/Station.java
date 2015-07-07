@@ -10,6 +10,7 @@ public class Station implements Unit, Json.Serializable {
     private StationType type;
     private Faction owner;
     private HexCoordinate coordinates;
+    private int construction;
 
     // TODO: fixme - only needed during deserialization
     private String typeName;
@@ -66,13 +67,15 @@ public class Station implements Unit, Json.Serializable {
     }
 
     @Override
-    public boolean isReadyForStep() {
-        return true;
-    }
-
-    @Override
-    public void step() {
-        // nothing to do?
+    public void update(Session session) {
+        if (construction < type.getCost()) {
+            construction++;
+            if (construction == type.getCost()) {
+                // increase faction range pnce construction is done
+                owner.getMap().explore(coordinates, type.getScanRange());
+                owner.getMap().addRange(coordinates);        
+            }
+        }
     }
     
     @Override
@@ -91,6 +94,7 @@ public class Station implements Unit, Json.Serializable {
         json.writeValue("type", type.getId());
         json.writeValue("owner", owner.getName());
         json.writeValue("coordinates", coordinates);
+        json.writeValue("construction", construction);
     }
 
     @Override
@@ -98,5 +102,6 @@ public class Station implements Unit, Json.Serializable {
         typeName = json.readValue("type", String.class, jv);
         ownerName = json.readValue("owner", String.class, jv);
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
+        construction = json.readValue("construction", Integer.class, jv);
     }
 }
