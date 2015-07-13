@@ -1,6 +1,7 @@
 package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
+import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.FactionMap;
 import com.afqa123.intergalactic.model.Galaxy;
@@ -19,6 +20,7 @@ import com.afqa123.intergalactic.input.SmartInputAdapter;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Ship;
+import com.afqa123.intergalactic.model.ShipType;
 import com.afqa123.intergalactic.model.Station;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -27,9 +29,12 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -67,13 +72,13 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 // Colonizes a planet
                 case Input.Keys.C:
                     if (activeShip != null && activeShip.colonizeSector(getSession())) {
-                        activeShip = null;
+                        selectShip(null);
                     }
                     return true;                    
                 // Builds an outpost
                 case Input.Keys.O:
                     if (activeShip != null && activeShip.buildStation(getSession())) {
-                        activeShip = null;
+                        selectShip(null);
                     }
                     return true;
                 // Kill current unit
@@ -81,14 +86,13 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                     if (activeShip != null) {
                         // TODO: needs to update faction map 
                         getSession().destroyUnit(activeShip);
-                        activeShip = null;
+                        selectShip(null);
                     }
                     return true;
                 case Input.Keys.F:
-                    if (activeShip instanceof Ship) {
-                        Ship selected = (Ship)activeShip;
-                        selected.fortify();
-                        activeShip = null;
+                    if (activeShip != null) {
+                        activeShip.fortify();
+                        selectShip(null);
                     }
                     return true;
                 case Input.Keys.S:
@@ -152,7 +156,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 for (Ship s : getSession().getPlayer().getShips()) {
                     // unit needs to be in sector and be owned by player
                     if (s.getCoordinates().equals(c) && s != activeShip) {
-                        activateShip(s);
+                        selectShip(s);
                         break;
                     }
                 }
@@ -231,6 +235,10 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     // UI
     private final List<Label> sectorLabels;
     private final TextButton turnButton;
+    private final Image shipFortifyButton;
+    private final Image shipDisbandButton;
+    private final Image shipColonizeButton;
+    private final Image shipStationButton;
     
     public GalaxyScreen(IntergalacticGame game) {
         super(game);
@@ -249,6 +257,58 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             }
         });
         getStage().addActor(turnButton);
+        
+        Texture texture = Assets.get("textures/ui.png");
+        shipFortifyButton = new Image(new TextureRegion(texture, 0.0625f, 0.125f, 0.125f, 0.1875f));
+        shipFortifyButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (activeShip != null) {
+                    activeShip.fortify();
+                    selectShip(null);
+                }
+            }
+        });
+        shipFortifyButton.setVisible(false);
+        getStage().addActor(shipFortifyButton);
+
+        shipDisbandButton = new Image(new TextureRegion(texture, 0.1875f, 0.125f, 0.25f, 0.1875f));        
+        shipDisbandButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (activeShip != null) {
+                    // TODO: needs to update faction map 
+                    getSession().destroyUnit(activeShip);
+                    selectShip(null);
+                }
+            }
+        });
+        shipDisbandButton.setVisible(false);
+        getStage().addActor(shipDisbandButton);
+        
+        shipColonizeButton = new Image(new TextureRegion(texture, 0.0f, 0.125f, 0.0625f, 0.1875f));    
+        shipColonizeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (activeShip != null && activeShip.colonizeSector(getSession())) {
+                    selectShip(null);
+                }
+            }
+        });
+        shipColonizeButton.setVisible(false);
+        getStage().addActor(shipColonizeButton);
+
+        shipStationButton = new Image(new TextureRegion(texture, 0.125f, 0.125f, 0.1875f, 0.1875f));        
+        shipStationButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (activeShip != null && activeShip.buildStation(getSession())) {
+                    selectShip(null);
+                }
+            }
+        });
+        shipStationButton.setVisible(false);
+        getStage().addActor(shipStationButton);
         
         cam = new PerspectiveCamera(42.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         // Center on player home
@@ -356,7 +416,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 // if not, select it and see if it has a path. if it doesn't 
                 // have a path, force player interaction, otherwise continue
                 // moving along path.
-                activateShip(s);                
+                selectShip(s);                
                 if (s.getPath() == null) {
                     return false;
                 }
@@ -478,14 +538,47 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         activeShip.selectTarget(getSession(), c);
     }
     
-    private void activateShip(Ship ship) {
+    private void selectShip(Ship ship) {
         activeShip = ship;
-        Vector3 target = activeShip.getCoordinates().toWorld();
-        indicator.setPosition(target);
-        // Focus camera on target
-        cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
-        cam.lookAt(target);
-        cam.update();
-        activeShip.wake();
+
+        if  (activeShip != null) {
+            Vector3 target = activeShip.getCoordinates().toWorld();
+            indicator.setPosition(target);
+            // Focus camera on target
+            cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
+            cam.lookAt(target);
+            cam.update();
+            activeShip.wake();            
+
+            float offset = 0.0f;
+            shipFortifyButton.setVisible(true);
+            shipFortifyButton.setPosition(offset, STAGE_MARGIN);
+            offset += shipFortifyButton.getWidth();
+            shipDisbandButton.setVisible(true);
+            shipDisbandButton.setPosition(offset, STAGE_MARGIN);
+            offset += shipDisbandButton.getWidth();
+            
+            if (activeShip.canPerformAction(ShipType.Action.COLONIZE)) {
+                shipColonizeButton.setVisible(true);
+                shipColonizeButton.setPosition(offset, STAGE_MARGIN);
+                offset += shipColonizeButton.getWidth();
+            } else {
+                shipColonizeButton.setVisible(false);                
+            }
+
+            if (activeShip.canPerformAction(ShipType.Action.BUILD_STATION)) {
+                shipStationButton.setVisible(true);
+                shipStationButton.setPosition(offset, STAGE_MARGIN);
+                offset += shipStationButton.getWidth();
+            } else {
+                shipStationButton.setVisible(false);                
+            }
+            
+        } else {
+            shipFortifyButton.setVisible(false);
+            shipDisbandButton.setVisible(false);
+            shipColonizeButton.setVisible(false);
+            shipStationButton.setVisible(false);
+        }        
     }
 }
