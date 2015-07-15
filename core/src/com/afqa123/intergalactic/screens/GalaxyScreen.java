@@ -310,7 +310,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         shipStationButton.setVisible(false);
         getStage().addActor(shipStationButton);
         
-        cam = new PerspectiveCamera(42.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam = new PerspectiveCamera(38.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         // Center on player home
         Faction player = getSession().getPlayer();
         Sector home = galaxy.getFactionSystems(player).get(0);
@@ -324,8 +324,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         gridRenderer = new GridRenderer(galaxy);
         bgRenderer = new BackgroundRenderer();
         starRenderer = new StarRenderer();        
-        indicator = new Indicator();        
-        indicator.setPosition(target);        
+        indicator = new Indicator();
         pathRenderer = new PathRenderer();
         
         shipRenderer = new ShipRenderer();        
@@ -575,6 +574,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             }
             
         } else {
+            indicator.setPosition(null);
             shipFortifyButton.setVisible(false);
             shipDisbandButton.setVisible(false);
             shipColonizeButton.setVisible(false);

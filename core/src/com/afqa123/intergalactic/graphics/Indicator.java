@@ -30,7 +30,6 @@ public class Indicator implements Disposable {
             new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE));
         buildMesh();
         modelM = new Matrix4();
-        position = Vector3.Zero;
     }
 
     // TODO: reuse
@@ -49,6 +48,9 @@ public class Indicator implements Disposable {
     }
     
     public void render(Camera cam) {
+        if (position == null) {
+            return;
+        }
         Matrix4 mvp = new Matrix4(modelM);
         modelM.setToTranslationAndScaling(position, SCALE_VECTOR);
         mvp.mulLeft(cam.combined);
