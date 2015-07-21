@@ -15,7 +15,7 @@ import java.util.List;
 public class BorderRenderer implements Disposable {
 
     private static final int VERTEX_SIZE = 3;
-    private static final float BORDER_WIDTH = 8.0f;
+    private static final float BORDER_WIDTH = 5.0f;
     private final ShaderProgram sp;
     private final Color color;
     private Mesh mesh;

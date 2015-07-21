@@ -143,6 +143,10 @@ public class FactionMap implements Json.Serializable {
         }
     }
     
+    // TODO: move border computation into seperate class that stores faction borders
+    // and provides border conflict resolution mechanisms
+    private static final float BORDER_OFFSET = 0.05f;
+    
     /**
      * Computes the inner and outer border of this map. An inner border exists 
      * between a SHORT and a LONG range sector, whereas an outer border exists
@@ -191,28 +195,28 @@ public class FactionMap implements Json.Serializable {
                     Edge edge = null;
                     switch (d) {
                         case NORTH_EAST:
-                            edge = new Edge(new Vector3(origin.x, origin.y, origin.z - Hex.SIZE), 
-                                new Vector3(origin.x + Hex.HEIGHT, origin.y, origin.z - Hex.HALF_SIZE));
+                            edge = new Edge(new Vector3(origin.x, origin.y, origin.z - Hex.SIZE + BORDER_OFFSET), 
+                                new Vector3(origin.x + Hex.HEIGHT - BORDER_OFFSET, origin.y, origin.z - Hex.HALF_SIZE + BORDER_OFFSET));
                             break;
                         case EAST:
-                            edge = new Edge(new Vector3(origin.x + Hex.HEIGHT, origin.y, origin.z - Hex.HALF_SIZE), 
-                                new Vector3(origin.x + Hex.HEIGHT, origin.y, origin.z + Hex.HALF_SIZE));
+                            edge = new Edge(new Vector3(origin.x + Hex.HEIGHT - BORDER_OFFSET, origin.y, origin.z - Hex.HALF_SIZE + BORDER_OFFSET), 
+                                new Vector3(origin.x + Hex.HEIGHT - BORDER_OFFSET, origin.y, origin.z + Hex.HALF_SIZE - BORDER_OFFSET));
                             break;
                         case SOUTH_EAST:
-                            edge = new Edge(new Vector3(origin.x + Hex.HEIGHT, origin.y, origin.z + Hex.HALF_SIZE), 
-                                new Vector3(origin.x, origin.y, origin.z + Hex.SIZE));
+                            edge = new Edge(new Vector3(origin.x + Hex.HEIGHT - BORDER_OFFSET, origin.y, origin.z + Hex.HALF_SIZE - BORDER_OFFSET), 
+                                new Vector3(origin.x, origin.y, origin.z + Hex.SIZE - BORDER_OFFSET));
                             break;
                         case SOUTH_WEST:
-                            edge = new Edge(new Vector3(origin.x, origin.y, origin.z + Hex.SIZE), 
-                                new Vector3(origin.x - Hex.HEIGHT, origin.y, origin.z + Hex.HALF_SIZE));
+                            edge = new Edge(new Vector3(origin.x, origin.y, origin.z + Hex.SIZE - BORDER_OFFSET), 
+                                new Vector3(origin.x - Hex.HEIGHT + BORDER_OFFSET, origin.y, origin.z + Hex.HALF_SIZE - BORDER_OFFSET));
                             break;
                         case WEST:
-                            edge = new Edge(new Vector3(origin.x - Hex.HEIGHT, origin.y, origin.z + Hex.HALF_SIZE),
-                                new Vector3(origin.x - Hex.HEIGHT, origin.y, origin.z - Hex.HALF_SIZE));
+                            edge = new Edge(new Vector3(origin.x - Hex.HEIGHT + BORDER_OFFSET, origin.y, origin.z + Hex.HALF_SIZE - BORDER_OFFSET),
+                                new Vector3(origin.x - Hex.HEIGHT + BORDER_OFFSET, origin.y, origin.z - Hex.HALF_SIZE + BORDER_OFFSET));
                             break;
                         case NORTH_WEST:
-                            edge = new Edge(new Vector3(origin.x - Hex.HEIGHT, origin.y, origin.z - Hex.HALF_SIZE),
-                                new Vector3(origin.x, origin.y, origin.z - Hex.SIZE));
+                            edge = new Edge(new Vector3(origin.x - Hex.HEIGHT + BORDER_OFFSET, origin.y, origin.z - Hex.HALF_SIZE + BORDER_OFFSET),
+                                new Vector3(origin.x, origin.y, origin.z - Hex.SIZE + BORDER_OFFSET));
                             break;                                    
                     }
                     if (isInnerBorder) {

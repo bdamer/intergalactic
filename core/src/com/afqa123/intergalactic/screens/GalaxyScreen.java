@@ -232,6 +232,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final StationRenderer stationRenderer;
     private final BorderRenderer innerBorderRenderer;
     private final BorderRenderer outerBorderRenderer;
+    private final BorderRenderer aiBorderRenderer;
     private Ship activeShip;
     private boolean debugDeityMode;
     
@@ -333,7 +334,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         shipRenderer = new ShipRenderer();        
         stationRenderer = new StationRenderer();
         innerBorderRenderer = new BorderRenderer(Color.GREEN);
-        outerBorderRenderer = new BorderRenderer(Color.RED);        
+        outerBorderRenderer = new BorderRenderer(Color.RED);
+        aiBorderRenderer = new BorderRenderer(Color.PURPLE);
     }
     
     @Override
@@ -408,6 +410,10 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         gridRenderer.update(playerMap);
         innerBorderRenderer.update(playerMap.getInnerBorder());
         outerBorderRenderer.update(playerMap.getOuterBorder());
+
+        // TODO: replace with proper implementation
+        Faction ai = getSession().getFactions().get("ai");
+        aiBorderRenderer.update(ai.getMap().getInnerBorder());
     }
     
     @Override
@@ -466,6 +472,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         starRenderer.render(cam, visibleSectors);
         gridRenderer.render(cam);
         indicator.render(cam);        
+        aiBorderRenderer.render(cam);
         innerBorderRenderer.render(cam);
         outerBorderRenderer.render(cam);
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
@@ -519,6 +526,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         indicator.dispose();
         innerBorderRenderer.dispose();
         outerBorderRenderer.dispose();
+        aiBorderRenderer.dispose();
     }
     
     private HexCoordinate pickSector(int x, int y) {
