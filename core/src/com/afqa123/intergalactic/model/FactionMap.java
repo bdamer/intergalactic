@@ -1,18 +1,11 @@
 package com.afqa123.intergalactic.model;
 
-import com.afqa123.intergalactic.math.Edge;
-import com.afqa123.intergalactic.math.Hex;
 import com.afqa123.intergalactic.math.HexCoordinate;
-import com.afqa123.intergalactic.math.HexCoordinate.Direction;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 
 public class FactionMap implements Json.Serializable {
@@ -29,8 +22,6 @@ public class FactionMap implements Json.Serializable {
     private FactionMapSector[][] map;
     private int radius;
     private final Set<ChangeListener> listeners = new HashSet<>();
-    private final List<Edge> innerBorder = new ArrayList<>();
-    private final List<Edge> outerBorder = new ArrayList<>();
     
     FactionMap() {
         // required for serialization
@@ -70,14 +61,6 @@ public class FactionMap implements Json.Serializable {
         return map;
     }
 
-    public List<Edge> getInnerBorder() {
-        return innerBorder;
-    }
-
-    public List<Edge> getOuterBorder() {
-        return outerBorder;
-    }
-    
     public List<FactionMapSector> findSectors(SectorStatus status, Range range) {
         List<FactionMapSector> res = new ArrayList<>();
         for (FactionMapSector[] row : map) {
@@ -119,7 +102,6 @@ public class FactionMap implements Json.Serializable {
                 }
             }            
         }
-        computeBorders();
         // Explore and notify map listeners
         explore(coord, 1);
     }
@@ -137,96 +119,10 @@ public class FactionMap implements Json.Serializable {
                     s.addStatus(SectorStatus.KNOWN);
                 }
             }
-        }        
+        }    
+        // TODO: potential optimization - only call listeners if map was actually changed
         for (FactionMap.ChangeListener l : listeners) {
             l.mapChanged();
-        }
-    }
-    
-    // TODO: move border computation into seperate class that stores faction borders
-    // and provides border conflict resolution mechanisms
-    private static final float BORDER_OFFSET = 0.05f;
-    
-    /**
-     * Computes the inner and outer border of this map. An inner border exists 
-     * between a SHORT and a LONG range sector, whereas an outer border exists
-     * between a LONG range sector and one without a range.
-     */
-    public void computeBorders() {
-        Set<HexCoordinate> visited = new HashSet<>();
-        Queue<HexCoordinate> candidates = new LinkedList<>();
-        innerBorder.clear();
-        outerBorder.clear();
-        
-        candidates.add(HexCoordinate.ORIGIN);
-        while (!candidates.isEmpty()) {
-            HexCoordinate cur = candidates.remove();
-            if (visited.contains(cur)) {
-                continue;
-            }
-            visited.add(cur);
-
-            // Check if this is a valid coordinate
-            FactionMapSector sector = getSector(cur);
-            if (sector == null) {
-                continue;
-            }
-
-            // Add neighbors to list of candidates
-            HexCoordinate[] neighbors = cur.getRing(1);
-            candidates.addAll(Arrays.asList(neighbors));
-
-            // Check if this sector is within faction range
-            Range sectorRange = sector.getRange();
-            if (sectorRange == null) {
-                continue;
-            }
-            
-            Vector3 origin = cur.toWorld();
-            // check each neighbor sector
-            for (Direction d : Direction.values()) {
-                HexCoordinate n = neighbors[d.ordinal()];
-                FactionMapSector neighbor = getSector(n);
-                // if neighbor sector off the map or has a different range 
-                // than the current sector, we've found a border
-                boolean isOuterBorder = (neighbor == null || (sectorRange == Range.LONG && neighbor.getRange() == null));
-                boolean isInnerBorder = (sectorRange == Range.SHORT && (neighbor == null || neighbor.getRange() == Range.LONG));
-                if (isOuterBorder || isInnerBorder) {
-                    Edge edge = null;
-                    switch (d) {
-                        case NORTH_EAST:
-                            edge = new Edge(new Vector3(origin.x, origin.y, origin.z - Hex.SIZE + BORDER_OFFSET), 
-                                new Vector3(origin.x + Hex.HEIGHT - BORDER_OFFSET, origin.y, origin.z - Hex.HALF_SIZE + BORDER_OFFSET));
-                            break;
-                        case EAST:
-                            edge = new Edge(new Vector3(origin.x + Hex.HEIGHT - BORDER_OFFSET, origin.y, origin.z - Hex.HALF_SIZE + BORDER_OFFSET), 
-                                new Vector3(origin.x + Hex.HEIGHT - BORDER_OFFSET, origin.y, origin.z + Hex.HALF_SIZE - BORDER_OFFSET));
-                            break;
-                        case SOUTH_EAST:
-                            edge = new Edge(new Vector3(origin.x + Hex.HEIGHT - BORDER_OFFSET, origin.y, origin.z + Hex.HALF_SIZE - BORDER_OFFSET), 
-                                new Vector3(origin.x, origin.y, origin.z + Hex.SIZE - BORDER_OFFSET));
-                            break;
-                        case SOUTH_WEST:
-                            edge = new Edge(new Vector3(origin.x, origin.y, origin.z + Hex.SIZE - BORDER_OFFSET), 
-                                new Vector3(origin.x - Hex.HEIGHT + BORDER_OFFSET, origin.y, origin.z + Hex.HALF_SIZE - BORDER_OFFSET));
-                            break;
-                        case WEST:
-                            edge = new Edge(new Vector3(origin.x - Hex.HEIGHT + BORDER_OFFSET, origin.y, origin.z + Hex.HALF_SIZE - BORDER_OFFSET),
-                                new Vector3(origin.x - Hex.HEIGHT + BORDER_OFFSET, origin.y, origin.z - Hex.HALF_SIZE + BORDER_OFFSET));
-                            break;
-                        case NORTH_WEST:
-                            edge = new Edge(new Vector3(origin.x - Hex.HEIGHT + BORDER_OFFSET, origin.y, origin.z - Hex.HALF_SIZE + BORDER_OFFSET),
-                                new Vector3(origin.x, origin.y, origin.z - Hex.SIZE + BORDER_OFFSET));
-                            break;                                    
-                    }
-                    if (isInnerBorder) {
-                        innerBorder.add(edge);
-                    }
-                    if (isOuterBorder) {
-                        outerBorder.add(edge);
-                    }
-                }
-            }
         }
     }
     

@@ -1,13 +1,13 @@
 package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.asset.Assets;
-import com.afqa123.intergalactic.model.FactionMap;
 import com.afqa123.intergalactic.model.Galaxy;
-import com.afqa123.intergalactic.model.Range;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.math.Hex;
+import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.FactionMapSector;
 import com.afqa123.intergalactic.model.SectorStatus;
+import com.afqa123.intergalactic.model.Session;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -19,27 +19,21 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
-import java.util.HashMap;
-import java.util.Map;
 
 public class GridRenderer implements Disposable {
 
-    private static final Vector2 TEXTURE_OFFSET = new Vector2(0.0f, 0.25f);
+    // Offset for regular hex
+    private static final Vector2 TEXTURE_OFFSET1 = new Vector2(0.0f, 0.25f);
+    // Offset for bigger hex used to indicate owned sectors
+    private static final Vector2 TEXTURE_OFFSET2 = new Vector2(0.25f, 0.25f);
     private static final Vector2 TEXTURE_SIZE = new Vector2(0.25f, 0.25f);
     // Number of vertices per hex
     private static final int NUM_VERTICES = 4;
     // Number of indices per hex
     private static final int NUM_INDICES = 6;
     // Number of elements per vertex
-    private static final int VERTEX_SIZE = 5;
-    private static final Color GRID_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.6f);
-    private static final Map<Range, Color> RANGE_COLORS;
-    
-    static {
-        RANGE_COLORS = new HashMap<>();
-        RANGE_COLORS.put(Range.SHORT, new Color(0.0f, 1.0f, 0.0f, 0.5f));
-        RANGE_COLORS.put(Range.LONG, new Color(1.0f, 1.55f, 0.0f, 0.6f));
-    }
+    private static final int VERTEX_SIZE = 9;
+    private static final Color GRID_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.5f);
     
     private final ShaderProgram sp;
     private final Galaxy galaxy;    
@@ -53,13 +47,16 @@ public class GridRenderer implements Disposable {
         this.mesh = new Mesh(true, galaxy.getCount() * NUM_VERTICES, 
             galaxy.getCount() * NUM_INDICES, 
             new VertexAttribute(Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
-            new VertexAttribute(Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE));
+            new VertexAttribute(Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE),
+            new VertexAttribute(Usage.ColorUnpacked, 4, ShaderProgram.COLOR_ATTRIBUTE));
     }
     
     /**
      * Rebuilds the grid mesh.
+     * 
+     * @param session The game session.
      */
-    public void update(FactionMap map) {
+    public void update(Session session) {
         // TODO: use lists (although ideally, we'd only want to update the
         // vertices that have changed)
         float[] vertices = new float[galaxy.getCount() * NUM_VERTICES * VERTEX_SIZE];
@@ -67,16 +64,29 @@ public class GridRenderer implements Disposable {
         
         int counter = 0;
         Sector[][] sectors = galaxy.getSectors();
-        FactionMapSector[][] entries = map.getSectors();
+        FactionMapSector[][] entries = session.getPlayer().getMap().getSectors();
         for (int row = 0; row < sectors.length; row++) {
             for (int col = 0; col < sectors[row].length; col++) {
-                // TODO: use player faction map to determine any additional properties
                 Sector sector = sectors[row][col];
+                // determine visiblity of sector based on player map
                 FactionMapSector factionSector = entries[row][col];
                 if (factionSector.getStatus() == SectorStatus.UNKNOWN) {
                     continue;
                 }
-                addSector(sector.getCoordinates().toWorld(), vertices, indices, counter);
+                
+                // TODO: use player faction map to determine any additional properties
+                Color c;
+                Vector2 to;
+                if (sector.hasOwner()) {
+                    Faction owner = session.getFactions().get(sector.getOwner());
+                    c = owner.getColor();
+                    to = TEXTURE_OFFSET2;
+                } else {
+                    c = GRID_COLOR;
+                    to = TEXTURE_OFFSET1;
+                }
+                
+                addSector(sector.getCoordinates().toWorld(), c, to, vertices, indices, counter);
                 counter++;
             }
         }
@@ -89,7 +99,7 @@ public class GridRenderer implements Disposable {
         //Gdx.app.debug(GridRenderer.class.getName(), String.format("Mesh indices: %d", mesh.getNumIndices()));
     }
     
-    private void addSector(Vector3 pos, float[] vertices, short[] indices, int vCount) {
+    private void addSector(Vector3 pos, Color color, Vector2 texOffset, float[] vertices, short[] indices, int vCount) {
         int vIndex = vCount * NUM_VERTICES * VERTEX_SIZE;
         // Vertex order:
         // 2 3
@@ -99,29 +109,45 @@ public class GridRenderer implements Disposable {
         vertices[vIndex++] = pos.x - Hex.SIZE;
         vertices[vIndex++] = 0.0f;
         vertices[vIndex++] = pos.z + Hex.SIZE;
-        vertices[vIndex++] = TEXTURE_OFFSET.x;
-        vertices[vIndex++] = TEXTURE_OFFSET.y + TEXTURE_SIZE.y;
+        vertices[vIndex++] = texOffset.x;
+        vertices[vIndex++] = texOffset.y + TEXTURE_SIZE.y;
+        vertices[vIndex++] = color.r;
+        vertices[vIndex++] = color.g;
+        vertices[vIndex++] = color.b;
+        vertices[vIndex++] = color.a;
         
         // Vertex 1
         vertices[vIndex++] = pos.x + Hex.SIZE;
         vertices[vIndex++] = 0.0f;
         vertices[vIndex++] = pos.z + Hex.SIZE;
-        vertices[vIndex++] = TEXTURE_OFFSET.x + TEXTURE_SIZE.x;
-        vertices[vIndex++] = TEXTURE_OFFSET.y + TEXTURE_SIZE.y;
+        vertices[vIndex++] = texOffset.x + TEXTURE_SIZE.x;
+        vertices[vIndex++] = texOffset.y + TEXTURE_SIZE.y;
+        vertices[vIndex++] = color.r;
+        vertices[vIndex++] = color.g;
+        vertices[vIndex++] = color.b;
+        vertices[vIndex++] = color.a;
 
         // Vertex 2
         vertices[vIndex++] = pos.x - Hex.SIZE;
         vertices[vIndex++] = 0.0f;
         vertices[vIndex++] = pos.z - Hex.SIZE;
-        vertices[vIndex++] = TEXTURE_OFFSET.x;
-        vertices[vIndex++] = TEXTURE_OFFSET.y;
+        vertices[vIndex++] = texOffset.x;
+        vertices[vIndex++] = texOffset.y;
+        vertices[vIndex++] = color.r;
+        vertices[vIndex++] = color.g;
+        vertices[vIndex++] = color.b;
+        vertices[vIndex++] = color.a;
 
         // Vertex 3
         vertices[vIndex++] = pos.x + Hex.SIZE;
         vertices[vIndex++] = 0.0f;
         vertices[vIndex++] = pos.z - Hex.SIZE;
-        vertices[vIndex++] = TEXTURE_OFFSET.x + TEXTURE_SIZE.x;
-        vertices[vIndex++] = TEXTURE_OFFSET.y;
+        vertices[vIndex++] = texOffset.x + TEXTURE_SIZE.x;
+        vertices[vIndex++] = texOffset.y;
+        vertices[vIndex++] = color.r;
+        vertices[vIndex++] = color.g;
+        vertices[vIndex++] = color.b;
+        vertices[vIndex++] = color.a;
     
         int iIndex = vCount * NUM_INDICES;
         indices[iIndex++] = (short)(vCount * NUM_VERTICES);
@@ -137,7 +163,6 @@ public class GridRenderer implements Disposable {
         sp.begin();
         sp.setUniformMatrix("u_mvp", cam.combined);
         sp.setUniformi("u_tex0", 0);
-        sp.setUniformf("u_color", GRID_COLOR);
         mesh.render(sp, GL20.GL_TRIANGLES);
         sp.end();
     }

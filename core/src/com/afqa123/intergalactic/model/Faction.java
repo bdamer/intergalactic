@@ -78,7 +78,6 @@ public class Faction implements Json.Serializable {
         name = json.readValue("name", String.class, jv);
         player = json.readValue("player", Boolean.class, jv);
         map = json.readValue("map", FactionMap.class, jv);
-        map.computeBorders();
         color = json.readValue("color", Color.class, jv);
         strategy = json.readValue("strategy", SimpleStrategy.class, jv);
     }

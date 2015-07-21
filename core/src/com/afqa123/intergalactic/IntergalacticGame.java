@@ -69,8 +69,10 @@ public class IntergalacticGame extends ApplicationAdapter {
                 GalaxyGenerator gen = new GalaxyGenerator();
                 Galaxy galaxy = gen.generateSpiralGalaxy(15);
                 Map<String,Faction> factions = new HashMap<>();
-                factions.put(PLAYER_FACTION, new Faction(PLAYER_FACTION, new Color(1.0f, 1.0f, 0.0f, 1.0f), true, galaxy));
-                factions.put("ai", new Faction("ai", new Color(0.0f, 1.0f, 0.0f, 1.0f), false, galaxy));
+                // Color #c02020
+                factions.put(PLAYER_FACTION, new Faction(PLAYER_FACTION, new Color(0.75f, 0.125f, 0.125f, 1.0f), true, galaxy));
+                // Color #20a010 
+                factions.put("ai", new Faction("ai", new Color(0.125f, 0.625f, 0.0625f, 1.0f), false, galaxy));
                 session = new Session(galaxy, factions);
                 simulation = new Simulation(session);
                 simulation.init();

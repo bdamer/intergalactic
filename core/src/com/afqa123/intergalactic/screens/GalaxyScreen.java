@@ -23,6 +23,7 @@ import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.model.ShipType;
 import com.afqa123.intergalactic.model.Station;
+import com.afqa123.intergalactic.util.FactionBorder;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -232,7 +233,6 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final StationRenderer stationRenderer;
     private final BorderRenderer innerBorderRenderer;
     private final BorderRenderer outerBorderRenderer;
-    private final BorderRenderer aiBorderRenderer;
     private Ship activeShip;
     private boolean debugDeityMode;
     
@@ -333,9 +333,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         
         shipRenderer = new ShipRenderer();        
         stationRenderer = new StationRenderer();
-        innerBorderRenderer = new BorderRenderer(Color.GREEN);
-        outerBorderRenderer = new BorderRenderer(Color.RED);
-        aiBorderRenderer = new BorderRenderer(Color.PURPLE);
+        innerBorderRenderer = new BorderRenderer(new Color(0.0f, 1.0f, 0.0f, 0.5f));
+        outerBorderRenderer = new BorderRenderer(new Color(1.0f, 0.0f, 0.0f, 0.5f));
     }
     
     @Override
@@ -407,13 +406,11 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             visibleSectors.add(sector);
         }
 
-        gridRenderer.update(playerMap);
-        innerBorderRenderer.update(playerMap.getInnerBorder());
-        outerBorderRenderer.update(playerMap.getOuterBorder());
-
-        // TODO: replace with proper implementation
-        Faction ai = getSession().getFactions().get("ai");
-        aiBorderRenderer.update(ai.getMap().getInnerBorder());
+        gridRenderer.update(getSession());
+        
+        FactionBorder borders = new FactionBorder(playerMap);
+        innerBorderRenderer.update(borders.getInnerBorder());
+        outerBorderRenderer.update(borders.getOuterBorder());
     }
     
     @Override
@@ -471,8 +468,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
         starRenderer.render(cam, visibleSectors);
         gridRenderer.render(cam);
-        indicator.render(cam);        
-        aiBorderRenderer.render(cam);
+        indicator.render(cam);
         innerBorderRenderer.render(cam);
         outerBorderRenderer.render(cam);
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
@@ -526,7 +522,6 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         indicator.dispose();
         innerBorderRenderer.dispose();
         outerBorderRenderer.dispose();
-        aiBorderRenderer.dispose();
     }
     
     private HexCoordinate pickSector(int x, int y) {

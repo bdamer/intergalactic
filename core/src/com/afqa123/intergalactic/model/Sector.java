@@ -371,4 +371,8 @@ public final class Sector {
     public boolean isIdle() {
         return buildQueue.size() == 0;
     }
+    
+    public boolean hasOwner() {
+        return owner != null;
+    }
 }
