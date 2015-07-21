@@ -12,7 +12,8 @@ import com.badlogic.gdx.utils.SnapshotArray;
  * production. 
  */
 public class ProductionGroup extends HorizontalGroup implements ProductionTransferListener {
-    
+
+    private static final float SCALE = 1.2f;
     // count of workers assigned to this production group
     private int count;
     private final TextureRegion texture;
@@ -44,7 +45,8 @@ public class ProductionGroup extends HorizontalGroup implements ProductionTransf
         } else if (delta > 0) {
             for (int i = children.size; i < count; i++) {
                 Image img = new Image(texture);
-                img.setPosition(texture.getRegionWidth(), 0);
+                img.setScale(SCALE);
+                img.setPosition(i * img.getWidth(), 0);
                 addActor(img);
                 dnd.addSource(new WorkerSource(img, texture));
             }

@@ -119,10 +119,10 @@ public class SectorScreen extends AbstractScreen {
         getStage().addActor(buildQueueLabel);        
         
         Texture texture = Assets.get("textures/catalog01.png");
-        TextureRegion tr = new TextureRegion(texture, 0.125f, 0.0f, 0.15625f, 0.03125f);
-
+        float size = 16.0f / 1024.0f;
+        TextureRegion tr = new TextureRegion(texture, 0.125f + size, 0.0f, 0.125f + size + size, size);
         foodProduction = new ProductionGroup(dnd, tr, sector.getFoodProducers());
-        foodProduction.setPosition(STAGE_WIDTH / 2, STAGE_MARGIN + 2 * tr.getRegionHeight());
+        foodProduction.setPosition(STAGE_WIDTH / 2, 70.0f);
         foodProduction.setChangeListener(new ChangeListener<Integer>() {
             @Override
             public void valueChanged(Integer value) {
@@ -135,7 +135,7 @@ public class SectorScreen extends AbstractScreen {
         getStage().addActor(foodProduction);
         
         indProduction = new ProductionGroup(dnd, tr, sector.getIndustrialProducers());
-        indProduction.setPosition(STAGE_WIDTH / 2, STAGE_MARGIN + tr.getRegionHeight());
+        indProduction.setPosition(STAGE_WIDTH / 2, 50.0f);
         indProduction.setChangeListener(new ChangeListener<Integer>() {
             @Override
             public void valueChanged(Integer value) {
@@ -147,7 +147,7 @@ public class SectorScreen extends AbstractScreen {
         getStage().addActor(indProduction);
 
         sciProduction = new ProductionGroup(dnd, tr, sector.getScienceProducers());
-        sciProduction.setPosition(STAGE_WIDTH / 2, STAGE_MARGIN);
+        sciProduction.setPosition(STAGE_WIDTH / 2, 30.0f);
         sciProduction.setChangeListener(new ChangeListener<Integer>() {
             @Override
             public void valueChanged(Integer value) {

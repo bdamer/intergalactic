@@ -38,8 +38,11 @@ import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +51,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
 
     private static final Vector3 CAMERA_OFFSET = new Vector3(0.0f, 10.0f, 5.0f);
     private static final float SCROLL_SPEED = 0.05f;
-    private static final Color DEFAULT_SECTOR_COLOR = Color.LIGHT_GRAY;
+    private static final Color DEFAULT_SECTOR_COLOR = Color.BLACK;
     
     private class DesktopInputProcessor extends InputAdapter {
         
@@ -377,6 +380,14 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             l.remove();
         }
         sectorLabels.clear();
+
+        // TODO: do this once, not every time the map changes
+        Texture texture = Assets.get("textures/catalog01.png");
+        float size = 16.0f / 1024.0f;
+        TextureRegion tr = new TextureRegion(texture, 0.125f, 0.0f, 0.125f + size, size);
+        Drawable labelBackground = new TextureRegionDrawable(tr);
+        LabelStyle defaultLabelStyle = new LabelStyle(getSkin().getFont(FONT), DEFAULT_SECTOR_COLOR);
+        defaultLabelStyle.background = labelBackground;
         
         final Faction player = getSession().getPlayer();
         final FactionMap playerMap = player.getMap();
@@ -387,9 +398,17 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 continue;
             }
 
-            Faction owner = getSession().getFactions().get(sector.getOwner());
-            Label sectorLabel = new Label(sector.getName(), getSkin(), FONT, new Color(1.0f, 1.0f, 1.0f, 1.0f));
-            sectorLabel.setColor(owner != null ? owner.getColor() : DEFAULT_SECTOR_COLOR);
+            // Create label based on sector owner
+            LabelStyle style;
+            if (sector.hasOwner()) {
+                Faction owner = getSession().getFactions().get(sector.getOwner());
+                style = new LabelStyle(getSkin().getFont(FONT), owner.getColor());
+                style.background = labelBackground;            
+            } else {
+                style = defaultLabelStyle;
+            }
+            
+            Label sectorLabel = new Label(sector.getName(), style);
             sectorLabel.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
