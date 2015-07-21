@@ -118,7 +118,7 @@ public class SectorScreen extends AbstractScreen {
         buildQueueLabel.setPosition(buildQueueSelect.getX(), buildQueueSelect.getY());
         getStage().addActor(buildQueueLabel);        
         
-        Texture texture = Assets.get("textures/ui.png");
+        Texture texture = Assets.get("textures/catalog01.png");
         TextureRegion tr = new TextureRegion(texture, 0.125f, 0.0f, 0.15625f, 0.03125f);
 
         foodProduction = new ProductionGroup(dnd, tr, sector.getFoodProducers());

@@ -115,7 +115,11 @@ public class HexCoordinate {
 
     public HexCoordinate[] getRing(int radius) {
         HexCoordinate[] res = new HexCoordinate[radius * Direction.values().length];
-        Direction[] directions = Direction.values();
+        // Movement around the hex starting from east
+        final Direction[] directions = new Direction[] { 
+            Direction.NORTH_WEST, Direction.WEST, Direction.SOUTH_WEST, 
+            Direction.SOUTH_EAST, Direction.EAST, Direction.NORTH_EAST };
+        // First neighbor is to the EAST of this coordinate
         HexCoordinate cur = new HexCoordinate(x + directions[4].x * radius, 
             y + directions[4].y * radius);
         int offset = 0;

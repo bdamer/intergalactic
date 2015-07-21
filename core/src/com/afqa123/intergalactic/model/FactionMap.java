@@ -1,11 +1,18 @@
 package com.afqa123.intergalactic.model;
 
+import com.afqa123.intergalactic.math.Edge;
+import com.afqa123.intergalactic.math.Hex;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.math.HexCoordinate.Direction;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 public class FactionMap implements Json.Serializable {
@@ -22,6 +29,8 @@ public class FactionMap implements Json.Serializable {
     private FactionMapSector[][] map;
     private int radius;
     private final Set<ChangeListener> listeners = new HashSet<>();
+    private final List<Edge> innerBorder = new ArrayList<>();
+    private final List<Edge> outerBorder = new ArrayList<>();
     
     FactionMap() {
         // required for serialization
@@ -44,7 +53,7 @@ public class FactionMap implements Json.Serializable {
             } else if (i >= median) {
                 cols--;
             }
-        }
+        }        
     }
     
     public FactionMapSector getSector(HexCoordinate c) {
@@ -59,6 +68,14 @@ public class FactionMap implements Json.Serializable {
 
     public FactionMapSector[][] getSectors() {
         return map;
+    }
+
+    public List<Edge> getInnerBorder() {
+        return innerBorder;
+    }
+
+    public List<Edge> getOuterBorder() {
+        return outerBorder;
     }
     
     public List<FactionMapSector> findSectors(SectorStatus status, Range range) {
@@ -102,7 +119,7 @@ public class FactionMap implements Json.Serializable {
                 }
             }            
         }
-        
+        computeBorders();
         // Explore and notify map listeners
         explore(coord, 1);
     }
@@ -123,6 +140,89 @@ public class FactionMap implements Json.Serializable {
         }        
         for (FactionMap.ChangeListener l : listeners) {
             l.mapChanged();
+        }
+    }
+    
+    /**
+     * Computes the inner and outer border of this map. An inner border exists 
+     * between a SHORT and a LONG range sector, whereas an outer border exists
+     * between a LONG range sector and one without a range.
+     */
+    public void computeBorders() {
+        Set<HexCoordinate> visited = new HashSet<>();
+        Queue<HexCoordinate> candidates = new LinkedList<>();
+        innerBorder.clear();
+        outerBorder.clear();
+        
+        candidates.add(HexCoordinate.ORIGIN);
+        while (!candidates.isEmpty()) {
+            HexCoordinate cur = candidates.remove();
+            if (visited.contains(cur)) {
+                continue;
+            }
+            visited.add(cur);
+
+            // Check if this is a valid coordinate
+            FactionMapSector sector = getSector(cur);
+            if (sector == null) {
+                continue;
+            }
+
+            // Add neighbors to list of candidates
+            HexCoordinate[] neighbors = cur.getRing(1);
+            candidates.addAll(Arrays.asList(neighbors));
+
+            // Check if this sector is within faction range
+            Range sectorRange = sector.getRange();
+            if (sectorRange == null) {
+                continue;
+            }
+            
+            Vector3 origin = cur.toWorld();
+            // check each neighbor sector
+            for (Direction d : Direction.values()) {
+                HexCoordinate n = neighbors[d.ordinal()];
+                FactionMapSector neighbor = getSector(n);
+                // if neighbor sector off the map or has a different range 
+                // than the current sector, we've found a border
+                boolean isOuterBorder = (neighbor == null || (sectorRange == Range.LONG && neighbor.getRange() == null));
+                boolean isInnerBorder = (sectorRange == Range.SHORT && (neighbor == null || neighbor.getRange() == Range.LONG));
+                if (isOuterBorder || isInnerBorder) {
+                    Edge edge = null;
+                    switch (d) {
+                        case NORTH_EAST:
+                            edge = new Edge(new Vector3(origin.x, origin.y, origin.z - Hex.SIZE), 
+                                new Vector3(origin.x + Hex.HEIGHT, origin.y, origin.z - Hex.HALF_SIZE));
+                            break;
+                        case EAST:
+                            edge = new Edge(new Vector3(origin.x + Hex.HEIGHT, origin.y, origin.z - Hex.HALF_SIZE), 
+                                new Vector3(origin.x + Hex.HEIGHT, origin.y, origin.z + Hex.HALF_SIZE));
+                            break;
+                        case SOUTH_EAST:
+                            edge = new Edge(new Vector3(origin.x + Hex.HEIGHT, origin.y, origin.z + Hex.HALF_SIZE), 
+                                new Vector3(origin.x, origin.y, origin.z + Hex.SIZE));
+                            break;
+                        case SOUTH_WEST:
+                            edge = new Edge(new Vector3(origin.x, origin.y, origin.z + Hex.SIZE), 
+                                new Vector3(origin.x - Hex.HEIGHT, origin.y, origin.z + Hex.HALF_SIZE));
+                            break;
+                        case WEST:
+                            edge = new Edge(new Vector3(origin.x - Hex.HEIGHT, origin.y, origin.z + Hex.HALF_SIZE),
+                                new Vector3(origin.x - Hex.HEIGHT, origin.y, origin.z - Hex.HALF_SIZE));
+                            break;
+                        case NORTH_WEST:
+                            edge = new Edge(new Vector3(origin.x - Hex.HEIGHT, origin.y, origin.z - Hex.HALF_SIZE),
+                                new Vector3(origin.x, origin.y, origin.z - Hex.SIZE));
+                            break;                                    
+                    }
+                    if (isInnerBorder) {
+                        innerBorder.add(edge);
+                    }
+                    if (isOuterBorder) {
+                        outerBorder.add(edge);
+                    }
+                }
+            }
         }
     }
     

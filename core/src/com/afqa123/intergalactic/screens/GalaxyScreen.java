@@ -10,6 +10,7 @@ import com.afqa123.intergalactic.model.SectorStatus;
 import com.afqa123.intergalactic.logic.Simulation.StepListener;
 import com.afqa123.intergalactic.model.Unit;
 import com.afqa123.intergalactic.graphics.BackgroundRenderer;
+import com.afqa123.intergalactic.graphics.BorderRenderer;
 import com.afqa123.intergalactic.graphics.GridRenderer;
 import com.afqa123.intergalactic.graphics.Indicator;
 import com.afqa123.intergalactic.graphics.PathRenderer;
@@ -229,6 +230,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private final PathRenderer pathRenderer;
     private final ShipRenderer shipRenderer;
     private final StationRenderer stationRenderer;
+    private final BorderRenderer innerBorderRenderer;
+    private final BorderRenderer outerBorderRenderer;
     private Ship activeShip;
     private boolean debugDeityMode;
     
@@ -258,7 +261,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         });
         getStage().addActor(turnButton);
         
-        Texture texture = Assets.get("textures/ui.png");
+        Texture texture = Assets.get("textures/catalog01.png");
         shipFortifyButton = new Image(new TextureRegion(texture, 0.0625f, 0.125f, 0.125f, 0.1875f));
         shipFortifyButton.addListener(new ClickListener() {
             @Override
@@ -329,6 +332,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         
         shipRenderer = new ShipRenderer();        
         stationRenderer = new StationRenderer();
+        innerBorderRenderer = new BorderRenderer(Color.GREEN);
+        outerBorderRenderer = new BorderRenderer(Color.RED);        
     }
     
     @Override
@@ -401,6 +406,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         }
 
         gridRenderer.update(playerMap);
+        innerBorderRenderer.update(playerMap.getInnerBorder());
+        outerBorderRenderer.update(playerMap.getOuterBorder());
     }
     
     @Override
@@ -453,10 +460,15 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);        
         bgRenderer.render(cam);        
-        gridRenderer.render(cam);
-        indicator.render(cam);
 
+        // disable depth testing so we can use transparency
+        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
         starRenderer.render(cam, visibleSectors);
+        gridRenderer.render(cam);
+        indicator.render(cam);        
+        innerBorderRenderer.render(cam);
+        outerBorderRenderer.render(cam);
+        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
         
         // Create unit render lists
         FactionMap playerMap = getSession().getPlayer().getMap();
@@ -505,6 +517,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         shipRenderer.dispose();
         stationRenderer.dispose();
         indicator.dispose();
+        innerBorderRenderer.dispose();
+        outerBorderRenderer.dispose();
     }
     
     private HexCoordinate pickSector(int x, int y) {
@@ -531,7 +545,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         }                
         // check if we're looking at new sector and need to recompute path
         HexCoordinate c = pickSector(x, y);
-        if (c.equals(activeShip.getTarget())) {
+        if (c == null || c.equals(activeShip.getTarget())) {
             return;
         }
         activeShip.selectTarget(getSession(), c);

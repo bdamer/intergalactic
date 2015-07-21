@@ -92,8 +92,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         // Assets
         Assets.load("textures/nebula32.png", Texture.class);
         Assets.load("textures/base-red.png", Texture.class);
+        Assets.load("textures/catalog01.png", Texture.class);
         Assets.load("textures/detail.png", Texture.class);
-        Assets.load("textures/ui.png", Texture.class);        
         Assets.load("textures/explosion.png", Texture.class);
         Assets.load("data/plans/plan01.json", String.class);
         Assets.load("data/sectors.json", JsonValue.class);
@@ -109,6 +109,8 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("shaders/sc_color.fsh", String.class);
         Assets.load("shaders/sc_default.vsh", String.class);
         Assets.load("shaders/sc_default.fsh", String.class);
+        Assets.load("shaders/sc_hexgrid.vsh", String.class);
+        Assets.load("shaders/sc_hexgrid.fsh", String.class);
         Assets.load("shaders/sc_sphere.vsh", String.class);
         Assets.load("shaders/sc_sphere.fsh", String.class);
         Assets.load("shaders/sc_star.vsh", String.class);
@@ -194,6 +196,7 @@ public class IntergalacticGame extends ApplicationAdapter {
     
     public void save(String filename) {
         try (JsonWriter writer = new JsonWriter(new FileWriter(filename))) {
+            writer.setOutputType(JsonWriter.OutputType.json);
             Json json = new Json();
             json.toJson(session, writer);            
         } catch (IOException ex) {

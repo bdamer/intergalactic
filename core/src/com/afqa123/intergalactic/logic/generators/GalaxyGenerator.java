@@ -74,6 +74,9 @@ public class GalaxyGenerator {
             // as the radius increases).
             angle += MIN_ANGLE + Math.random() * (1.0f - ratio) * (MAX_ANGLE - MIN_ANGLE);
         }
+        
+        Gdx.app.debug(GalaxyGenerator.class.getName(), "Built galaxy with " + res.getCount() + " sectors.");
+        
         return res;
     }
     

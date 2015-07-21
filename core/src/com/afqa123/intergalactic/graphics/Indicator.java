@@ -24,7 +24,7 @@ public class Indicator implements Disposable {
     
     public Indicator() {
         sp = ShaderFactory.buildShader("shaders/textured.vsh", "shaders/transparency.fsh");
-        texture = Assets.get("textures/ui.png");        
+        texture = Assets.get("textures/catalog01.png");
         mesh = new Mesh(true, 4, 0,
             new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
             new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE));
