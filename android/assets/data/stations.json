@@ -3,6 +3,8 @@
         "id": "outpost",
         "label": "Outpost",
         "scanRange": 3,
-        "cost": 4
+        "cost": 4,
+        "defense": 10,
+        "health": 25
     }
 ]

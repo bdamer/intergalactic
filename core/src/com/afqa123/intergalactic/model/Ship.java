@@ -21,6 +21,7 @@ public class Ship implements Unit, Json.Serializable {
     private Path path; 
     // Movement points remaining this turn
     private float movementPoints;
+    private float health;
     private boolean fortified;
 
     // TODO: fixme - only needed during deserialization
@@ -47,6 +48,7 @@ public class Ship implements Unit, Json.Serializable {
         this.coordinates = coordinates;
         this.owner = owner;
         this.ownerName = owner.getName();
+        this.health = type.getHealth();
     }
     
     @Override
@@ -71,6 +73,32 @@ public class Ship implements Unit, Json.Serializable {
     
     public float getMovementPoints() {
         return movementPoints;
+    }
+
+    @Override
+    public float getBaseAttack() {
+        return type.getAttack() * getPower();
+    }
+    
+    @Override
+    public float getBaseDefense() {
+        return type.getDefense() * getPower();
+    }
+    
+    @Override
+    public float getPower() {
+        float power = health / type.getHealth();
+        return Math.max(power, 0.1f);
+    }
+    
+    @Override
+    public void applyDamage(float damage) {
+        health -= damage;
+    }
+    
+    @Override
+    public float getHealth() {
+        return health;
     }
     
     public Range getRange() {
@@ -142,10 +170,14 @@ public class Ship implements Unit, Json.Serializable {
                     CombatSimulator sim = new CombatSimulator();
                     switch (sim.simulate(this, u)) {
                         case VICTORY:
-                            session.destroyUnit(u);
+                            if (u.getHealth() <= 0.0f) {
+                                session.destroyUnit(u);
+                            }
                             break;
                         case DEFEAT:
-                            session.destroyUnit(this);
+                            if (getHealth() <= 0.0f) {
+                                session.destroyUnit(this);
+                            }
                             return true;
                         case DRAW:
                             return false;

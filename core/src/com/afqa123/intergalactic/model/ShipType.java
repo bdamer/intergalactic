@@ -14,25 +14,15 @@ public class ShipType implements UnitType, BuildOption {
     private Range range;
     private int scanRange;
     private int movementRange;
+    private float attack;
+    private float defense;
+    private float health;
     private Action[] actions;
 
     ShipType() {
         
     }
     
-    public ShipType(String id, String label, String detail, int cost, String[] dependencies, 
-        Range range, int movementRange, int scanRange, Action[] actions) {
-        this.id = id;
-        this.label = label;
-        this.detail = detail;
-        this.cost = cost;
-        this.dependencies = dependencies;
-        this.range = range;
-        this.movementRange = movementRange;
-        this.scanRange = scanRange;
-        this.actions = actions;
-    }
-
     @Override
     public String getId() {
         return id;
@@ -73,6 +63,18 @@ public class ShipType implements UnitType, BuildOption {
     
     public int getScanRange() {
         return scanRange;
+    }
+
+    public float getAttack() {
+        return attack;
+    }
+
+    public float getDefense() {
+        return defense;
+    }
+
+    public float getHealth() {
+        return health;
     }
     
     public Action[] getActions() {

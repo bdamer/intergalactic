@@ -11,7 +11,8 @@ public class Station implements Unit, Json.Serializable {
     private Faction owner;
     private HexCoordinate coordinates;
     private int construction;
-
+    private float health;
+    
     // TODO: fixme - only needed during deserialization
     private String typeName;
     private String ownerName;    
@@ -35,6 +36,7 @@ public class Station implements Unit, Json.Serializable {
         this.coordinates = coordinates;
         this.owner = owner;
         this.ownerName = owner.getName();
+        this.health = type.getHealth();
     }
     
     @Override
@@ -66,6 +68,32 @@ public class Station implements Unit, Json.Serializable {
         return type.getScanRange();
     }
 
+    @Override
+    public float getBaseAttack() {
+        return 0.0f;
+    }
+    
+    @Override
+    public float getBaseDefense() {
+        return type.getDefense() * getPower();
+    }
+    
+    @Override
+    public float getPower() {
+        float power = health / type.getHealth();
+        return Math.max(power, 0.1f);
+    }
+    
+    @Override
+    public void applyDamage(float damage) {
+        health -= damage;
+    }
+
+    @Override
+    public float getHealth() {
+        return health;
+    }
+    
     @Override
     public void update(Session session) {
         if (construction < type.getCost()) {

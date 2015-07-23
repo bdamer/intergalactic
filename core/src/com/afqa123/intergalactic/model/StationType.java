@@ -6,6 +6,8 @@ public class StationType implements UnitType {
     private String label;
     private int scanRange;
     private int cost;
+    private float defense;
+    private float health;
     
     @Override
     public String getId() {
@@ -23,5 +25,13 @@ public class StationType implements UnitType {
 
     public int getCost() {
         return cost;
+    }
+    
+    public float getDefense() {
+        return defense;
+    }
+
+    public float getHealth() {
+        return health;
     }
 }

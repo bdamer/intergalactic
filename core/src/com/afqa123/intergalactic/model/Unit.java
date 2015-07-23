@@ -14,6 +14,31 @@ public interface Unit {
 
     int getScanRange();
 
+    float getBaseAttack();
+    
+    float getBaseDefense();
+    
+    /**
+     * The normalized power value [0..1].
+     * 
+     * @return The power value.
+     */
+    float getPower();
+    
+    /**
+     * Applies damage to this unit.
+     * 
+     * @param damage The amount of damage.
+     */
+    void applyDamage(float damage);
+    
+    /**
+     * The absolute health value.
+     * 
+     * @return The health value.
+     */
+    float getHealth();
+        
     void update(Session session);
 
     void refresh(Session session);
