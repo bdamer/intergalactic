@@ -136,7 +136,7 @@ public class Ship implements Unit, Json.Serializable {
             if (u != null) {
                 // TODO: combat should probably be handled somewhere else...
                 if (step.attack) {
-                    // once we attack, now more movement is possible
+                    // once we attack, no more movement is possible
                     movementPoints = 0.0f;
                     // Attack logic
                     CombatSimulator sim = new CombatSimulator();
@@ -162,8 +162,11 @@ public class Ship implements Unit, Json.Serializable {
                         }
                     }
                     if (!canPass) {
-                        // abandon current path
-                        path.clear();
+                        // abandon current path if we cannot move even though we
+                        // are at full movement points
+                        if (movementPoints == type.getMovementRange()) {
+                            path.clear();  
+                        }
                         res = false;
                         break;
                     }

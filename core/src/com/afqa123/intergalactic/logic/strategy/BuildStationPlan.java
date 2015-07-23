@@ -107,8 +107,12 @@ public class BuildStationPlan implements Plan {
                         res = Status.INVALID;
                     }
                 } else {
+                    // if at any point the goal sector becomes occupied, mark plan as invalid
+                    Sector targetSector = session.getGalaxy().getSector(goal.getTargetSector());
+                    if (!targetSector.canBuildOutpost()) {
+                        res = Status.INVALID;
                     // unit still moving to target
-                    if (ship.move(session)) {
+                    } else if (ship.move(session)) {
                         res = Status.BLOCKED;
                     } else {
                         // unit was not able to move. attempt to compute new path

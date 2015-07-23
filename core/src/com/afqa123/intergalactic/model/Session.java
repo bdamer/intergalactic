@@ -95,7 +95,8 @@ public class Session implements Json.Serializable {
      */
     public Station createStation(StationType type, HexCoordinate coordinates, Faction faction) {
         Station station = new Station(type.getId() + lastId++, type, coordinates, faction);
-        units.add(station);        
+        units.add(station);
+        galaxy.getSector(coordinates).setOwner(faction.getName());
         return station;
     }
         

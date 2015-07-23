@@ -1,10 +1,8 @@
 package com.afqa123.intergalactic.logic;
 
-import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.Galaxy;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.Faction;
-import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.model.ShipType;
 import com.afqa123.intergalactic.model.Unit;
 import com.afqa123.intergalactic.model.Session;
@@ -66,6 +64,8 @@ public class Simulation {
             }
         }
 
+        Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", session.getTurn()));
+
         // AI turns
         Gdx.app.log(Simulation.class.getName(), "Simulating other factions.");        
         for (Faction faction : session.getFactions().values()) {
@@ -73,10 +73,7 @@ public class Simulation {
                 faction.getStrategy().nextTurn(session);
             }
         }
-        
-        session.increaseTurns();
-        Gdx.app.log(Simulation.class.getName(), String.format("Simulating turn %d", session.getTurn()));
-        
+                
         List<Sector> sectors = galaxy.getStarSystems();
         float science = 0.0f;
         for (Sector s : sectors) {
@@ -90,6 +87,8 @@ public class Simulation {
         for (Unit u : session.getUnits()) {
             u.update(session);
         }
+
+        session.increaseTurns();
         
         for (StepListener listener : listeners) {
             listener.afterStep();
