@@ -332,6 +332,7 @@ public class Ship implements Unit, Json.Serializable {
         json.writeValue("target", target);
         json.writeValue("movementPoints", movementPoints);
         json.writeValue("fortified", fortified);
+        json.writeValue("health", health);
     }
 
     @Override
@@ -343,5 +344,6 @@ public class Ship implements Unit, Json.Serializable {
         target = json.readValue("target", HexCoordinate.class, jv);
         movementPoints = json.readValue("movementPoints", Float.class, jv);        
         fortified = json.readValue("fortified", Boolean.class, jv);
+        health = json.readValue("health", Float.class, jv);
     }
 }
