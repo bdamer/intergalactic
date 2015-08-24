@@ -264,7 +264,7 @@ public class SectorScreen extends AbstractScreen {
             inQueue.add(e.getId());
             sb.append(e.getLabel());
             sb.append(" (");
-            if (sector.getIndustrialOutput() > 0.0f) {
+            if (sector.getIndustrialOutput() > 0.0f && e.getCost() > 0.0f) {
                 sb.append((int)Math.ceil(e.getCost() / sector.getIndustrialOutput()));
             } else {
                 sb.append(-1);
@@ -274,12 +274,12 @@ public class SectorScreen extends AbstractScreen {
         }
         buildQueueLabel.setText(sb);
         buildQueueLabel.setPosition(buildQueueSelect.getX(), 
-            buildQueueSelect.getY() - buildQueueSelect.getHeight() - height);
+        buildQueueSelect.getY() - buildQueueSelect.getHeight() - height);
         
         // Populate build option dropdown
-        List<BuildOption> availableStructures = getSession().getBuildTree().getBuildOptions(sector);
+        List<BuildOption> availableOptions = getSession().getBuildTree().getBuildOptions(sector);
         List<BuildQueueEntry> buildOptionLabels = new ArrayList<>();
-        for (BuildOption option : availableStructures) {
+        for (BuildOption option : availableOptions) {
             if (option.isUnique() && inQueue.contains(option.getId())) {
                 continue;
             }            

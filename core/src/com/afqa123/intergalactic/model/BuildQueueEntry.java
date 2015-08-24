@@ -2,6 +2,8 @@ package com.afqa123.intergalactic.model;
 
 public class BuildQueueEntry {
 
+    private static final double INFINITE_COST = -1000.0;
+    
     private String id;
     private String label;
     private double cost;
@@ -36,6 +38,20 @@ public class BuildQueueEntry {
 
     public void setCost(double cost) {
         this.cost = cost;
+    }
+    
+    public void produce(double production) {
+        if (cost != INFINITE_COST) {
+            cost -= production;
+        }
+    }
+    
+    public boolean isComplete() {
+        return cost != INFINITE_COST && cost <= 0.0;
+    }
+    
+    public boolean isInfinite() {
+        return cost == INFINITE_COST;
     }
     
     @Override

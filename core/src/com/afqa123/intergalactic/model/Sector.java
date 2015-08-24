@@ -267,6 +267,9 @@ public final class Sector {
         industrialMultiplier = DEFAULT_IND_MULTIPLIER;
         scienceMultiplier = DEFAULT_SCI_MULTIPLIER;
         foodConsumptionRate = DEFAULT_FOOD_CONSUMPTION;
+
+        
+        
         // Growth rate slows down as population increases [0.09-0.01]
         if (population < 9.0) {
             growthRate = (10.0 - population) / 100.0;
@@ -277,6 +280,11 @@ public final class Sector {
         // more slowly, over time?
         morale = 0.5f;
 
+        BuildQueueEntry top = buildQueue.peek();
+        if (top != null && top.isInfinite()) {
+            // add effects, if any
+        }
+        
         for (String s : structures) {
             // TODO: update modifiers from structures
         }
@@ -334,10 +342,8 @@ public final class Sector {
         if (entry == null) {
             return;
         }
-        double remaining = entry.getCost() - getIndustrialOutput();
-        if (remaining > 0) {
-            entry.setCost(remaining);
-        } else {
+        entry.produce(getIndustrialOutput());
+        if (entry.isComplete()) {
             buildQueue.remove();
             // add entry to list of structures or create new ship entity
             BuildOption option = session.getBuildTree().getBuildOption(entry.getId());

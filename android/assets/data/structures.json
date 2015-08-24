@@ -1,5 +1,26 @@
 [
     {
+        "id": "trade_goods",
+        "label": "Trade Goods",
+        "detail": "Produces wealth each turn.",
+        "cost": -1000,
+        "dependencies": []
+    },
+    {
+        "id": "forced_labor",
+        "label": "Forced Labor",
+        "detail": "Increases food and industrial production.",
+        "cost": -1000,
+        "dependencies": [ "barracks" ]
+    },
+    {
+        "id": "to_boldly_go",
+        "label": "To boldly go...",
+        "detail": "Increases science production.",
+        "cost": -1000,
+        "dependencies": [ "research_lab" ]
+    },   
+    {
         "id": "barracks",
         "label": "Barracks",
         "detail": "Provides defense against ground invasions.",
