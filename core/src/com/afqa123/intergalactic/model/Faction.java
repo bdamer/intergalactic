@@ -52,18 +52,7 @@ public class Faction implements Json.Serializable {
     public List<Ship> getShips() {
         return ships;
     }
-    
-    public void addColony(Sector sector) {
-        sector.setOwner(name);
-        sector.setPopulation(2.0f);
-        sector.setFoodProducers(1);
-        sector.setIndustrialProducers(1);
-        // TODO: compute automatically based on number of terraformed planets
-        sector.setMaxPopulation(10);
-        sector.updateModifiers();
-        map.addRange(sector.getCoordinates());
-    }
-    
+        
     @Override
     public void write(Json json) {
         json.writeValue("name", name);

@@ -150,6 +150,10 @@ public class Session implements Json.Serializable {
     public void read(Json json, JsonValue jv) {
         turn = json.readValue("turn", Integer.class, jv);
         galaxy = json.readValue("galaxy", Galaxy.class, jv);
+        // initialize modifiers
+        for (Sector s : galaxy.getStarSystems()) {
+            s.updateModifiers(this);
+        }
         Faction[] flist = json.readValue("factions", Faction[].class, jv);
         for (Faction f : flist) {
             factions.put(f.getName(), f);
@@ -160,7 +164,7 @@ public class Session implements Json.Serializable {
             if (u instanceof Ship) {
                 u.getOwner().getShips().add((Ship)u);
             }
-            units.add(u);        
+            units.add(u);
         }
     }
 }

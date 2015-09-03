@@ -4,111 +4,119 @@
         "label": "Trade Goods",
         "detail": "Produces wealth each turn.",
         "cost": -1000,
-        "dependencies": []
+        "dependencies": [],
+        "bonusMap": { }
     },
     {
         "id": "forced_labor",
         "label": "Forced Labor",
         "detail": "Increases food and industrial production.",
         "cost": -1000,
-        "dependencies": [ "barracks" ]
+        "dependencies": [ "barracks" ],
+        "bonusMap": { }
     },
     {
         "id": "to_boldly_go",
         "label": "To boldly go...",
         "detail": "Increases science production.",
         "cost": -1000,
-        "dependencies": [ "research_lab" ]
+        "dependencies": [ "research_lab" ],
+        "bonusMap": { }
     },   
     {
         "id": "barracks",
         "label": "Barracks",
         "detail": "Provides defense against ground invasions.",
         "cost": 10,
-        "dependencies": []
+        "dependencies": [],
+        "bonusMap": { }
     },
     {
         "id": "climate_control",
         "label": "Climate Control",
         "detail": "Controls planetary climate to increase food production.",
-        "provides": "+10% FOOD",
         "cost": 15,
-        "dependencies": []
+        "dependencies": [],
+        "bonusMap": { "foodMod": 0.11 }
     },
     {
         "id": "fabricators",
         "label": "Fabricators",
         "detail": "Increases industrial production.",
-        "provides": "+25% IND",
         "cost": 15,
-        "dependencies": []
+        "dependencies": [],
+        "bonusMap": { "indMod": 0.25 }
     },
     {
         "id": "mass_replication",
         "label": "Mass Replication",
         "detail": "Increases industrial production.",
-        "provides": "+20% IND",
         "cost": 20,
-        "dependencies": [ "fabricators", "research_lab" ]
+        "dependencies": [ "fabricators", "research_lab" ],
+        "bonusMap": { "indMod": 0.2 }
     },
     {
         "id": "nano_fabrication",
         "label": "Nano Fabrication",
         "detail": "Increases industrial production.",
-        "provides": "+15% IND",
         "cost": 40,
-        "dependencies": [ "mass_replication", "research_lab" ]
+        "dependencies": [ "mass_replication", "research_lab" ],
+        "bonusMap": { "indMod": 0.15 }
     },
     {
         "id": "offworld_farming",
         "label": "Off-world Farming",
         "detail": "Increases food production.",
-        "provides": "+100 FOOD",
         "cost": 30,
-        "dependencies": [ "climate_control", "shipyard" ]
+        "dependencies": [ "climate_control", "shipyard" ],
+        "bonusMap": { "foodBase": 10.0 }
     },
     {
         "id": "orbital_laser",
         "label": "Orbital Laser",
         "detail": "Provides orbital defense against enemy ships.",
         "cost": 20,
-        "dependencies": [ "shipyard", "science_academy" ]
+        "dependencies": [ "shipyard", "science_academy" ],
+        "bonusMap": { }
     },
     {
         "id": "scanner",
         "label": "Scanner",
         "detail": "Increases this colonies scan and supply range.",
         "cost": 30,
-        "dependencies": [ "shipyard", "research_lab" ]
+        "dependencies": [ "shipyard", "research_lab" ],
+        "bonusMap": { }
     },
     {
         "id": "science_academy",
         "label": "Science Academy",
         "detail": "Increases scientific research.",
-        "provides": "+15% SCI",
         "cost": 20,
-        "dependencies": [ "research_lab" ]
+        "dependencies": [ "research_lab" ],
+        "bonusMap": { "sciMod": 0.15 }
     },
     {
         "id": "shield_generator",
         "label": "Shield Generator",
         "detail": "Provides orbital defense against enemy ships.",
         "cost": 25,
-        "dependencies": [ "science_academy" ]
+        "dependencies": [ "science_academy" ],
+        "bonusMap": { }
     },
     {
         "id": "shipyard",
         "label": "Shipyard",
         "detail": "Enables construction of ships.",
         "cost": 15,
-        "dependencies": [ ]
+        "dependencies": [ ],
+        "bonusMap": { }
     },
     {
         "id": "research_lab",
         "label": "Research Lab",
         "detail": "Increases scientific research.",
-        "provides": "+18% SCI",
         "cost": 10,
-        "dependencies": [ ]
+        "dependencies": [ ],
+        "bonusMap": { "sciMod": 18.0 }
     }
 ]

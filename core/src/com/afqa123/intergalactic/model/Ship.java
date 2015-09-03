@@ -267,8 +267,9 @@ public class Ship implements Unit, Json.Serializable {
         Sector s = session.getGalaxy().getSector(coordinates);
         if (!s.canColonize())
             return false;
-
-        owner.addColony(s);
+        s.colonize(session, ownerName);
+        // explore player map around new colony
+        owner.getMap().addRange(s.getCoordinates());
         session.destroyUnit(this);
         return true;
     }

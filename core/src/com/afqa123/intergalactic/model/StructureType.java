@@ -5,8 +5,7 @@ public class StructureType implements BuildOption {
     private String id;
     private String label;
     private String detail;
-    // TODO: replace with structured data
-    private String provides;
+    private BonusMap bonusMap;
     private int cost;
     private String[] dependencies;
     
@@ -50,6 +49,10 @@ public class StructureType implements BuildOption {
     @Override
     public String[] getDependencies() {
         return dependencies;
+    }
+
+    public BonusMap getBonusMap() {
+        return bonusMap;
     }
     
     @Override

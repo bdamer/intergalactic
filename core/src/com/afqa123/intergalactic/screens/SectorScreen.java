@@ -62,9 +62,9 @@ public class SectorScreen extends AbstractScreen {
     private final ProductionGroup indProduction;
     private final ProductionGroup sciProduction;
         
-    public SectorScreen(IntergalacticGame game, Sector sector) {        
+    public SectorScreen(IntergalacticGame game, Sector aSector) {        
         super(game);
-        this.sector = sector;
+        sector = aSector;
         
         dnd = new DragAndDrop();
         
@@ -126,8 +126,8 @@ public class SectorScreen extends AbstractScreen {
         foodProduction.setChangeListener(new ChangeListener<Integer>() {
             @Override
             public void valueChanged(Integer value) {
-                SectorScreen.this.sector.setFoodProducers(value);
-                SectorScreen.this.sector.updateModifiers();
+                sector.setFoodProducers(value);
+                sector.updateModifiers(getSession());
                 // TODO: replace with ModelChangedListener...
                 updateControls();
             }            
@@ -139,8 +139,8 @@ public class SectorScreen extends AbstractScreen {
         indProduction.setChangeListener(new ChangeListener<Integer>() {
             @Override
             public void valueChanged(Integer value) {
-                SectorScreen.this.sector.setIndustrialProducers(value);
-                SectorScreen.this.sector.updateModifiers();
+                sector.setIndustrialProducers(value);
+                sector.updateModifiers(getSession());
                 updateControls();
             }            
         });
@@ -151,8 +151,8 @@ public class SectorScreen extends AbstractScreen {
         sciProduction.setChangeListener(new ChangeListener<Integer>() {
             @Override
             public void valueChanged(Integer value) {
-                SectorScreen.this.sector.setScienceProducers(value);
-                SectorScreen.this.sector.updateModifiers();
+                sector.setScienceProducers(value);
+                sector.updateModifiers(getSession());
                 updateControls();
             }            
         });

@@ -13,18 +13,25 @@ import java.util.Set;
 public final class Sector {
 
     // TODO: externalize these settings so we can change them more easily
-    private static final double BASE_FOOD_PRODUCTION = 0.0;
-    private static final double BASE_IND_PRODUCTION = 1.0;
-    private static final double BASE_SCI_PRODUCTION = 0.0;    
-    private static final double DEFAULT_FOOD_MULTIPLIER = 1.0;
-    private static final double DEFAULT_IND_MULTIPLIER = 0.25;
-    private static final double DEFAULT_SCI_MULTIPLIER = 0.5;
+    private static final double DEFAULT_FOOD_BASE = 0.0;
+    private static final double DEFAULT_IND_BASE = 1.0;
+    private static final double DEFAULT_SCI_BASE = 0.0;
+    private static final double DEFAULT_FOOD_MOD = 1.0;
+    private static final double DEFAULT_IND_MOD = 0.25;
+    private static final double DEFAULT_SCI_MOD = 0.5;
     private static final double DEFAULT_FOOD_CONSUMPTION = 0.3;
-    
+    // Bonus map entries
+    public static final String FOOD_BASE = "foodBase";
+    public static final String IND_BASE = "indBase";
+    public static final String SCI_BASE = "sciBase";
+    public static final String FOOD_MOD = "foodMod";
+    public static final String IND_MOD = "indMod";
+    public static final String SCI_MOD = "sciMod";
+    // FX settings
     private static final float TURBULENCE = 1.0f / 100000.0f;
+    
     private String name;
     private String owner;
-    
     // Axial coordinates of this sector.
     private HexCoordinate coordinates;
     private StarType type;
@@ -33,7 +40,6 @@ public final class Sector {
     private double population;
     private int maxPopulation;
     private double growthRate;
-
     private double morale;
     private double foodConsumptionRate;
     // Members of population allocated to production
@@ -41,9 +47,7 @@ public final class Sector {
     private int industrialProducers;
     private int scienceProducers;
     // Production multipliers
-    private double foodMultiplier;
-    private double industrialMultiplier;
-    private double scienceMultiplier;
+    private BonusMap bonusMap = new BonusMap();
     // Buildings and production queue
     private Set<String> structures;
     private Queue<BuildQueueEntry> buildQueue;
@@ -77,7 +81,6 @@ public final class Sector {
         this.foodProducers = 0;
         this.structures = new HashSet<>();
         this.buildQueue = new LinkedList<>();
-        updateModifiers();
         
         if (type != null) {
             switch (type) {
@@ -241,15 +244,17 @@ public final class Sector {
     }
 
     public double getNetFoodOutput() {
-        return BASE_FOOD_PRODUCTION + (double)foodProducers * foodMultiplier - (foodConsumptionRate * (int)population);
+        double production = bonusMap.get(FOOD_BASE) + bonusMap.get(FOOD_MOD) * (double)foodProducers;
+        double consumption = foodConsumptionRate * (int)population; // round down population
+        return production - consumption;
     }
 
     public double getScientificOutput() {
-        return BASE_SCI_PRODUCTION + (double)scienceProducers * scienceMultiplier;
+        return bonusMap.get(SCI_BASE) + bonusMap.get(SCI_MOD) * (double)scienceProducers;
     }
     
     public double getIndustrialOutput() {
-        return BASE_IND_PRODUCTION + (double)industrialProducers * industrialMultiplier;
+        return bonusMap.get(IND_BASE) + bonusMap.get(IND_MOD) * (double)industrialProducers;
     }
 
     public Queue<BuildQueueEntry> getBuildQueue() {
@@ -259,49 +264,40 @@ public final class Sector {
     public Set<String> getStructures() {
         return structures;
     }
-    
-    public void updateModifiers() {
-        // Default everything...
-        // TODO: externalize these settings so we can change them more easily
-        foodMultiplier = DEFAULT_FOOD_MULTIPLIER;
-        industrialMultiplier = DEFAULT_IND_MULTIPLIER;
-        scienceMultiplier = DEFAULT_SCI_MULTIPLIER;
-        foodConsumptionRate = DEFAULT_FOOD_CONSUMPTION;
-
         
+    public void update(Session session) {
+        // nothing to do, since there is no population
+        if (population == 0.0) 
+            return;
         
-        // Growth rate slows down as population increases [0.09-0.01]
-        if (population < 9.0) {
-            growthRate = (10.0 - population) / 100.0;
-        } else {
-            growthRate = 0.01;
-        }
-        // TODO: or is morale different from other values in that it changes
-        // more slowly, over time?
-        morale = 0.5f;
-
-        BuildQueueEntry top = buildQueue.peek();
-        if (top != null && top.isInfinite()) {
-            // add effects, if any
-        }
-        
-        for (String s : structures) {
-            // TODO: update modifiers from structures
-        }
-
-        if (getNetFoodOutput() < 0.0f) {
-            growthRate = -0.25;
-            morale -= 0.25f;
-        } else {
-            // TODO: add bonus to growth based on food surplus
-        }
-    }
-    
-    public void update(Session state) {
-        produce(state);
+        produce(session);
         growPopulation();
-        updateModifiers();        
+        updateModifiers(session);        
     }
+
+    /**
+     * Updates top of production queue.
+     * 
+     * @param session The game session.
+     */
+    private void produce(Session session) {
+        BuildQueueEntry entry = buildQueue.peek();
+        if (entry == null) {
+            return;
+        }
+        entry.produce(getIndustrialOutput());
+        if (entry.isComplete()) {
+            buildQueue.remove();
+            // add entry to list of structures or create new ship entity
+            BuildOption option = session.getBuildTree().getBuildOption(entry.getId());
+            if (option instanceof ShipType) {
+                Faction ownerFaction = session.getFactions().get(owner);
+                session.createShip((ShipType)option, coordinates, ownerFaction);
+            } else {
+                structures.add(entry.getId());
+            }
+        }
+    } 
     
     /**
      * Grows or shrinks the population based on the current growth rate.
@@ -331,30 +327,46 @@ public final class Sector {
             }
         }        
     }
+    
+    public void updateModifiers(Session session) {
+        // Default everything...
+        bonusMap.set(FOOD_BASE, DEFAULT_FOOD_BASE);
+        bonusMap.set(IND_BASE, DEFAULT_IND_BASE);
+        bonusMap.set(SCI_BASE, DEFAULT_SCI_BASE);
+        bonusMap.set(FOOD_MOD, DEFAULT_FOOD_MOD);
+        bonusMap.set(IND_MOD, DEFAULT_IND_MOD);
+        bonusMap.set(SCI_MOD, DEFAULT_SCI_MOD);
 
-    /**
-     * Updates top of production queue.
-     * 
-     * @param session The game session.
-     */
-    private void produce(Session session) {
-        BuildQueueEntry entry = buildQueue.peek();
-        if (entry == null) {
-            return;
+        foodConsumptionRate = DEFAULT_FOOD_CONSUMPTION;
+        
+        // Growth rate slows down as population increases [0.09-0.01]
+        if (population < 9.0) {
+            growthRate = (10.0 - population) / 100.0;
+        } else {
+            growthRate = 0.01;
         }
-        entry.produce(getIndustrialOutput());
-        if (entry.isComplete()) {
-            buildQueue.remove();
-            // add entry to list of structures or create new ship entity
-            BuildOption option = session.getBuildTree().getBuildOption(entry.getId());
-            if (option instanceof ShipType) {
-                Faction ownerFaction = session.getFactions().get(owner);
-                session.createShip((ShipType)option, coordinates, ownerFaction);
-            } else {
-                structures.add(entry.getId());
-            }
+        // TODO: or is morale different from other values in that it changes
+        // more slowly, over time?
+        morale = 0.5f;
+
+        BuildQueueEntry top = buildQueue.peek();
+        if (top != null && top.isInfinite()) {
+            // add effects, if any
         }
-    }    
+        
+        // merge in bonus modifiers provided by structure
+        for (String id : structures) {
+            StructureType struc = (StructureType)session.getBuildTree().getBuildOption(id);
+            bonusMap.merge(struc.getBonusMap());
+        }
+
+        if (getNetFoodOutput() < 0.0f) {
+            growthRate = -0.25;
+            morale -= 0.25f;
+        } else {
+            // TODO: add bonus to growth based on food surplus
+        }
+    }
     
     public boolean canColonize() {
         return (type != null && owner == null);
@@ -380,5 +392,15 @@ public final class Sector {
     
     public boolean hasOwner() {
         return owner != null;
+    }
+    
+    public void colonize(Session session, String owner) {
+        this.owner = owner;
+        this.population = 2.0f;
+        this.foodProducers = 1;
+        this.industrialProducers = 1;
+        // TODO: compute automatically based on number of terraformed planets
+        this.maxPopulation = 10;
+        updateModifiers(session);
     }
 }

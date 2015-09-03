@@ -25,7 +25,7 @@ public class Station implements Unit, Json.Serializable {
      * Creates a new station of a given type. Unit should only be created using 
      * the factory methods provided by {@code Session}.
      * 
-     * @param id The station's id
+     * @param id The station id
      * @param type The station type.
      * @param coordinates The initial coordinates.
      * @param owner The owner faction.

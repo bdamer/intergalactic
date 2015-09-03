@@ -49,7 +49,9 @@ public class Simulation {
             do {
                 home = sectors.get((int)(Math.random() * sectors.size()));
             } while (home.getOwner() != null);            
-            faction.addColony(home);
+            home.colonize(session, faction.getName());
+            // explore player map around new colony
+            faction.getMap().addRange(home.getCoordinates());
             session.createShip(scoutType, home.getCoordinates(), faction);
         }
     }
