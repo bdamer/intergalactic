@@ -455,6 +455,13 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 i++;
             }
         }
+        // Check that all sectors are ready
+        for (Sector s : galaxy.getFactionSystems(session.getPlayer())) {
+            if (s.isIdle()) {
+                focusCamera(s.getCoordinates().toWorld());
+                return false;
+            }
+        }
         return true;
     }
     
@@ -579,10 +586,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         if  (activeShip != null) {
             Vector3 target = activeShip.getCoordinates().toWorld();
             indicator.setPosition(target);
-            // Focus camera on target
-            cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
-            cam.lookAt(target);
-            cam.update();
+            focusCamera(target);
             activeShip.wake();            
 
             float offset = 0.0f;
@@ -616,5 +620,11 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             shipColonizeButton.setVisible(false);
             shipStationButton.setVisible(false);
         }        
+    }
+    
+    private void focusCamera(Vector3 target) {
+        cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
+        cam.lookAt(target);
+        cam.update();
     }
 }
