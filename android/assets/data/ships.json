@@ -54,5 +54,20 @@
         "defense": 1,
         "health": 2,
         "actions": ["ATTACK"]
-    }
+    },
+    {
+        "id": "pirate",
+        "label": "Pirate",
+        "detail": "Pirate ship.",
+        "cost": 0,
+        "dependencies": ["pirate_base"],
+        "range": "LONG",
+        "movementRange": 2,
+        "scanRange": 2,
+        "attack": 2,
+        "defense": 1,
+        "health": 3,
+        "actions": ["ATTACK"]
+    },
+    
 ]

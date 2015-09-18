@@ -1,6 +1,6 @@
 package com.afqa123.intergalactic.model;
 
-import com.afqa123.intergalactic.IntergalacticGame;
+import com.afqa123.intergalactic.asset.Strings;
 import com.afqa123.intergalactic.logic.EntityDatabase;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.logic.BuildTree;
@@ -9,14 +9,17 @@ import com.afqa123.intergalactic.logic.CombatSimulator.CombatResult;
 import static com.afqa123.intergalactic.logic.CombatSimulator.CombatResult.DEFEAT;
 import static com.afqa123.intergalactic.logic.CombatSimulator.CombatResult.DRAW;
 import static com.afqa123.intergalactic.logic.CombatSimulator.CombatResult.VICTORY;
+import com.afqa123.intergalactic.logic.UnitListener;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * Session containing the state of the game.
@@ -31,8 +34,7 @@ public class Session implements Json.Serializable {
     private final Map<String,Faction> factions;
     private final BuildTree buildTree;
     private final Queue<Notification> notifications;
-    
-    // TODO: add properties for difficulty, AI state, etc.
+    private final Set<UnitListener> listeners = new HashSet<>();
     
     Session() {
         db = new EntityDatabase();
@@ -47,7 +49,7 @@ public class Session implements Json.Serializable {
         buildTree = new BuildTree(db);
         this.galaxy = galaxy;
         this.factions = factions;
-        this.units = new ArrayList<>();
+        units = new ArrayList<>();
         notifications = new LinkedList<>();
     }
     
@@ -68,7 +70,11 @@ public class Session implements Json.Serializable {
     }
 
     public Faction getPlayer() {
-        return factions.get(IntergalacticGame.PLAYER_FACTION);
+        return factions.get(Faction.PLAYER_FACTION);
+    }
+    
+    public Faction getPirates() {
+        return factions.get(Faction.PIRATE_FACTION);
     }
     
     public List<Unit> getUnits() {
@@ -88,6 +94,9 @@ public class Session implements Json.Serializable {
         units.add(ship);        
         faction.getShips().add(ship);
         faction.getMap().explore(coordinates, type.getScanRange());
+        for (UnitListener l : listeners) {
+            l.unitCreated(ship);
+        }
         return ship;
     }
     
@@ -107,6 +116,9 @@ public class Session implements Json.Serializable {
         Station station = new Station(type.getId() + lastId++, type, coordinates, faction);
         units.add(station);
         galaxy.getSector(coordinates).setOwner(faction.getName());
+        for (UnitListener l : listeners) {
+            l.unitCreated(station);
+        }
         return station;
     }
         
@@ -116,9 +128,13 @@ public class Session implements Json.Serializable {
 
     public void destroyUnit(Unit unit) {
         if (unit instanceof Ship) {
+            Ship ship = (Ship)unit;
             unit.getOwner().getShips().remove((Ship)unit);
         }
         units.remove(unit);
+        for (UnitListener l : listeners) {
+            l.unitDestroyed(unit);
+        }
     }
     
     public Unit findUnitInSector(HexCoordinate c) {
@@ -146,42 +162,35 @@ public class Session implements Json.Serializable {
     public BuildTree getBuildTree() {
         return buildTree;
     }
-    
-    @Override
-    public void write(Json json) {
-        json.writeValue("turn", turn);
-        json.writeValue("lastId", lastId);        
-        json.writeValue("galaxy", galaxy);
-        json.writeValue("factions", factions.values());
-        json.writeValue("units", units.toArray(new Unit[] { }));
-    }
-
-    @Override
-    public void read(Json json, JsonValue jv) {
-        turn = json.readValue("turn", Integer.class, jv);
-        galaxy = json.readValue("galaxy", Galaxy.class, jv);
-        // initialize modifiers
-        for (Sector s : galaxy.getStarSystems()) {
-            s.updateModifiers(this);
-        }
-        Faction[] flist = json.readValue("factions", Faction[].class, jv);
-        for (Faction f : flist) {
-            factions.put(f.getName(), f);
-        }
-        Unit[] ulist = json.readValue("units", Unit[].class, jv);
-        for (Unit u : ulist) {
-            u.refresh(this);
-            if (u instanceof Ship) {
-                u.getOwner().getShips().add((Ship)u);
-            }
-            units.add(u);
-        }
-    }
-    
+        
     public void trigger(GameEvent e, Object... arguments) {
+        Sector sector;
+        Faction faction;
         switch (e) {
             case FIRST_VISIT_TO_SECTOR:
-                randomSectorEvent((Sector)arguments[0], (Faction)arguments[1]);
+                sector = (Sector)arguments[0];
+                faction = (Faction)arguments[1];
+                if (!faction.isPirates()) {
+                    randomSectorEvent(sector, faction);
+                }
+                break;
+            case SECTOR_GROWTH:
+                sector = (Sector)arguments[0];
+                faction = factions.get(sector.getOwner());
+                if (faction.isPlayer()) {
+                    notifications.add(new Notification(Strings.get("DIALOG_POP_GROWTH"),
+                        String.format(Strings.get("MSG_POP_GROWTH"), sector.getName()), 
+                            sector.getCoordinates()));
+                }
+                break;
+            case SECTOR_STARVATION:
+                sector = (Sector)arguments[0];
+                faction = factions.get(sector.getOwner());
+                if (faction.isPlayer()) {
+                    notifications.add(new Notification(Strings.get("DIALOG_POP_SHORT"), 
+                        String.format(Strings.get("MSG_POP_SHORT"), sector.getName()), 
+                            sector.getCoordinates()));
+                }
                 break;
         }
     }
@@ -190,11 +199,10 @@ public class Session implements Json.Serializable {
         sector.setFlag(Sector.FLAG_EXPLORED);
         if (Math.random() < Settings.<Double>get("eventOnSectorExploration")) {
             // TODO: implement effect
-            
             // queue up UI event
             if (faction.isPlayer()) {
-                // TODO: localize
-                notifications.add(new Notification("Sector Explored", "While exploring the sector, your ship found something!"));
+                notifications.add(new Notification(Strings.get("DIALOG_SECTOR_EXPLORED"), 
+                    Strings.get("MSG_SECTOR_EXPLORED"), sector.getCoordinates()));
             }
         }                
     }
@@ -226,4 +234,43 @@ public class Session implements Json.Serializable {
     public boolean hasNotifications() {
         return !notifications.isEmpty();
     }
+    
+    public void addUnitListener(UnitListener l) {
+        listeners.add(l);
+    }
+    
+    public void removeUnitListener(UnitListener l) {
+        listeners.remove(l);
+    }
+    
+    @Override
+    public void write(Json json) {
+        json.writeValue("turn", turn);
+        json.writeValue("lastId", lastId);        
+        json.writeValue("galaxy", galaxy);
+        json.writeValue("factions", factions.values());
+        json.writeValue("units", units.toArray(new Unit[] { }));
+    }
+
+    @Override
+    public void read(Json json, JsonValue jv) {
+        turn = json.readValue("turn", Integer.class, jv);
+        galaxy = json.readValue("galaxy", Galaxy.class, jv);
+        // initialize modifiers
+        for (Sector s : galaxy.getStarSystems()) {
+            s.updateModifiers(this);
+        }
+        Faction[] flist = json.readValue("factions", Faction[].class, jv);
+        for (Faction f : flist) {
+            factions.put(f.getName(), f);
+        }
+        Unit[] ulist = json.readValue("units", Unit[].class, jv);
+        for (Unit u : ulist) {
+            u.refresh(this);
+            if (u instanceof Ship) {
+                u.getOwner().getShips().add((Ship)u);
+            }
+            units.add(u);
+        }
+    }    
 }

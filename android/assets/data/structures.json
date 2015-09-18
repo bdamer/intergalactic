@@ -107,7 +107,7 @@
         "id": "shipyard",
         "label": "Shipyard",
         "detail": "Enables construction of ships.",
-        "cost": 15,
+        "cost": 10,
         "dependencies": [ ],
         "bonusMap": { }
     },

@@ -2,6 +2,7 @@ package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.asset.Assets;
+import com.afqa123.intergalactic.asset.Strings;
 import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.FactionMap;
 import com.afqa123.intergalactic.model.Galaxy;
@@ -18,6 +19,7 @@ import com.afqa123.intergalactic.graphics.ShipRenderer;
 import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.afqa123.intergalactic.graphics.StationRenderer;
 import com.afqa123.intergalactic.input.SmartInputAdapter;
+import com.afqa123.intergalactic.logic.UnitListener;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.Notification;
 import com.afqa123.intergalactic.model.Session;
@@ -49,12 +51,12 @@ import com.badlogic.gdx.utils.Align;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeListener, StepListener {
+public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeListener, StepListener, UnitListener {
 
     private static final Vector3 CAMERA_OFFSET = new Vector3(0.0f, 10.0f, 5.0f);
     private static final float SCROLL_SPEED = 0.05f;
     private static final Color DEFAULT_SECTOR_COLOR = Color.BLACK;
-    
+
     private class DesktopInputProcessor extends InputAdapter {
         
         private static final int DEFAULT_DRAG_THRESHOLD = 8;
@@ -258,7 +260,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         sectorLabels = new ArrayList<>();
         
         // Create ui components
-        turnButton = new TextButton(getGame().getLabels().getProperty("BUTTON_TURN"), getSkin());
+        turnButton = new TextButton(Strings.get("BUTTON_TURN"), getSkin());
         turnButton.setPosition(STAGE_WIDTH - STAGE_MARGIN - turnButton.getWidth(), STAGE_MARGIN);
         turnButton.addListener(new ClickListener() {
             @Override
@@ -347,6 +349,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     public void activate() {
         super.activate();
         getSession().getPlayer().getMap().addChangeListener(this);
+        getSession().addUnitListener(this);
         getGame().getSimulation().addStepListener(this);
 
         // Update viewport in case it changed
@@ -365,6 +368,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     @Override
     public void deactivate() {
         getSession().getPlayer().getMap().removeChangeListener(this);
+        getSession().removeUnitListener(this);
         getGame().getSimulation().removeStepListener(this);
     }
     
@@ -417,7 +421,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 public void clicked(InputEvent event, float x, float y) {
                     // Move to sector screen if this is a player colony
                     if (sector.getType() != null && 
-                        (debugDeityMode || IntergalacticGame.PLAYER_FACTION.equals(sector.getOwner()))) {
+                        (debugDeityMode || Faction.PLAYER_FACTION.equals(sector.getOwner()))) {
                         getGame().pushScreen(new SectorScreen(getGame(), sector));
                     }
                 }
@@ -458,7 +462,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 // during the next iteration
                 i++;
             }
-        }
+        }        
         // Check that all sectors are ready
         for (Sector s : galaxy.getFactionSystems(session.getPlayer())) {
             if (s.isIdle()) {
@@ -471,6 +475,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     
     @Override
     public void afterStep() {
+        processNotifications();
         if (activeShip != null) {
             indicator.setPosition(activeShip.getCoordinates().toWorld());
         }
@@ -635,6 +640,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
     private void processNotifications() {
         while (getSession().hasNotifications()) {
             Notification n = getSession().pollNotifications();
+            focusCamera(n.getFocus().toWorld());
+                    
             final Dialog dlg = new Dialog(n.getTitle(), getSkin()) {
                 @Override
                 protected void result(Object object) {
@@ -642,7 +649,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 }
             };
             
-            dlg.button(getGame().getLabels().getProperty("BUTTON_OK"), true);
+            dlg.button(Strings.get("BUTTON_OK"), true);
             dlg.key(Input.Keys.ENTER, true);
             
             LabelStyle style = new LabelStyle(getSkin().getFont(FONT), Color.WHITE);
@@ -650,6 +657,18 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             label.setAlignment(Align.center);
             dlg.getContentTable().add(label);
             dlg.show(getStage());
+        }
+    }
+
+    @Override
+    public void unitCreated(Unit u) {
+        
+    }
+
+    @Override
+    public void unitDestroyed(Unit u) {
+        if (u == activeShip) {
+            selectShip(null);
         }
     }
 }

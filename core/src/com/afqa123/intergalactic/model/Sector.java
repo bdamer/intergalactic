@@ -1,6 +1,7 @@
 package com.afqa123.intergalactic.model;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector3;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -259,15 +260,27 @@ public final class Sector extends Entity {
     }
         
     public void update(Session session) {
-        // nothing to do, since there is no population
-        if (population == 0.0) 
-            return;
-        
-        produce(session);
-        growPopulation();
-        updateModifiers(session);        
+        // Updated colonized planet
+        if (population > 0.0) {
+            produce(session);
+            growPopulation(session);
+            updateModifiers(session);        
+        // vacant planet without unit can spawn pirates
+        } else {
+            // TODO: should this be part of the pirate strategy?
+            spawnPirate(session);
+        }
     }
 
+    public void spawnPirate(Session session) {
+        if (type != null && !hasOwner() && session.findUnitInSector(coordinates) == null && 
+                Math.random() < Settings.<Double>get("sectorSpawnPirates")) {
+            Gdx.app.log(Sector.class.getName(), String.format("Spawning pirate at: %s", coordinates));
+            ShipType pirateType = session.getDatabase().getShip("pirate");
+            session.createShip(pirateType, coordinates, session.getPirates());
+        }
+    }
+    
     /**
      * Updates top of production queue.
      * 
@@ -295,7 +308,7 @@ public final class Sector extends Entity {
     /**
      * Grows or shrinks the population based on the current growth rate.
      */
-    private void growPopulation() {
+    private void growPopulation(Session session) {
         int oldPopulation = (int)population;
         population += growthRate;
         if (population < 1.0) {
@@ -304,11 +317,16 @@ public final class Sector extends Entity {
             population = maxPopulation;
         }
         
+        if (growthRate < 0) {
+            session.trigger(GameEvent.SECTOR_STARVATION, this);
+        }
+        
         int newPopulation = (int)population;
         // Population grew (this works under the assumption that the population
         // will never grow or shrink by more than 1 per turn)
         if (newPopulation > oldPopulation) {
             foodProducers++;
+            session.trigger(GameEvent.SECTOR_GROWTH, this);
         // Population shrunk
         } else if (oldPopulation > newPopulation) {
             if (foodProducers > 0) {
@@ -395,6 +413,7 @@ public final class Sector extends Entity {
         this.scienceProducers = Settings.get("sectorInitialSciProducers");
         // TODO: compute automatically based on number of terraformed planets
         this.maxPopulation = 10;
+        setFlag(Sector.FLAG_EXPLORED);
         updateModifiers(session);
     }
 }

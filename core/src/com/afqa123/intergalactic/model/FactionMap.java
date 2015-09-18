@@ -126,6 +126,15 @@ public class FactionMap implements Json.Serializable {
         }
     }
     
+    public void exploreAll() {
+        for (FactionMapSector[] row : map) {
+            for (FactionMapSector s : row) {
+                s.addStatus(SectorStatus.KNOWN);
+                s.addRange(Range.LONG);
+            }
+        }
+    }
+    
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }

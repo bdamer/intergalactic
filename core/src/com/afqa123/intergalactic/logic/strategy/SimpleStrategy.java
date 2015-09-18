@@ -1,7 +1,6 @@
 package com.afqa123.intergalactic.logic.strategy;
 
 import com.afqa123.intergalactic.logic.strategy.Goal.Type;
-import com.afqa123.intergalactic.logic.strategy.Plan.Status;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.FactionMap;
@@ -11,32 +10,11 @@ import com.afqa123.intergalactic.model.Range;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.SectorStatus;
 import com.afqa123.intergalactic.model.Session;
-import com.afqa123.intergalactic.util.PriorityList;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
-public class SimpleStrategy implements Strategy, Json.Serializable {
-
-    private String factionName;
-    // Active plans
-    private final List<Plan> plans = new LinkedList<>();
-    // Goals for which we have not yet created a plan
-    private final List<Goal> goals = new PriorityList<>(new Comparator<Goal>() {
-        @Override
-        public int compare(Goal o1, Goal o2) {
-            return (o1.getType().getPriority() - o2.getType().getPriority());
-        }        
-    });
-    // All currently active goals
-    private final Set<Goal> allGoals = new HashSet<>();
+public class SimpleStrategy extends BaseStrategy implements Json.Serializable {
 
     SimpleStrategy() {
         
@@ -47,40 +25,7 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
     }
     
     @Override
-    public void nextTurn(Session session) {        
-        Gdx.app.debug(SimpleStrategy.class.getName(), "Computing turn for: " + factionName);
-        Faction faction = session.getFactions().get(factionName);
-        updateGoals(session);
-        
-        // Create new plans for goals on queue 
-        for (Goal goal : goals) {
-            Gdx.app.debug(SimpleStrategy.class.getName(), String.format("Adding plan for: %s", goal.toString()));
-            plans.add(PlanFactory.newPlan(goal));
-        }
-        goals.clear();
-        
-        // evaluate plans
-        Gdx.app.log(SimpleStrategy.class.getName(), String.format("Active plans: %d", plans.size()));
-        int i = 0;
-        while (i < plans.size()) {
-            Plan plan = plans.get(i);
-            // Update plan as long as status is active
-            Status status;
-            while (Status.ACTIVE == (status = plan.update(session, faction))) ;
-            if (status == Status.COMPLETE) {
-                onGoalCompleted(plan.getGoal());
-                plans.remove(i);
-            } else if (status == Status.INVALID) {
-                // cancel plan and return goal to queue
-                onGoalCancelled(plan.getGoal());
-                plans.remove(i);
-            } else {
-                i++;
-            }
-        } 
-    }
-
-    private void updateGoals(Session session) {
+    protected void updateGoals(Session session) {
         final Faction faction = session.getFactions().get(factionName);
         final Galaxy galaxy = session.getGalaxy();
 
@@ -139,13 +84,6 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
         }
         
         // TODO: Add DESTROY goals for enemy units within visible range        
-    }
-
-    private void addGoal(Goal goal) {
-        if (!allGoals.contains(goal)) {
-            goals.add(goal);
-            allGoals.add(goal);
-        }        
     }
     
     private void checkColonyProduction(Sector sector) {
@@ -245,18 +183,7 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
         }
         return bestCoord;
     }
-    
-    private void onGoalCompleted(Goal goal) {
-        // TODO: evaluate and see if the completion of this goal triggers a new one
-        allGoals.remove(goal);
-    }
-    
-    private void onGoalCancelled(Goal goal) {
-        // for now, just add goal back to queue
-        // TODO: evaluate and see if this goal is in fact still valid
-        goals.add(goal);
-    }
-    
+        
     private List<Goal> getGoalsByType(Goal.Type type) {
         List<Goal> res = new ArrayList<>();
         for (Goal goal : allGoals) {
@@ -266,25 +193,10 @@ public class SimpleStrategy implements Strategy, Json.Serializable {
         }
         return res;
     }
-
+    
     @Override
     public void write(Json json) {
-        json.writeValue("factionName", factionName);
-        json.writeValue("plans", plans);
-        json.writeValue("goals", goals);        
-    }
-
-    @Override
-    public void read(Json json, JsonValue jv) {
-        factionName = json.readValue("factionName", String.class, jv);
-        plans.addAll(Arrays.asList(json.readValue("plans", Plan[].class, jv)));
-        goals.addAll(Arrays.asList(json.readValue("goals", Goal[].class, jv)));
-
-        // fill all goals with goals from both plans and goal queue
-        allGoals.clear();
-        for (Plan p : plans) {
-            allGoals.add(p.getGoal());
-        }
-        allGoals.addAll(goals);
+        json.writeValue("class", SimpleStrategy.class.getName());
+        super.write(json);
     }
 }

@@ -2,6 +2,7 @@ package com.afqa123.intergalactic.screens;
 
 import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.asset.Assets;
+import com.afqa123.intergalactic.asset.Strings;
 import com.afqa123.intergalactic.model.BuildQueueEntry;
 import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.BuildOption;
@@ -78,7 +79,7 @@ public class SectorScreen extends AbstractScreen {
         productionLabel.setPosition(STAGE_WIDTH / 2 - 75, 70.0f);        
         getStage().addActor(productionLabel);
         
-        backButton = new TextButton(getGame().getLabels().getProperty("BUTTON_BACK"), getSkin());
+        backButton = new TextButton(Strings.get("BUTTON_BACK"), getSkin());
         backButton.setPosition(STAGE_MARGIN, STAGE_HEIGHT - STAGE_MARGIN - backButton.getHeight());
         backButton.addListener(new ClickListener() {
             @Override
@@ -92,7 +93,7 @@ public class SectorScreen extends AbstractScreen {
         structuresLabel.setPosition(STAGE_MARGIN, backButton.getY() - backButton.getHeight() - STAGE_MARGIN);
         getStage().addActor(structuresLabel);
         
-        buildQueueButton = new TextButton(getGame().getLabels().getProperty("BUTTON_ADD"), getSkin());
+        buildQueueButton = new TextButton(Strings.get("BUTTON_ADD"), getSkin());
         buildQueueButton.setPosition(STAGE_WIDTH - STAGE_MARGIN - buildQueueButton.getWidth(), 
                 STAGE_HEIGHT - STAGE_MARGIN - buildQueueButton.getHeight());
         buildQueueButton.addListener(new ClickListener() {

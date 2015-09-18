@@ -4,6 +4,11 @@ import com.afqa123.intergalactic.model.Session;
 
 public interface Strategy {
         
-    void nextTurn(Session state);
+    /**
+     * Computes the next turn.
+     * 
+     * @param session The game session.
+     */
+    void nextTurn(Session session);
 
 }

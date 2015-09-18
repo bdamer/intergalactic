@@ -45,6 +45,10 @@ public class Simulation {
         // Determine faction start planets
         List<Sector> sectors = galaxy.getStarSystems();
         for (Faction faction : session.getFactions().values()) {
+            if (faction.isPirates()) {
+                continue;
+            }
+            
             Sector home;
             do {
                 home = sectors.get((int)(Math.random() * sectors.size()));
@@ -53,6 +57,11 @@ public class Simulation {
             // explore player map around new colony
             faction.getMap().addRange(home.getCoordinates());
             session.createShip(scoutType, home.getCoordinates(), faction);
+        }
+        
+        // seed pirates
+        for (Sector sector : galaxy.getStarSystems()) {
+            sector.spawnPirate(session);
         }
     }
     
@@ -77,14 +86,9 @@ public class Simulation {
         }
                 
         List<Sector> sectors = galaxy.getStarSystems();
-        float science = 0.0f;
         for (Sector s : sectors) {
-            science += s.getScientificOutput();
             s.update(session);
         }
-        
-        // TODO: apply science output to current research project
-        Gdx.app.debug(Simulation.class.getName(), String.format("Science output: %f", science));
 
         for (Unit u : session.getUnits()) {
             u.update(session);

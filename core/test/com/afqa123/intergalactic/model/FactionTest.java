@@ -10,7 +10,7 @@ public class FactionTest {
     @Test
     public void testSerialization() {
         Galaxy g = new Galaxy(1);
-        Faction expected = new Faction("name", Color.RED, true, g);
+        Faction expected = new Faction("name", Color.RED, g, null);
         
         Json json = new Json();
         String raw = json.toJson(expected);
@@ -21,7 +21,5 @@ public class FactionTest {
         Assert.assertEquals(expected.isPlayer(), actual.isPlayer());
 
         // TODO: compare faction map
-        
-    }
-    
+    }    
 }

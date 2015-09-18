@@ -17,6 +17,7 @@ public class PlanFactory {
             case BUILD_STATION:
                 return new BuildStationPlan(goal);
             case DESTROY_UNIT:
+                return new DestroyUnitPlan(goal);
             default:
                 return null;
         }

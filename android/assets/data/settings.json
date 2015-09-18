@@ -10,7 +10,7 @@
         },
         "sectorIndBase":{
             "class": "java.lang.Double",
-            "value": 1.0
+            "value": 0.25
         },
         "sectorSciBase":{
             "class": "java.lang.Double",
@@ -22,7 +22,7 @@
         },
         "sectorIndMod":{
             "class": "java.lang.Double",
-            "value": 0.25
+            "value": 0.75
         },
         "sectorSciMod":{
             "class": "java.lang.Double",
@@ -79,6 +79,10 @@
         "sectorMoraleEcstatic":{
             "class": "java.lang.Double",
             "value": 1.0
+        },
+        "sectorSpawnPirates":{
+            "class": "java.lang.Double",
+            "value": 0.01
         }
     }
 }

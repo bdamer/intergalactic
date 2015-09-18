@@ -1,6 +1,5 @@
 package com.afqa123.intergalactic.model;
 
-import com.afqa123.intergalactic.logic.strategy.SimpleStrategy;
 import com.afqa123.intergalactic.logic.strategy.Strategy;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Json;
@@ -10,6 +9,8 @@ import java.util.List;
 
 public class Faction implements Json.Serializable {
 
+    public static final String PLAYER_FACTION = "player";
+    public static final String PIRATE_FACTION = "pirates";
     private String name;
     private boolean player;
     private FactionMap map;
@@ -21,12 +22,11 @@ public class Faction implements Json.Serializable {
         // required for serialization
     }
     
-    public Faction(String name, Color color, boolean player, Galaxy galaxy) {
+    public Faction(String name, Color color, Galaxy galaxy, Strategy strategy) {
         this.name = name;
         this.color = color;
-        this.player = player;
         this.map = new FactionMap(galaxy);
-        this.strategy = new SimpleStrategy(name);
+        this.strategy = strategy;
     }
 
     public String getName() {
@@ -38,7 +38,11 @@ public class Faction implements Json.Serializable {
     }
 
     public boolean isPlayer() {
-        return player;
+        return PLAYER_FACTION.equals(name);
+    }    
+
+    public boolean isPirates() {
+        return PIRATE_FACTION.equals(name);
     }    
     
     public FactionMap getMap() {
@@ -68,6 +72,6 @@ public class Faction implements Json.Serializable {
         player = json.readValue("player", Boolean.class, jv);
         map = json.readValue("map", FactionMap.class, jv);
         color = json.readValue("color", Color.class, jv);
-        strategy = json.readValue("strategy", SimpleStrategy.class, jv);
+        strategy = json.readValue("strategy", Strategy.class, jv);
     }
 }

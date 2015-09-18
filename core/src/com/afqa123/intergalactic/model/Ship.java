@@ -1,5 +1,6 @@
 package com.afqa123.intergalactic.model;
 
+import com.afqa123.intergalactic.logic.CombatSimulator.CombatResult;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.ShipType.Action;
 import com.afqa123.intergalactic.util.AStarPathfinder;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 public class Ship extends Entity implements Unit, Json.Serializable {
     
     public static final String FLAG_FORTIFIED = "fortified";
+    public static final String FLAG_DESTROYED = "destroyed";
     
     private String id;
     private ShipType type;
@@ -172,12 +174,11 @@ public class Ship extends Entity implements Unit, Json.Serializable {
                 if (step.attack) {
                     // once we attack, no more movement is possible
                     movementPoints = 0.0f;
-                    switch (session.simulateCombat(this, u)) {
-                        case VICTORY:
-                        case DEFEAT:
-                            return true;
-                        case DRAW: 
-                            return false;
+                    // in case of defeat or draw, movement is done
+                    if (session.simulateCombat(this, u) != CombatResult.VICTORY) {
+                        path = null;
+                        target = null;
+                        return true;
                     }
                 } else {
                     // allow unit to pass through a sector with units as long

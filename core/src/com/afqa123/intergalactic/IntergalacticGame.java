@@ -2,11 +2,14 @@ package com.afqa123.intergalactic;
 
 import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.asset.FontProvider;
+import com.afqa123.intergalactic.asset.Strings;
 import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.Galaxy;
 import com.afqa123.intergalactic.logic.Simulation;
 import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.logic.generators.GalaxyGenerator;
+import com.afqa123.intergalactic.logic.strategy.PirateStrategy;
+import com.afqa123.intergalactic.logic.strategy.SimpleStrategy;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
 import com.afqa123.intergalactic.model.Session;
@@ -31,9 +34,7 @@ import java.util.Properties;
 import java.util.Stack;
 
 public class IntergalacticGame extends ApplicationAdapter {
-	
-    public static final String PLAYER_FACTION = "player";
-    
+	    
     // The current screen
     private Screen screen;
     // Screen stack
@@ -42,12 +43,7 @@ public class IntergalacticGame extends ApplicationAdapter {
     private Simulation simulation;
     // State of the game
     private Session session;
-    
-    //private Galaxy galaxy;
-    //private Map<String,Faction> factions;
-    //private Faction player;    
     private FPSLogger fps;
-    private Properties labels;
     
 	@Override
 	public void create () {
@@ -71,9 +67,14 @@ public class IntergalacticGame extends ApplicationAdapter {
                 Galaxy galaxy = gen.generateSpiralGalaxy(15);
                 Map<String,Faction> factions = new HashMap<>();
                 // Color #c02020
-                factions.put(PLAYER_FACTION, new Faction(PLAYER_FACTION, new Color(0.75f, 0.125f, 0.125f, 1.0f), true, galaxy));
-                // Color #20a010 
-                factions.put("ai", new Faction("ai", new Color(0.125f, 0.625f, 0.0625f, 1.0f), false, galaxy));
+                factions.put(Faction.PLAYER_FACTION, 
+                    new Faction(Faction.PLAYER_FACTION, new Color(0.75f, 0.125f, 0.125f, 1.0f), galaxy, null));
+                factions.put(Faction.PIRATE_FACTION, 
+                    new Faction(Faction.PIRATE_FACTION, new Color(0.3f, 0.3f, 0.3f, 1.0f), galaxy, new PirateStrategy(Faction.PIRATE_FACTION)));
+                factions.get(Faction.PIRATE_FACTION).getMap().exploreAll();
+                // Color #20a010
+                factions.put("ai", 
+                    new Faction("ai", new Color(0.125f, 0.625f, 0.0625f, 1.0f), galaxy, new SimpleStrategy("ai")));
                 session = new Session(galaxy, factions);
                 simulation = new Simulation(session);
                 simulation.init();
@@ -139,7 +140,7 @@ public class IntergalacticGame extends ApplicationAdapter {
 
         FontProvider.intialize();
         Settings.initialize(new Json().fromJson(Settings.class, (String)Assets.get("data/settings.json")));
-        labels = Assets.get("localization/default.properties");
+        Strings.initialize((Properties)Assets.get("localization/default.properties"));
     }
     
     @Override
@@ -184,10 +185,6 @@ public class IntergalacticGame extends ApplicationAdapter {
         this.screen.dispose();        
         this.screen = screens.pop();
         this.screen.activate();
-    }
-        
-    public Properties getLabels() {
-        return labels;
     }
     
     public Session getSession() {
