@@ -3,8 +3,10 @@ package com.afqa123.intergalactic.model;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Station implements Unit, Json.Serializable {
+public class Station extends Entity implements Unit, Json.Serializable {
 
     private String id;
     private StationType type;
@@ -123,6 +125,7 @@ public class Station implements Unit, Json.Serializable {
         json.writeValue("owner", owner.getName());
         json.writeValue("coordinates", coordinates);
         json.writeValue("construction", construction);
+        json.writeValue("flags", flags);
     }
 
     @Override
@@ -131,5 +134,6 @@ public class Station implements Unit, Json.Serializable {
         ownerName = json.readValue("owner", String.class, jv);
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
         construction = json.readValue("construction", Integer.class, jv);
+        flags.putAll(json.readValue("flags", HashMap.class, jv));
     }
 }

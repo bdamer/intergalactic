@@ -4,12 +4,19 @@ import com.afqa123.intergalactic.IntergalacticGame;
 import com.afqa123.intergalactic.logic.EntityDatabase;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.logic.BuildTree;
+import com.afqa123.intergalactic.logic.CombatSimulator;
+import com.afqa123.intergalactic.logic.CombatSimulator.CombatResult;
+import static com.afqa123.intergalactic.logic.CombatSimulator.CombatResult.DEFEAT;
+import static com.afqa123.intergalactic.logic.CombatSimulator.CombatResult.DRAW;
+import static com.afqa123.intergalactic.logic.CombatSimulator.CombatResult.VICTORY;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * Session containing the state of the game.
@@ -23,6 +30,7 @@ public class Session implements Json.Serializable {
     private final List<Unit> units;
     private final Map<String,Faction> factions;
     private final BuildTree buildTree;
+    private final Queue<Notification> notifications;
     
     // TODO: add properties for difficulty, AI state, etc.
     
@@ -31,6 +39,7 @@ public class Session implements Json.Serializable {
         buildTree = new BuildTree(db);
         factions = new HashMap<>();
         units = new ArrayList<>();
+        notifications = new LinkedList<>();
     }
     
     public Session(Galaxy galaxy, Map<String,Faction> factions) {
@@ -39,6 +48,7 @@ public class Session implements Json.Serializable {
         this.galaxy = galaxy;
         this.factions = factions;
         this.units = new ArrayList<>();
+        notifications = new LinkedList<>();
     }
     
     public int getTurn() {
@@ -166,5 +176,54 @@ public class Session implements Json.Serializable {
             }
             units.add(u);
         }
+    }
+    
+    public void trigger(GameEvent e, Object... arguments) {
+        switch (e) {
+            case FIRST_VISIT_TO_SECTOR:
+                randomSectorEvent((Sector)arguments[0], (Faction)arguments[1]);
+                break;
+        }
+    }
+    
+    private void randomSectorEvent(Sector sector, Faction faction) {
+        sector.setFlag(Sector.FLAG_EXPLORED);
+        if (Math.random() < Settings.<Double>get("eventOnSectorExploration")) {
+            // TODO: implement effect
+            
+            // queue up UI event
+            if (faction.isPlayer()) {
+                // TODO: localize
+                notifications.add(new Notification("Sector Explored", "While exploring the sector, your ship found something!"));
+            }
+        }                
+    }
+    
+    public CombatResult simulateCombat(Unit attacker, Unit defender) {
+        CombatSimulator sim = new CombatSimulator();
+        CombatResult res = sim.simulate(attacker, defender);
+        switch (res) {
+            case VICTORY:
+                if (defender.getHealth() <= 0.0f) {
+                    destroyUnit(defender);
+                }
+                break;
+            case DEFEAT:
+                if (attacker.getHealth() <= 0.0f) {
+                    destroyUnit(attacker);
+                }
+                break;
+            case DRAW:
+                break;
+        }
+        return res;
+    }
+    
+    public Notification pollNotifications() {
+        return notifications.poll();
+    }
+    
+    public boolean hasNotifications() {
+        return !notifications.isEmpty();
     }
 }

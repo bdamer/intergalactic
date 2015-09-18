@@ -1,6 +1,5 @@
 package com.afqa123.intergalactic.model;
 
-import com.afqa123.intergalactic.logic.CombatSimulator;
 import com.afqa123.intergalactic.math.HexCoordinate;
 import com.afqa123.intergalactic.model.ShipType.Action;
 import com.afqa123.intergalactic.util.AStarPathfinder;
@@ -9,8 +8,11 @@ import com.afqa123.intergalactic.util.Path.PathStep;
 import com.afqa123.intergalactic.util.Pathfinder;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import java.util.HashMap;
 
-public class Ship implements Unit, Json.Serializable {
+public class Ship extends Entity implements Unit, Json.Serializable {
+    
+    public static final String FLAG_FORTIFIED = "fortified";
     
     private String id;
     private ShipType type;
@@ -22,7 +24,6 @@ public class Ship implements Unit, Json.Serializable {
     // Movement points remaining this turn
     private float movementPoints;
     private float health;
-    private boolean fortified;
 
     // TODO: fixme - only needed during deserialization
     private String typeName;
@@ -139,6 +140,10 @@ public class Ship implements Unit, Json.Serializable {
     public Path getPath() {
         return path;
     }
+    
+    public boolean hasPath() {
+        return path != null && !path.isEmpty();
+    }
 
     /**
      * Moves this ship towards its target.
@@ -148,11 +153,13 @@ public class Ship implements Unit, Json.Serializable {
      * blocked.
      */
     public boolean move(Session session) {
-        if (path == null) {
+        if (!hasPath()) {
             return false;
         }
+        
         boolean res = true;
-        while (!path.isEmpty()) {
+        while (!path.isEmpty()) {            
+            // Check movment cost
             PathStep step = path.peek();
             if (movementPoints < step.cost) {
                 break;
@@ -162,24 +169,14 @@ public class Ship implements Unit, Json.Serializable {
             // Check if next sector is occupied by another unit
             Unit u = session.findUnitInSector(step.coordinate);
             if (u != null) {
-                // TODO: combat should probably be handled somewhere else...
                 if (step.attack) {
                     // once we attack, no more movement is possible
                     movementPoints = 0.0f;
-                    // Attack logic
-                    CombatSimulator sim = new CombatSimulator();
-                    switch (sim.simulate(this, u)) {
+                    switch (session.simulateCombat(this, u)) {
                         case VICTORY:
-                            if (u.getHealth() <= 0.0f) {
-                                session.destroyUnit(u);
-                            }
-                            break;
                         case DEFEAT:
-                            if (getHealth() <= 0.0f) {
-                                session.destroyUnit(this);
-                            }
                             return true;
-                        case DRAW:
+                        case DRAW: 
                             return false;
                     }
                 } else {
@@ -204,9 +201,18 @@ public class Ship implements Unit, Json.Serializable {
                     }
                 }
             }
+            
+            // If we make it this far, we can move to the next sector
+            // TODO: revisit to synchronize ship movement
             coordinates = step.coordinate;
-            owner.getMap().explore(step.coordinate, type.getScanRange());
             movementPoints -= step.cost;
+            Sector sector = session.getGalaxy().getSector(step.coordinate);
+            owner.getMap().explore(step.coordinate, type.getScanRange());
+            // First visitor to a new sector triggers discovery event
+            if (sector.getType() != null && !sector.getFlag(Sector.FLAG_EXPLORED)) {
+                session.trigger(GameEvent.FIRST_VISIT_TO_SECTOR, sector, owner);
+                return false; // return false to stop movement
+            }
         }
         
         if (path.isEmpty()) {
@@ -217,7 +223,7 @@ public class Ship implements Unit, Json.Serializable {
     }
     
     public boolean isReadyForUpdate() {
-        return (fortified || movementPoints < 1.0f);
+        return (getFlag(FLAG_FORTIFIED) || movementPoints < 1.0f);
     }
 
     @Override
@@ -299,13 +305,13 @@ public class Ship implements Unit, Json.Serializable {
     }
     
     public void fortify() {
-        this.fortified = true;
+        setFlag(FLAG_FORTIFIED);
         this.path = null;
         this.target = null;
     }    
 
     public void wake() {
-        fortified = false;
+        unsetFlag(FLAG_FORTIFIED);
     }
 
     @Override
@@ -332,8 +338,8 @@ public class Ship implements Unit, Json.Serializable {
         json.writeValue("coordinates", coordinates);
         json.writeValue("target", target);
         json.writeValue("movementPoints", movementPoints);
-        json.writeValue("fortified", fortified);
         json.writeValue("health", health);
+        json.writeValue("flags", flags);
     }
 
     @Override
@@ -344,7 +350,7 @@ public class Ship implements Unit, Json.Serializable {
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
         target = json.readValue("target", HexCoordinate.class, jv);
         movementPoints = json.readValue("movementPoints", Float.class, jv);        
-        fortified = json.readValue("fortified", Boolean.class, jv);
         health = json.readValue("health", Float.class, jv);
+        flags.putAll(json.readValue("flags", HashMap.class, jv));
     }
 }

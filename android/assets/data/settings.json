@@ -1,0 +1,84 @@
+{
+   "values":{
+       "eventOnSectorExploration":{
+           "class": "java.lang.Double",
+           "value": 0.5
+        },
+        "sectorFoodBase":{
+            "class": "java.lang.Double",
+            "value": 0.0
+        },
+        "sectorIndBase":{
+            "class": "java.lang.Double",
+            "value": 1.0
+        },
+        "sectorSciBase":{
+            "class": "java.lang.Double",
+            "value": 0.0
+        },
+        "sectorFoodMod":{
+            "class": "java.lang.Double",
+            "value": 1.0
+        },
+        "sectorIndMod":{
+            "class": "java.lang.Double",
+            "value": 0.25
+        },
+        "sectorSciMod":{
+            "class": "java.lang.Double",
+            "value": 0.5
+        },
+        "sectorFoodConsumption":{
+            "class": "java.lang.Double",
+            "value": 0.3
+        },
+        "sectorMorale":{
+            "class": "java.lang.Double",
+            "value": 0.5
+        },
+        "sectorInitialPopulation":{
+            "class": "java.lang.Double",
+            "value": 2.0
+        },
+        "sectorInitialFoodProducers":{
+            "class": "java.lang.Integer",
+            "value": 1
+        },
+        "sectorInitialIndProducers":{
+            "class": "java.lang.Integer",
+            "value": 1
+        },
+        "sectorInitialSciProducers":{
+            "class": "java.lang.Integer",
+            "value": 0
+        },
+        "sectorStarvationGrowthRate":{
+            "class": "java.lang.Double",
+            "value": -0.25
+        },
+        "sectorStarvationMorale":{
+            "class": "java.lang.Double",
+            "value": -0.25
+        },
+        "sectorMoraleRebellious":{
+            "class": "java.lang.Double",
+            "value": 0.2
+        },
+        "sectorMoraleDisgruntled":{
+            "class": "java.lang.Double",
+            "value": 0.4
+        },
+        "sectorMoraleContent":{
+            "class": "java.lang.Double",
+            "value": 0.6
+        },
+        "sectorMoralePleased":{
+            "class": "java.lang.Double",
+            "value": 0.8
+        },
+        "sectorMoraleEcstatic":{
+            "class": "java.lang.Double",
+            "value": 1.0
+        }
+    }
+}

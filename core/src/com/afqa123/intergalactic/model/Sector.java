@@ -10,16 +10,9 @@ import java.util.Set;
 /**
  * Class representing a single galactic sector.
  */
-public final class Sector {
+public final class Sector extends Entity {
 
-    // TODO: externalize these settings so we can change them more easily
-    private static final double DEFAULT_FOOD_BASE = 0.0;
-    private static final double DEFAULT_IND_BASE = 1.0;
-    private static final double DEFAULT_SCI_BASE = 0.0;
-    private static final double DEFAULT_FOOD_MOD = 1.0;
-    private static final double DEFAULT_IND_MOD = 0.25;
-    private static final double DEFAULT_SCI_MOD = 0.5;
-    private static final double DEFAULT_FOOD_CONSUMPTION = 0.3;
+    public static final String FLAG_EXPLORED = "explored";
     // Bonus map entries
     public static final String FOOD_BASE = "foodBase";
     public static final String IND_BASE = "indBase";
@@ -182,13 +175,13 @@ public final class Sector {
     }    
     
     public Morale getMorale() {
-        if (morale < 0.2) {
+        if (morale < Settings.<Double>get("sectorMoraleRebellious")) {
             return Morale.REBELLIOUS;
-        } else if (morale < 0.4) {
+        } else if (morale < Settings.<Double>get("sectorMoraleDisgruntled")) {
             return Morale.DISGRUNTLED;
-        } else if (morale < 0.6) {
+        } else if (morale < Settings.<Double>get("sectorMoraleContent")) {
             return Morale.CONTENT;
-        } else if (morale < 0.8) {
+        } else if (morale < Settings.<Double>get("sectorMoralePleased")) {
             return Morale.PLEASED;
         } else {
             return Morale.ECSTATIC;
@@ -330,14 +323,14 @@ public final class Sector {
     
     public void updateModifiers(Session session) {
         // Default everything...
-        bonusMap.set(FOOD_BASE, DEFAULT_FOOD_BASE);
-        bonusMap.set(IND_BASE, DEFAULT_IND_BASE);
-        bonusMap.set(SCI_BASE, DEFAULT_SCI_BASE);
-        bonusMap.set(FOOD_MOD, DEFAULT_FOOD_MOD);
-        bonusMap.set(IND_MOD, DEFAULT_IND_MOD);
-        bonusMap.set(SCI_MOD, DEFAULT_SCI_MOD);
+        bonusMap.set(FOOD_BASE, Settings.<Double>get("sectorFoodBase"));
+        bonusMap.set(IND_BASE, Settings.<Double>get("sectorIndBase"));
+        bonusMap.set(SCI_BASE, Settings.<Double>get("sectorSciBase"));
+        bonusMap.set(FOOD_MOD, Settings.<Double>get("sectorFoodMod"));
+        bonusMap.set(IND_MOD, Settings.<Double>get("sectorIndMod"));
+        bonusMap.set(SCI_MOD, Settings.<Double>get("sectorSciMod"));
 
-        foodConsumptionRate = DEFAULT_FOOD_CONSUMPTION;
+        foodConsumptionRate = Settings.<Double>get("sectorFoodConsumption");
         
         // Growth rate slows down as population increases [0.09-0.01]
         if (population < 9.0) {
@@ -347,7 +340,7 @@ public final class Sector {
         }
         // TODO: or is morale different from other values in that it changes
         // more slowly, over time?
-        morale = 0.5f;
+        morale = Settings.get("sectorMorale");
 
         BuildQueueEntry top = buildQueue.peek();
         if (top != null && top.isInfinite()) {
@@ -361,8 +354,8 @@ public final class Sector {
         }
 
         if (getNetFoodOutput() < 0.0f) {
-            growthRate = -0.25;
-            morale -= 0.25f;
+            growthRate = Settings.<Double>get("sectorStarvationGrowthRate");
+            morale += Settings.<Double>get("sectorStarvationMorale");
         } else {
             // TODO: add bonus to growth based on food surplus
         }
@@ -396,9 +389,10 @@ public final class Sector {
     
     public void colonize(Session session, String owner) {
         this.owner = owner;
-        this.population = 2.0f;
-        this.foodProducers = 1;
-        this.industrialProducers = 1;
+        this.population = Settings.get("sectorInitialPopulation");
+        this.foodProducers = Settings.get("sectorInitialFoodProducers");
+        this.industrialProducers = Settings.get("sectorInitialIndProducers");
+        this.scienceProducers = Settings.get("sectorInitialSciProducers");
         // TODO: compute automatically based on number of terraformed planets
         this.maxPopulation = 10;
         updateModifiers(session);

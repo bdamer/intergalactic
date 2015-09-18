@@ -19,6 +19,7 @@ import com.afqa123.intergalactic.graphics.StarRenderer;
 import com.afqa123.intergalactic.graphics.StationRenderer;
 import com.afqa123.intergalactic.input.SmartInputAdapter;
 import com.afqa123.intergalactic.math.HexCoordinate;
+import com.afqa123.intergalactic.model.Notification;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.model.ShipType;
@@ -36,6 +37,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -168,10 +170,11 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 return true;
             } else if (button == Input.Buttons.RIGHT) {
                 rightDown = false;
-                if (activeShip != null && activeShip.getPath() != null) {
+                if (activeShip != null && activeShip.hasPath()) {
                     activeShip.move(getSession());
                     Vector3 target = activeShip.getCoordinates().toWorld();
                     indicator.setPosition(target);
+                    processNotifications();
                 }
                 return true;
             } else {
@@ -444,11 +447,12 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 // if not, select it and see if it has a path. if it doesn't 
                 // have a path, force player interaction, otherwise continue
                 // moving along path.
-                selectShip(s);                
-                if (s.getPath() == null) {
+                selectShip(s);
+                if (!s.hasPath()) {
                     return false;
                 }
                 s.move(session);
+                processNotifications();
             } else {
                 // only increment if unit was ready, otherwise we'll check again 
                 // during the next iteration
@@ -626,5 +630,26 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         cam.position.set(target.x + CAMERA_OFFSET.x, target.y + CAMERA_OFFSET.y, target.z + CAMERA_OFFSET.z);
         cam.lookAt(target);
         cam.update();
+    }
+    
+    private void processNotifications() {
+        while (getSession().hasNotifications()) {
+            Notification n = getSession().pollNotifications();
+            final Dialog dlg = new Dialog(n.getTitle(), getSkin()) {
+                @Override
+                protected void result(Object object) {
+                    remove();
+                }
+            };
+            
+            dlg.button(getGame().getLabels().getProperty("BUTTON_OK"), true);
+            dlg.key(Input.Keys.ENTER, true);
+            
+            LabelStyle style = new LabelStyle(getSkin().getFont(FONT), Color.WHITE);
+            Label label = new Label(n.getMessage(), style);
+            label.setAlignment(Align.center);
+            dlg.getContentTable().add(label);
+            dlg.show(getStage());
+        }
     }
 }

@@ -10,6 +10,7 @@ import com.afqa123.intergalactic.logic.generators.GalaxyGenerator;
 import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
 import com.afqa123.intergalactic.model.Session;
+import com.afqa123.intergalactic.model.Settings;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -102,6 +103,7 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("data/ships.json", String.class);
         Assets.load("data/stations.json", String.class);
         Assets.load("data/structures.json", String.class);
+        Assets.load("data/settings.json", String.class);
         
         // TODO: load based on system locale
         Assets.load("localization/default.properties", Properties.class);
@@ -135,9 +137,9 @@ public class IntergalacticGame extends ApplicationAdapter {
         
         Assets.getManager().finishLoading();
 
-        labels = Assets.get("localization/default.properties");
-        
         FontProvider.intialize();
+        Settings.initialize(new Json().fromJson(Settings.class, (String)Assets.get("data/settings.json")));
+        labels = Assets.get("localization/default.properties");
     }
     
     @Override
@@ -203,7 +205,7 @@ public class IntergalacticGame extends ApplicationAdapter {
             json.toJson(session, writer);            
         } catch (IOException ex) {
             Gdx.app.error(IntergalacticGame.class.getName(), "Error saving file.", ex);
-        }        
+        }
     }
     
     public void load(String filename) {
