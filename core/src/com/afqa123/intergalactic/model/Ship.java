@@ -128,7 +128,7 @@ public class Ship extends Entity implements Unit, Json.Serializable {
         } else if (!target.equals(this.target)) {
             this.target = target;
             Unit anotherUnit = session.findUnitInSector(target);
-            if (anotherUnit != null && canAttack(anotherUnit)) {
+            if (anotherUnit != null && canAttack(anotherUnit) && canMoveTo(target)) {
                 // Create attack path
                 path = new Path();
                 path.add(new PathStep(target, 1.0f, true));
@@ -250,6 +250,11 @@ public class Ship extends Entity implements Unit, Json.Serializable {
             return true;
         }
     }
+    
+    public boolean canMoveTo(HexCoordinate coord) {
+        FactionMapSector sector = owner.getMap().getSector(coord);
+        return (sector.getRange().ordinal() <= getRange().ordinal());
+    }
 
     public boolean canPerformAction(Action action) {
         for (Action a : type.getActions()) {
@@ -278,6 +283,7 @@ public class Ship extends Entity implements Unit, Json.Serializable {
         // explore player map around new colony
         owner.getMap().addRange(s.getCoordinates());
         session.destroyUnit(this);
+        session.trigger(GameEvent.SECTOR_COLONIZED, s);
         return true;
     }
         

@@ -166,6 +166,7 @@ public class Session implements Json.Serializable {
     public void trigger(GameEvent e, Object... arguments) {
         Sector sector;
         Faction faction;
+        Unit unit;
         switch (e) {
             case FIRST_VISIT_TO_SECTOR:
                 sector = (Sector)arguments[0];
@@ -174,6 +175,28 @@ public class Session implements Json.Serializable {
                     randomSectorEvent(sector, faction);
                 }
                 break;
+                
+            case SECTOR_COLONIZED:
+                sector = (Sector)arguments[0];
+                faction = factions.get(sector.getOwner());
+                if (faction.isPlayer()) {
+                    notifications.add(new Notification(Strings.get("DIALOG_SECTOR_COLONIZED"),
+                        String.format(Strings.get("MSG_SECTOR_COLONIZED"), sector.getName()), 
+                            sector.getCoordinates()));
+                }
+                break;
+                
+            case SECTOR_CONSTRUCT:
+                sector = (Sector)arguments[0];
+                faction = factions.get(sector.getOwner());
+                if (faction.isPlayer()) {
+                    String type = (String)arguments[1];
+                    notifications.add(new Notification(Strings.get("DIALOG_SECTOR_CONSTRUCT"),
+                        String.format(Strings.get("MSG_SECTOR_CONSTRUCT"), sector.getName(), type), 
+                            sector.getCoordinates()));
+                }
+                break;
+
             case SECTOR_GROWTH:
                 sector = (Sector)arguments[0];
                 faction = factions.get(sector.getOwner());
@@ -183,6 +206,7 @@ public class Session implements Json.Serializable {
                             sector.getCoordinates()));
                 }
                 break;
+                
             case SECTOR_STARVATION:
                 sector = (Sector)arguments[0];
                 faction = factions.get(sector.getOwner());
@@ -190,6 +214,24 @@ public class Session implements Json.Serializable {
                     notifications.add(new Notification(Strings.get("DIALOG_POP_SHORT"), 
                         String.format(Strings.get("MSG_POP_SHORT"), sector.getName()), 
                             sector.getCoordinates()));
+                }
+                break;
+                
+            case UNIT_DESTROYED:
+                unit = (Unit)arguments[0];
+                if (unit.getOwner().isPlayer()) {
+                    String typeName = unit instanceof Ship ? db.getShip(unit.getType()).getLabel() :
+                            db.getStation(unit.getType()).getLabel();
+                    notifications.add(new Notification(Strings.get("DIALOG_UNIT_DESTROYED"), 
+                        String.format(Strings.get("MSG_UNIT_DESTROYED"), typeName), unit.getCoordinates()));
+                }
+                break;
+                
+            case STATION_CONSTRUCT:
+                unit = (Unit)arguments[0];
+                if (unit.getOwner().isPlayer()) {
+                    notifications.add(new Notification(Strings.get("DIALOG_STATION_CONSTRUCT"), 
+                        Strings.get("MSG_STATION_CONSTRUCT"), unit.getCoordinates()));
                 }
                 break;
         }
@@ -214,11 +256,13 @@ public class Session implements Json.Serializable {
             case VICTORY:
                 if (defender.getHealth() <= 0.0f) {
                     destroyUnit(defender);
+                    trigger(GameEvent.UNIT_DESTROYED, defender);
                 }
                 break;
             case DEFEAT:
                 if (attacker.getHealth() <= 0.0f) {
                     destroyUnit(attacker);
+                    trigger(GameEvent.UNIT_DESTROYED, attacker);
                 }
                 break;
             case DRAW:

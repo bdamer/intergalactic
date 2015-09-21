@@ -82,6 +82,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 case Input.Keys.C:
                     if (activeShip != null && activeShip.colonizeSector(getSession())) {
                         selectShip(null);
+                        processNotifications();
                     }
                     return true;                    
                 // Builds an outpost
@@ -304,7 +305,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             public void clicked(InputEvent event, float x, float y) {
                 if (activeShip != null && activeShip.colonizeSector(getSession())) {
                     selectShip(null);
-                }
+                    processNotifications();
+               }
             }
         });
         shipColonizeButton.setVisible(false);
@@ -656,6 +658,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             Label label = new Label(n.getMessage(), style);
             label.setAlignment(Align.center);
             dlg.getContentTable().add(label);
+            dlg.setModal(true);
+            dlg.setMovable(false);
             dlg.show(getStage());
         }
     }

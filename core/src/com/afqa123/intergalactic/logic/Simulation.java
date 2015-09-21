@@ -48,12 +48,13 @@ public class Simulation {
             if (faction.isPirates()) {
                 continue;
             }
-            
             Sector home;
             do {
                 home = sectors.get((int)(Math.random() * sectors.size()));
             } while (home.getOwner() != null);            
             home.colonize(session, faction.getName());
+            // home colony starts with some buildings...
+            home.getStructures().add("shipyard");
             // explore player map around new colony
             faction.getMap().addRange(home.getCoordinates());
             session.createShip(scoutType, home.getCoordinates(), faction);

@@ -108,8 +108,11 @@ public class ExploreSectorPlan implements Plan {
                     res = Status.INVALID; // again, we could move back into the initial state 
                                           // but it's probably cleaner to re-evaluate the goal
                 } else {
-                    // Move unit and check if we have reached the target
-                    if (ship.move(session)) {
+                    // check if we have reached the target
+                    if (ship.getCoordinates().equals(goal.getTargetSector())) {
+                        res = Status.COMPLETE;
+                    // otherwise, move unit 
+                    } else if (ship.move(session)) {
                         if (ship.getCoordinates().equals(goal.getTargetSector())) {
                             res = Status.COMPLETE;
                         } else {

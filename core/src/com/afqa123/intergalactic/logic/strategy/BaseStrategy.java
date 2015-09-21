@@ -41,6 +41,7 @@ public abstract class BaseStrategy implements Strategy, Json.Serializable {
         }
         goals.clear();
         
+        int updateCounter = 0;
         // evaluate plans
         Gdx.app.log(BaseStrategy.class.getName(), String.format("Active plans: %d", plans.size()));
         int i = 0;
@@ -48,7 +49,12 @@ public abstract class BaseStrategy implements Strategy, Json.Serializable {
             Plan plan = plans.get(i);
             // Update plan as long as status is active
             Plan.Status status;
-            while (Plan.Status.ACTIVE == (status = plan.update(session, faction))) ;
+            while (Plan.Status.ACTIVE == (status = plan.update(session, faction))) {
+                updateCounter++;
+                if (updateCounter >= 1000) {
+                    throw new RuntimeException("Excessive plan updates!");
+                }
+            }
             if (status == Plan.Status.COMPLETE) {
                 onGoalCompleted(plan.getGoal());
                 plans.remove(i);
@@ -59,7 +65,8 @@ public abstract class BaseStrategy implements Strategy, Json.Serializable {
             } else {
                 i++;
             }
-        } 
+        }
+        Gdx.app.log(BaseStrategy.class.getName(), String.format("Performed %d plan updates.", updateCounter));
     }
     
     /**

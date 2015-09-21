@@ -302,6 +302,7 @@ public final class Sector extends Entity {
             } else {
                 structures.add(entry.getId());
             }
+            session.trigger(GameEvent.SECTOR_CONSTRUCT, this, entry.getLabel());
         }
     } 
     

@@ -4,7 +4,6 @@ import com.afqa123.intergalactic.math.HexCoordinate;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Station extends Entity implements Unit, Json.Serializable {
 
@@ -101,9 +100,10 @@ public class Station extends Entity implements Unit, Json.Serializable {
         if (construction < type.getCost()) {
             construction++;
             if (construction == type.getCost()) {
-                // increase faction range pnce construction is done
+                // increase faction range once construction is done
                 owner.getMap().explore(coordinates, type.getScanRange());
                 owner.getMap().addRange(coordinates);        
+                session.trigger(GameEvent.STATION_CONSTRUCT, this);
             }
         }
     }
@@ -121,6 +121,7 @@ public class Station extends Entity implements Unit, Json.Serializable {
     
     @Override
     public void write(Json json) {
+        json.writeValue("id", id);
         json.writeValue("type", type.getId());
         json.writeValue("owner", owner.getName());
         json.writeValue("coordinates", coordinates);
@@ -130,6 +131,7 @@ public class Station extends Entity implements Unit, Json.Serializable {
 
     @Override
     public void read(Json json, JsonValue jv) {
+        id = json.readValue("id", String.class, jv);
         typeName = json.readValue("type", String.class, jv);
         ownerName = json.readValue("owner", String.class, jv);
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
