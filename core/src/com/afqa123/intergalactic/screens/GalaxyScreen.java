@@ -106,7 +106,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                     }
                     return true;
                 case Input.Keys.S:
-                    getGame().saveAuto();
+                    getGame().getStateManager().saveAuto(getSession());
                     return true;
                 case Input.Keys.F1:
                     debugDeityMode = !debugDeityMode;
@@ -481,6 +481,7 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         if (activeShip != null) {
             indicator.setPosition(activeShip.getCoordinates().toWorld());
         }
+        getGame().getStateManager().saveAuto(getSession());
     }
     
     @Override

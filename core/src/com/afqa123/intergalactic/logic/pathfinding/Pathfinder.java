@@ -1,4 +1,4 @@
-package com.afqa123.intergalactic.util;
+package com.afqa123.intergalactic.logic.pathfinding;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
 

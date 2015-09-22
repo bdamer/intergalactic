@@ -1,7 +1,7 @@
-package com.afqa123.intergalactic.util;
+package com.afqa123.intergalactic.logic.pathfinding;
 
 import com.afqa123.intergalactic.math.HexCoordinate;
-import com.afqa123.intergalactic.util.Path.PathStep;
+import com.afqa123.intergalactic.logic.pathfinding.Path.PathStep;
 import java.io.Serializable;
 import java.util.LinkedList;
 

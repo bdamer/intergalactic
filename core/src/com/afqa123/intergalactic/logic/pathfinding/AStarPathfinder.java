@@ -1,4 +1,4 @@
-package com.afqa123.intergalactic.util;
+package com.afqa123.intergalactic.logic.pathfinding;
 
 import com.afqa123.intergalactic.model.FactionMap;
 import com.afqa123.intergalactic.model.Range;
@@ -7,7 +7,8 @@ import com.afqa123.intergalactic.model.Faction;
 import com.afqa123.intergalactic.model.FactionMapSector;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Unit;
-import com.afqa123.intergalactic.util.Path.PathStep;
+import com.afqa123.intergalactic.logic.pathfinding.Path.PathStep;
+import com.afqa123.intergalactic.util.PriorityList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;

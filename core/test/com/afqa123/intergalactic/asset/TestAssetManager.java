@@ -2,6 +2,7 @@ package com.afqa123.intergalactic.asset;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -25,7 +26,10 @@ public class TestAssetManager extends AssetManager {
         Class<T> type = TYPES.get(fileName);        
         try {
             File f = new File(ASSET_DIR, fileName);
-            if (fileName.endsWith(".json")) {
+            if (type.equals(String.class)) {
+                Path path = FileSystems.getDefault().getPath(f.getAbsolutePath());
+                return (T)new String(Files.readAllBytes(path));        
+            } else if (type.equals(JsonValue.class)) {
                 Path path = FileSystems.getDefault().getPath(f.getAbsolutePath());
                 String raw = new String(Files.readAllBytes(path));        
                 return (T)new JsonReader().parse(raw);

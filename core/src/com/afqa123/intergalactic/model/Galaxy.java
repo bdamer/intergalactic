@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Galaxy data structure containing all sectors for a game.
  */
-public final class Galaxy implements Json.Serializable {
+public class Galaxy implements Json.Serializable {
 
     // Size of the galaxy represented by the radius of the surrounding circle.
     private int radius;

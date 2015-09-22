@@ -1,8 +1,8 @@
 package com.afqa123.intergalactic.graphics;
 
 import com.afqa123.intergalactic.model.Ship;
-import com.afqa123.intergalactic.util.Path;
-import com.afqa123.intergalactic.util.Path.PathStep;
+import com.afqa123.intergalactic.logic.pathfinding.Path;
+import com.afqa123.intergalactic.logic.pathfinding.Path.PathStep;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
