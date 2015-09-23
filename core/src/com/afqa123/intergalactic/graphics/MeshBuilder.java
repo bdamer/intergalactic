@@ -1,35 +1,25 @@
 package com.afqa123.intergalactic.graphics;
 
+import com.afqa123.intergalactic.asset.Assets;
 import com.afqa123.intergalactic.math.Geometry;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: make builder more flexible by allowing selection of vertex type
 public class MeshBuilder {
 
-    // TODO: make builder more flexible by allowing selection of vertex type
-    private enum VertexType {
-
-        POS3(3),
-        POS3_NOR3(6),
-        POS3_COL4(7),
-        POS3_UV2(5),
-        POS3_NOR3_UV2(8);
-        
-        private final int size;
-        
-        private VertexType(int size) {
-            this.size = size;
-        }
-        
-        public int size() {
-            return size;
-        }        
-    };
+    // TODO: move
+    public static final VertexAttribute ATTR_POS3 = new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE);
+    public static final VertexAttribute ATTR_NOR3 = new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE);
+    public static final VertexAttribute ATTR_COL4 = new VertexAttribute(VertexAttributes.Usage.ColorUnpacked, 4, ShaderProgram.COLOR_ATTRIBUTE);
+    public static final VertexAttribute ATTR_UV2 = new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, ShaderProgram.TEXCOORD_ATTRIBUTE);
     
     /**
      * Builds up a sphere mesh of {@code POS3_NOR3} vertices with a given number
@@ -50,9 +40,9 @@ public class MeshBuilder {
             new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE));
         
         // Build up vertex array
-        float[] vertices = new float[numVertices * VertexType.POS3_NOR3.size()];
+        float[] vertices = new float[numVertices * VertexFormat.POS3_NOR3.size()];
         for (int i = 0; i < numVertices; i++) {
-            int offset = i * VertexType.POS3_NOR3.size();
+            int offset = i * VertexFormat.POS3_NOR3.size();
             vertices[offset++] = vertexData.get(i * 3 + 0);
             vertices[offset++] = vertexData.get(i * 3 + 1);
             vertices[offset++] = vertexData.get(i * 3 + 2);
@@ -114,7 +104,7 @@ public class MeshBuilder {
      * @return The mesh.
      */
     public Mesh buildSpiral(int numSegments, float step, float radius, Color color) {        
-        float[] vertices = new float[numSegments * VertexType.POS3_COL4.size()];
+        float[] vertices = new float[numSegments * VertexFormat.POS3_COL4.size()];
         
         Mesh mesh = new Mesh(true, numSegments, 0, 
             new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
@@ -122,7 +112,7 @@ public class MeshBuilder {
 
         float angle = 0.0f;
         for (int idx = 0; idx < numSegments; idx++) {
-            int offset = idx * VertexType.POS3_COL4.size();
+            int offset = idx * VertexFormat.POS3_COL4.size();
             vertices[offset++] = (float)Math.cos(angle) * (float)idx / (float)numSegments * radius;
             vertices[offset++] = (float)Math.sin(angle) * (float)idx / (float)numSegments * radius;
             vertices[offset++] = 0.0f;
@@ -143,57 +133,7 @@ public class MeshBuilder {
      * @return The mesh.
      */
     public Mesh buildCube() {
-        final float[] vertices = new float[] {
-            // bottom face
-            -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
-             1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
-            -1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f,
-             1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f,
-             1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f,
-            -1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f,
-            // top face
-            -1.0f, 1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
-             1.0f, 1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
-            -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-             1.0f, 1.0f,  1.0f, 0.0f, 1.0f, 0.0f,
-             1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-            -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-            // back face
-             1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-             1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-             1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f,
-            // front face
-            -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-             1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-             1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-             1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-            // left face
-            -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f,  1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f,  1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-            // right face
-            1.0f, -1.0f,  1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f,  1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f
-        };
-
-        Mesh mesh = new Mesh(true, vertices.length / VertexType.POS3_NOR3.size(), 0, 
-            new VertexAttribute(VertexAttributes.Usage.Position, 3, ShaderProgram.POSITION_ATTRIBUTE),
-            new VertexAttribute(VertexAttributes.Usage.Normal, 3, ShaderProgram.NORMAL_ATTRIBUTE));
-        mesh.setVertices(vertices);
-        
-        return mesh;
+        return load(Assets.<JsonValue>get("meshes/cube_pn.mesh"));
     }
 
     /**
@@ -213,6 +153,54 @@ public class MeshBuilder {
             -1.0f, 1.0f, -1.0f
         };        
         mesh.setVertices(vertices);        
+        return mesh;
+    }
+    
+    /**
+     * Loads a {@code Mesh} from a JSON value.
+     * 
+     * @param val The JSON value.
+     * @return The mesh.
+     */
+    public Mesh load(JsonValue val) {
+        return load(val, null);
+    }
+    
+    /**
+     * Loads a {@code Mesh} from a JSON value. Any UV coordinates will be transformed
+     * using the provided offset.
+     * 
+     * @param val The JSON value.
+     * @param textureOffset {left, top, right, bottom} transformation.
+     * @return The mesh.
+     */
+    public Mesh load(JsonValue val, float[] textureOffset) {
+        Json json = new Json();
+        VertexFormat fmt = json.readValue("format", VertexFormat.class, val);
+        float[] vertices = json.readValue("vertices", float[].class, val);
+        short[] indices = json.readValue("indices", short[].class, val);
+        Mesh mesh = new Mesh(true, vertices.length / fmt.size(), indices.length, fmt.getAttributes());
+
+        if (textureOffset != null) {
+            for (int i = 0; i < vertices.length; i += fmt.size()) {
+                switch (fmt) {
+                    case POS3_UV2:
+                        vertices[i + 3] = textureOffset[0] + vertices[i + 3] * (textureOffset[2] - textureOffset[0]);
+                        vertices[i + 4] = textureOffset[1] + vertices[i + 4] * (textureOffset[3] - textureOffset[1]);
+                        break;
+                    case POS3_NOR3_UV2:
+                        vertices[i + 6] = textureOffset[0] + vertices[i + 6] * (textureOffset[2] - textureOffset[0]);
+                        vertices[i + 7] = textureOffset[1] + vertices[i + 7] * (textureOffset[3] - textureOffset[1]);
+                        break;
+                    default:
+                        // no texture coords
+                        break;
+                }
+            }
+        }
+        
+        mesh.setVertices(vertices);
+        mesh.setIndices(indices);
         return mesh;
     }
 }

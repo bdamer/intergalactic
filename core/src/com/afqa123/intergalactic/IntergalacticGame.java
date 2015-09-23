@@ -10,10 +10,10 @@ import com.afqa123.intergalactic.graphics.ShaderFactory;
 import com.afqa123.intergalactic.logic.generators.GalaxyGenerator;
 import com.afqa123.intergalactic.logic.strategy.PirateStrategy;
 import com.afqa123.intergalactic.logic.strategy.SimpleStrategy;
-import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.screens.Screen;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Settings;
+import com.afqa123.intergalactic.screens.GalaxyScreen;
 import com.afqa123.intergalactic.util.GameStateManager;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
@@ -94,12 +94,22 @@ public class IntergalacticGame extends ApplicationAdapter {
     private void loadAssets() {
         Gdx.app.log(IntergalacticGame.class.getName(), "Loading assets...");
         
-        // Assets
+        // Textures
         Assets.load("textures/nebula32.png", Texture.class);
         Assets.load("textures/base-red.png", Texture.class);
         Assets.load("textures/catalog01.png", Texture.class);
+        Assets.load("textures/cube.png", Texture.class);
         Assets.load("textures/detail.png", Texture.class);
         Assets.load("textures/explosion.png", Texture.class);
+
+        // Meshes
+        Assets.load("meshes/cube_pn.mesh", JsonValue.class);
+        Assets.load("meshes/cube_pnt.mesh", JsonValue.class);
+        Assets.load("meshes/raider_pnt.mesh", JsonValue.class);
+
+        // TODO: implement single-face cube for raider
+        
+        // Data assets
         Assets.load("data/plans/plan01.json", String.class);
         Assets.load("data/sectors.json", JsonValue.class);
         Assets.load("data/ships.json", String.class);
@@ -123,6 +133,10 @@ public class IntergalacticGame extends ApplicationAdapter {
         Assets.load("shaders/sc_star.fsh", String.class);
         Assets.load("shaders/sc_star_noise.vsh", String.class);
         Assets.load("shaders/sc_star_noise.fsh", String.class);
+        Assets.load("shaders/sc_texture.vsh", String.class);
+        Assets.load("shaders/sc_texture.fsh", String.class);
+        Assets.load("shaders/sc_unit.vsh", String.class);
+        Assets.load("shaders/sc_unit.fsh", String.class);
 
         Assets.load("shaders/textured.vsh", String.class);
         Assets.load("shaders/textured.fsh", String.class);

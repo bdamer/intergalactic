@@ -68,6 +68,5 @@
         "defense": 1,
         "health": 3,
         "actions": ["ATTACK"]
-    },
-    
+    }
 ]
