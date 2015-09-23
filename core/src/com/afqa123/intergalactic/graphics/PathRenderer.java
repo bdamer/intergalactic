@@ -32,7 +32,7 @@ public class PathRenderer implements Disposable {
             return;
         }
         
-        float points = ship.getMovementPoints();
+        double points = ship.getMovementPoints();
         
         Matrix4 model = new Matrix4();
         Matrix4 mvp = new Matrix4();

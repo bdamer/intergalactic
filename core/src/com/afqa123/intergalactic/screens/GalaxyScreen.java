@@ -175,8 +175,11 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
                 rightDown = false;
                 if (activeShip != null && activeShip.hasPath()) {
                     activeShip.move(getSession());
-                    Vector3 target = activeShip.getCoordinates().toWorld();
-                    indicator.setPosition(target);
+                    if (activeShip != null) {
+                        indicator.setPosition(activeShip.getCoordinates().toWorld());
+                    } else {
+                        indicator.setPosition(null);
+                    }
                     processNotifications();
                 }
                 return true;
@@ -480,6 +483,8 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
         processNotifications();
         if (activeShip != null) {
             indicator.setPosition(activeShip.getCoordinates().toWorld());
+        } else {
+            indicator.setPosition(null);
         }
         getGame().getStateManager().saveAuto(getSession());
     }

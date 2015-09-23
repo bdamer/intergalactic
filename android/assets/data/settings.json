@@ -22,11 +22,11 @@
         },
         "sectorIndMod":{
             "class": "java.lang.Double",
-            "value": 0.75
+            "value": 0.25
         },
         "sectorSciMod":{
             "class": "java.lang.Double",
-            "value": 0.5
+            "value": 0.25
         },
         "sectorFoodConsumption":{
             "class": "java.lang.Double",

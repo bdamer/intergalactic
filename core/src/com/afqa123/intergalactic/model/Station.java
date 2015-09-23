@@ -12,7 +12,7 @@ public class Station extends Entity implements Unit, Json.Serializable {
     private Faction owner;
     private HexCoordinate coordinates;
     private int construction;
-    private float health;
+    private double health;
     
     // TODO: fixme - only needed during deserialization
     private String typeName;
@@ -70,28 +70,28 @@ public class Station extends Entity implements Unit, Json.Serializable {
     }
 
     @Override
-    public float getBaseAttack() {
-        return 0.0f;
+    public double getBaseAttack() {
+        return 0.0;
     }
     
     @Override
-    public float getBaseDefense() {
+    public double getBaseDefense() {
         return type.getDefense() * getPower();
     }
     
     @Override
-    public float getPower() {
-        float power = health / type.getHealth();
-        return Math.max(power, 0.1f);
+    public double getPower() {
+        double power = health / type.getHealth();
+        return Math.max(power, 0.1);
     }
     
     @Override
-    public void applyDamage(float damage) {
+    public void applyDamage(double damage) {
         health -= damage;
     }
 
     @Override
-    public float getHealth() {
+    public double getHealth() {
         return health;
     }
     
@@ -126,6 +126,7 @@ public class Station extends Entity implements Unit, Json.Serializable {
         json.writeValue("owner", owner.getName());
         json.writeValue("coordinates", coordinates);
         json.writeValue("construction", construction);
+        json.writeValue("health", health);
         json.writeValue("flags", flags);
     }
 
@@ -136,6 +137,7 @@ public class Station extends Entity implements Unit, Json.Serializable {
         ownerName = json.readValue("owner", String.class, jv);
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
         construction = json.readValue("construction", Integer.class, jv);
+        health = json.readValue("health", Double.class, jv);
         flags.putAll(json.readValue("flags", HashMap.class, jv));
     }
 }

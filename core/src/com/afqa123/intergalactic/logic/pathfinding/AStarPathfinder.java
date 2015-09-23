@@ -22,6 +22,8 @@ public class AStarPathfinder implements Pathfinder {
     private final static float BASE_COST = 1.0f;
     // Cost for moving through a sector with enemny unit in it
     private final static float ENEMY_COST = 15.0f;
+    // Cost for moving through a sector with a friendly unit in it
+    private final static float FRIENDLY_COST = 12.0f;
     
     private class PathNode {
         
@@ -40,8 +42,12 @@ public class AStarPathfinder implements Pathfinder {
             if (parent != null) {
                 // TODO: cost needs to include sector information from map
                 Unit u = session.findUnitInSector(coord);
-                if (u != null && !faction.equals(u.getOwner())) {
-                    estCost += ENEMY_COST;
+                if (u != null) {
+                    if (faction.equals(u.getOwner())) {
+                        estCost += FRIENDLY_COST;
+                    } else {
+                        estCost += ENEMY_COST;
+                    }
                 }
                 cost = BASE_COST;
                 cumulativeCost = parent.cost + cost + estCost;

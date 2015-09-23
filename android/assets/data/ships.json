@@ -46,7 +46,7 @@
         "label": "Scout",
         "detail": "Unarmored long-range scout ship.",
         "cost": 10,
-        "dependencies": ["research_lab","shipyard"],
+        "dependencies": ["shipyard"],
         "range": "LONG",
         "movementRange": 2,
         "scanRange": 2,

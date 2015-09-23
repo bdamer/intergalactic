@@ -9,6 +9,7 @@ import com.afqa123.intergalactic.model.Sector;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.model.ShipType.Action;
+import com.afqa123.intergalactic.model.Unit;
 
 public class BuildStationPlan implements Plan {
 
@@ -34,11 +35,29 @@ public class BuildStationPlan implements Plan {
         this.step = Step.START;
     }
     
+    private boolean isTargetValid(Session session) {
+        Sector colony = session.getGalaxy().getSector(goal.getTargetSector());
+        if (!colony.canBuildOutpost()) {
+            return false;
+        }
+        Unit u = session.findUnitInSector(goal.getTargetSector());
+        if (u != null && !u.getId().equals(shipId)) {
+            return false;
+        }
+        return true;
+    }
+    
     @Override
     public Status update(Session session, Faction faction) {
         Status res = null;
         Sector producer = null;
         Ship ship = null;
+        
+        // Always check if target is still valid.
+        if (!isTargetValid(session)) {
+            return Status.INVALID;
+        }
+        
         switch (step) {
             case START:
             case FIND_STATION_SHIP:

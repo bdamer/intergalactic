@@ -24,8 +24,8 @@ public class Ship extends Entity implements Unit, Json.Serializable {
     // Path from current coordinates to target
     private Path path; 
     // Movement points remaining this turn
-    private float movementPoints;
-    private float health;
+    private double movementPoints;
+    private double health;
 
     // TODO: fixme - only needed during deserialization
     private String typeName;
@@ -74,33 +74,33 @@ public class Ship extends Entity implements Unit, Json.Serializable {
         return type.getScanRange();
     }
     
-    public float getMovementPoints() {
+    public double getMovementPoints() {
         return movementPoints;
     }
 
     @Override
-    public float getBaseAttack() {
+    public double getBaseAttack() {
         return type.getAttack() * getPower();
     }
     
     @Override
-    public float getBaseDefense() {
+    public double getBaseDefense() {
         return type.getDefense() * getPower();
     }
     
     @Override
-    public float getPower() {
-        float power = health / type.getHealth();
-        return Math.max(power, 0.1f);
+    public double getPower() {
+        double power = health / type.getHealth();
+        return Math.max(power, 0.1);
     }
     
     @Override
-    public void applyDamage(float damage) {
+    public void applyDamage(double damage) {
         health -= damage;
     }
     
     @Override
-    public float getHealth() {
+    public double getHealth() {
         return health;
     }
     
@@ -192,11 +192,8 @@ public class Ship extends Entity implements Unit, Json.Serializable {
                         }
                     }
                     if (!canPass) {
-                        // abandon current path if we cannot move even though we
-                        // are at full movement points
-                        if (movementPoints == type.getMovementRange()) {
-                            path.clear();  
-                        }
+                        // TODO: revisit - this might cause AI to go into loop
+                        path.clear();  
                         res = false;
                         break;
                     }
@@ -212,7 +209,10 @@ public class Ship extends Entity implements Unit, Json.Serializable {
             // First visitor to a new sector triggers discovery event
             if (sector.getType() != null && !sector.getFlag(Sector.FLAG_EXPLORED)) {
                 session.trigger(GameEvent.FIRST_VISIT_TO_SECTOR, sector, owner);
-                return false; // return false to stop movement
+                // Ugly...
+                if (owner.isPlayer()) {
+                    return false; // return false to stop movement
+                }
             }
         }
         
@@ -258,7 +258,7 @@ public class Ship extends Entity implements Unit, Json.Serializable {
 
     public boolean canPerformAction(Action action) {
         for (Action a : type.getActions()) {
-            if (a == action) {
+            if (a == action && movementPoints > 0.0f) {
                 return true;
             }
         }
@@ -356,8 +356,8 @@ public class Ship extends Entity implements Unit, Json.Serializable {
         ownerName = json.readValue("owner", String.class, jv);
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
         target = json.readValue("target", HexCoordinate.class, jv);
-        movementPoints = json.readValue("movementPoints", Float.class, jv);        
-        health = json.readValue("health", Float.class, jv);
+        movementPoints = json.readValue("movementPoints", Double.class, jv);        
+        health = json.readValue("health", Double.class, jv);
         flags.putAll(json.readValue("flags", HashMap.class, jv));
     }
 }

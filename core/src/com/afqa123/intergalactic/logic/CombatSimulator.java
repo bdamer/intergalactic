@@ -15,17 +15,17 @@ public class CombatSimulator {
     
     public CombatResult simulate(Unit attacker, Unit defender) {
         // TODO: include modifiers
-        float attackDmg = attacker.getBaseAttack() * (1.0f - DAMAGE_VARIANCE * (float)Math.random());
-        float defenseDmg = defender.getBaseDefense() * (1.0f - DAMAGE_VARIANCE * (float)Math.random());
-        float attackHealth = attacker.getHealth() - defenseDmg;
-        float defenseHealth = defender.getHealth() - attackDmg;
+        double attackDmg = attacker.getBaseAttack() * (1.0f - DAMAGE_VARIANCE * Math.random());
+        double defenseDmg = defender.getBaseDefense() * (1.0f - DAMAGE_VARIANCE * Math.random());
+        double attackHealth = attacker.getHealth() - defenseDmg;
+        double defenseHealth = defender.getHealth() - attackDmg;
 
         Gdx.app.log(CombatSimulator.class.getName(), String.format("Attack: %f - %f = %f", defender.getHealth(), attackDmg, defenseHealth));
         Gdx.app.log(CombatSimulator.class.getName(), String.format("Defense: %f - %f = %f", attacker.getHealth(), defenseDmg, attackHealth));
 
         // both units are dead - unit with least damage stays alive, so adjust damage
         if (attackHealth <= 0.0f && defenseHealth <= 0.0f) {
-            float d = attackHealth - defenseHealth;
+            double d = attackHealth - defenseHealth;
             if (d >= 0.0f) {
                 defenseDmg = attacker.getHealth() - 0.1f;
             } else {
