@@ -25,6 +25,8 @@ import com.afqa123.intergalactic.model.Notification;
 import com.afqa123.intergalactic.model.Session;
 import com.afqa123.intergalactic.model.Ship;
 import com.afqa123.intergalactic.model.ShipType;
+import com.afqa123.intergalactic.model.ShipType.Action;
+import static com.afqa123.intergalactic.model.ShipType.Action.COLONIZE;
 import com.afqa123.intergalactic.model.Station;
 import com.afqa123.intergalactic.util.FactionBorder;
 import com.badlogic.gdx.Gdx;
@@ -613,23 +615,30 @@ public class GalaxyScreen extends AbstractScreen implements FactionMap.ChangeLis
             shipDisbandButton.setVisible(true);
             shipDisbandButton.setPosition(offset, STAGE_MARGIN);
             offset += shipDisbandButton.getWidth();
+        
+            // Hide buttons
+            shipColonizeButton.setVisible(false);                
+            shipStationButton.setVisible(false);                
             
-            if (activeShip.canPerformAction(ShipType.Action.COLONIZE)) {
-                shipColonizeButton.setVisible(true);
-                shipColonizeButton.setPosition(offset, STAGE_MARGIN);
-                offset += shipColonizeButton.getWidth();
-            } else {
-                shipColonizeButton.setVisible(false);                
+            for (Action action : activeShip.getActions()) {
+                switch (action) {
+                    case COLONIZE:
+                        // TODO: check activeShip.canPerformAction(ShipType.Action.COLONIZE) to 
+                        // see if button is "enabled"
+                        shipColonizeButton.setVisible(true);
+                        shipColonizeButton.setPosition(offset, STAGE_MARGIN);
+                        offset += shipColonizeButton.getWidth();
+                        break;
+                        
+                    case BUILD_STATION:
+                        // TODO: check activeShip.canPerformAction(ShipType.Action.BUILD_STATION) to
+                        // see if button is "enabled"
+                        shipStationButton.setVisible(true);
+                        shipStationButton.setPosition(offset, STAGE_MARGIN);
+                        offset += shipStationButton.getWidth();
+                        break;
+                }
             }
-
-            if (activeShip.canPerformAction(ShipType.Action.BUILD_STATION)) {
-                shipStationButton.setVisible(true);
-                shipStationButton.setPosition(offset, STAGE_MARGIN);
-                offset += shipStationButton.getWidth();
-            } else {
-                shipStationButton.setVisible(false);                
-            }
-            
         } else {
             indicator.setPosition(null);
             shipFortifyButton.setVisible(false);

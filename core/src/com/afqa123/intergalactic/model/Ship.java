@@ -70,6 +70,10 @@ public class Ship extends Entity implements Unit, Json.Serializable {
     public Faction getOwner() {
         return owner;
     }
+
+    public Action[] getActions() {
+        return type.getActions();
+    }
     
     @Override
     public int getScanRange() {
@@ -110,6 +114,24 @@ public class Ship extends Entity implements Unit, Json.Serializable {
     @Override
     public float getHealth() {
         return shieldCapacity + crewSize;
+    }
+
+    public float getShieldPercentage() {
+        float max = type.getShieldCapacity();
+        if (max > 0.0f) {
+            return shieldCapacity / max;
+        } else {
+            return 0.0f;
+        }
+    }
+    
+    public float getCrewPercentage() {
+        float max = type.getCrewSize();
+        if (max > 0.0f) {
+            return crewSize / max;
+        } else {
+            return 0.0f;
+        }
     }
     
     public Range getRange() {
@@ -273,7 +295,7 @@ public class Ship extends Entity implements Unit, Json.Serializable {
         }
         return false;
     }
-
+    
     /**
      * If possible will colonize the current sector. If successful, this action
      * will remove this unit from the session.
