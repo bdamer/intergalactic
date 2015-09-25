@@ -9,14 +9,27 @@ public class ShipType implements UnitType, BuildOption {
     private String id;
     private String label;
     private String detail;
+    // Build cost
     private int cost;
+    // Build dependencies
     private String[] dependencies;
+    // Movement range (short or long)
     private Range range;
+    // Scan range
     private int scanRange;
-    private int movementRange;
+    // Number of movement points per turn
+    private int movementPoints;
+    // Base attack value
     private float attack;
+    // Base defense value
     private float defense;
-    private float health;
+    // Max crew size
+    private float crewSize;
+    // Max shield power
+    private float shieldCapacity;
+    // Shield recharge rate
+    private float shieldRecharge;
+    // Available actions
     private Action[] actions;
 
     ShipType() {
@@ -57,8 +70,8 @@ public class ShipType implements UnitType, BuildOption {
         return range;
     }
 
-    public int getMovementRange() {
-        return movementRange;
+    public int getMovementPoints() {
+        return movementPoints;
     }
     
     public int getScanRange() {
@@ -73,8 +86,16 @@ public class ShipType implements UnitType, BuildOption {
         return defense;
     }
 
-    public float getHealth() {
-        return health;
+    public float getCrewSize() {
+        return crewSize;
+    }
+
+    public float getShieldCapacity() {
+        return shieldCapacity;
+    }
+
+    public float getShieldRecharge() {
+        return shieldRecharge;
     }
     
     public Action[] getActions() {

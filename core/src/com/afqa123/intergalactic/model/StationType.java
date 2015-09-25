@@ -8,6 +8,7 @@ public class StationType implements UnitType {
     private int cost;
     private float defense;
     private float health;
+    private float shieldRecharge;
     
     @Override
     public String getId() {
@@ -33,5 +34,9 @@ public class StationType implements UnitType {
 
     public float getHealth() {
         return health;
+    }
+    
+    public float getShieldRecharge() {
+        return shieldRecharge;
     }
 }

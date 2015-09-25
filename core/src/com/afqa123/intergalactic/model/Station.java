@@ -12,7 +12,8 @@ public class Station extends Entity implements Unit, Json.Serializable {
     private Faction owner;
     private HexCoordinate coordinates;
     private int construction;
-    private double health;
+    // TODO: replace with crew + shield similar to Ship?
+    private float health;
     
     // TODO: fixme - only needed during deserialization
     private String typeName;
@@ -70,28 +71,28 @@ public class Station extends Entity implements Unit, Json.Serializable {
     }
 
     @Override
-    public double getBaseAttack() {
-        return 0.0;
+    public float getBaseAttack() {
+        return 0.0f;
     }
     
     @Override
-    public double getBaseDefense() {
+    public float getBaseDefense() {
         return type.getDefense() * getPower();
     }
     
     @Override
-    public double getPower() {
-        double power = health / type.getHealth();
-        return Math.max(power, 0.1);
+    public float getPower() {
+        float power = health / type.getHealth();
+        return Math.max(power, 0.1f);
     }
     
     @Override
-    public void applyDamage(double damage) {
+    public void applyDamage(float damage) {
         health -= damage;
     }
 
     @Override
-    public double getHealth() {
+    public float getHealth() {
         return health;
     }
     
@@ -106,6 +107,8 @@ public class Station extends Entity implements Unit, Json.Serializable {
                 session.trigger(GameEvent.STATION_CONSTRUCT, this);
             }
         }
+        // Recharge health 
+        health = Math.min(health + type.getShieldRecharge(), type.getHealth());
     }
     
     @Override
@@ -137,7 +140,7 @@ public class Station extends Entity implements Unit, Json.Serializable {
         ownerName = json.readValue("owner", String.class, jv);
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
         construction = json.readValue("construction", Integer.class, jv);
-        health = json.readValue("health", Double.class, jv);
+        health = json.readValue("health", Float.class, jv);
         flags.putAll(json.readValue("flags", HashMap.class, jv));
     }
 }

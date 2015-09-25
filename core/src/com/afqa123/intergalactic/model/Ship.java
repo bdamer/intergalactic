@@ -24,8 +24,9 @@ public class Ship extends Entity implements Unit, Json.Serializable {
     // Path from current coordinates to target
     private Path path; 
     // Movement points remaining this turn
-    private double movementPoints;
-    private double health;
+    private float movementPoints;
+    private float crewSize;
+    private float shieldCapacity;
 
     // TODO: fixme - only needed during deserialization
     private String typeName;
@@ -47,11 +48,12 @@ public class Ship extends Entity implements Unit, Json.Serializable {
     Ship(String id, ShipType type, HexCoordinate coordinates, Faction owner) {
         this.id = id;
         this.type = type;
-        this.movementPoints = type.getMovementRange();
+        this.movementPoints = type.getMovementPoints();
         this.coordinates = coordinates;
         this.owner = owner;
         this.ownerName = owner.getName();
-        this.health = type.getHealth();
+        this.shieldCapacity = type.getShieldCapacity();
+        this.crewSize = type.getCrewSize();
     }
     
     @Override
@@ -74,34 +76,40 @@ public class Ship extends Entity implements Unit, Json.Serializable {
         return type.getScanRange();
     }
     
-    public double getMovementPoints() {
+    public float getMovementPoints() {
         return movementPoints;
     }
 
     @Override
-    public double getBaseAttack() {
+    public float getBaseAttack() {
         return type.getAttack() * getPower();
     }
     
     @Override
-    public double getBaseDefense() {
+    public float getBaseDefense() {
         return type.getDefense() * getPower();
     }
     
     @Override
-    public double getPower() {
-        double power = health / type.getHealth();
-        return Math.max(power, 0.1);
+    public float getPower() {
+        float power = crewSize / type.getCrewSize();
+        return Math.max(power, 0.1f);
     }
     
     @Override
-    public void applyDamage(double damage) {
-        health -= damage;
+    public void applyDamage(float damage) {
+        float remaining = shieldCapacity - damage;
+        if (remaining > 0.0f) {
+            shieldCapacity = remaining;
+        } else {
+            shieldCapacity = 0.0f;
+            crewSize += remaining;
+        }
     }
     
     @Override
-    public double getHealth() {
-        return health;
+    public float getHealth() {
+        return shieldCapacity + crewSize;
     }
     
     public Range getRange() {
@@ -229,7 +237,8 @@ public class Ship extends Entity implements Unit, Json.Serializable {
 
     @Override
     public void update(Session session) {
-        movementPoints = type.getMovementRange();
+        movementPoints = type.getMovementPoints();
+        shieldCapacity = Math.min(type.getShieldCapacity(), shieldCapacity + type.getShieldRecharge());
     }
 
     /**
@@ -345,7 +354,8 @@ public class Ship extends Entity implements Unit, Json.Serializable {
         json.writeValue("coordinates", coordinates);
         json.writeValue("target", target);
         json.writeValue("movementPoints", movementPoints);
-        json.writeValue("health", health);
+        json.writeValue("crewSize", crewSize);
+        json.writeValue("shieldCapacity", shieldCapacity);
         json.writeValue("flags", flags);
     }
 
@@ -356,8 +366,9 @@ public class Ship extends Entity implements Unit, Json.Serializable {
         ownerName = json.readValue("owner", String.class, jv);
         coordinates = json.readValue("coordinates", HexCoordinate.class, jv);
         target = json.readValue("target", HexCoordinate.class, jv);
-        movementPoints = json.readValue("movementPoints", Double.class, jv);        
-        health = json.readValue("health", Double.class, jv);
+        movementPoints = json.readValue("movementPoints", Float.class, jv);        
+        crewSize = json.readValue("crewSize", Float.class, jv);        
+        shieldCapacity = json.readValue("shieldCapacity", Float.class, jv);        
         flags.putAll(json.readValue("flags", HashMap.class, jv));
     }
 }

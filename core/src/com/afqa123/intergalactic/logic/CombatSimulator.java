@@ -15,10 +15,10 @@ public class CombatSimulator {
     
     public CombatResult simulate(Unit attacker, Unit defender) {
         // TODO: include modifiers
-        double attackDmg = attacker.getBaseAttack() * (1.0f - DAMAGE_VARIANCE * Math.random());
-        double defenseDmg = defender.getBaseDefense() * (1.0f - DAMAGE_VARIANCE * Math.random());
-        double attackHealth = attacker.getHealth() - defenseDmg;
-        double defenseHealth = defender.getHealth() - attackDmg;
+        float attackDmg = attacker.getBaseAttack() * (1.0f - DAMAGE_VARIANCE * (float)Math.random());
+        float defenseDmg = defender.getBaseDefense() * (1.0f - DAMAGE_VARIANCE * (float)Math.random());
+        float attackHealth = attacker.getHealth() - defenseDmg;
+        float defenseHealth = defender.getHealth() - attackDmg;
 
         Gdx.app.log(CombatSimulator.class.getName(), String.format("Attack: %f - %f = %f", defender.getHealth(), attackDmg, defenseHealth));
         Gdx.app.log(CombatSimulator.class.getName(), String.format("Defense: %f - %f = %f", attacker.getHealth(), defenseDmg, attackHealth));

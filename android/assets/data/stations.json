@@ -4,7 +4,8 @@
         "label": "Outpost",
         "scanRange": 3,
         "cost": 4,
-        "defense": 2,
-        "health": 25
+        "defense": 15,
+        "health": 200,
+        "shieldRecharge": 10
     }
 ]
